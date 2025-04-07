@@ -1,0 +1,22 @@
+services:
+  websocket-service:
+    build:
+      context: ../../
+      dockerfile: ./deployments/docker/websocket.Dockerfile
+    ports:
+      - "8090:8090"
+    environment:
+      - MAIN_GRPC_HOST=${WEBSOCKET_MAIN_GRPC_HOST:-localhost}
+      - MAIN_GRPC_PORT=${WEBSOCKET_MAIN_GRPC_PORT:-50051}
+      - DRAFT_GRPC_HOST=${WEBSOCKET_DRAFT_GRPC_HOST:-localhost}
+      - DRAFT_GRPC_PORT=${WEBSOCKET_DRAFT_GRPC_PORT:-50052}
+      - HTTP_PORT=${WEBSOCKET_HTTP_PORT:-8090}
+      - JWT_SECRET=${JWT_SECRET}
+      - JWT_ISSUER=${JWT_ISSUER}
+      - ENV_TYPE=${ENV_TYPE:-dev}
+#    healthcheck:
+#      test: ["CMD", "wget", "--spider", "-q", "http://localhost:${WEBSOCKET_HTTP_PORT:-8090}/ping"]
+#      interval: 10s
+#      timeout: 5s
+#      retries: 3
+#      start_period: 5s
