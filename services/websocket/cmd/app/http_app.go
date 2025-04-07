@@ -8,36 +8,39 @@ import (
 	"net/http"
 	"time"
 	"websocket/internal/adapters/config"
+	"websocket/internal/adapters/controller/ws"
 )
 
 type HttpApp struct {
+	Mux    *http.ServeMux
 	config *config.Config
 	server *http.Server
 }
 
 func NewHttpApp(config *config.Config) *HttpApp {
-	server := &http.Server{
-		Addr:         fmt.Sprintf(":%d", config.HTTPPort),
-		ReadTimeout:  15 * time.Second,
-		WriteTimeout: 15 * time.Second,
-		IdleTimeout:  60 * time.Second,
-	}
+	mux := http.NewServeMux()
 
-	includePingHandler()
-
-	return &HttpApp{
-		config: config,
-		server: server,
-	}
-}
-
-func includePingHandler() {
-	http.HandleFunc(
+	mux.HandleFunc(
 		"/ping", func(w http.ResponseWriter, r *http.Request) {
 			_, _ = w.Write([]byte("pong!"))
 		},
 	)
 
+	loggedHandler := ws.LoggingMiddleware(mux)
+
+	server := &http.Server{
+		Addr:         fmt.Sprintf(":%d", config.HTTPPort),
+		Handler:      loggedHandler,
+		ReadTimeout:  15 * time.Second,
+		WriteTimeout: 15 * time.Second,
+		IdleTimeout:  60 * time.Second,
+	}
+
+	return &HttpApp{
+		Mux:    mux,
+		config: config,
+		server: server,
+	}
 }
 
 func (a *HttpApp) Start(ctx context.Context) {

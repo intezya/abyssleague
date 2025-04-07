@@ -28,13 +28,13 @@ func main() {
 
 	mainHub := service.NewHub()
 	go mainHub.Run()
-	ws.SetupRoute(mainHub, "main", jwtService)
 
 	draftHub := service.NewHub()
 	go draftHub.Run()
-	ws.SetupRoute(draftHub, "draft", jwtService)
 
 	httpApp := app.NewHttpApp(appConfig)
+	ws.SetupRoute(httpApp.Mux, mainHub, "main", jwtService)
+	ws.SetupRoute(httpApp.Mux, draftHub, "draft", jwtService)
 	httpAppDone := make(chan struct{})
 	go func() {
 		defer close(httpAppDone)

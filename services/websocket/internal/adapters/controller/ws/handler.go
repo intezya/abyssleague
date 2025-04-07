@@ -9,13 +9,13 @@ import (
 )
 
 type Handler struct {
-	authMiddleware *Middleware
+	authMiddleware *SecurityMiddleware
 	upgrader       websocket.Upgrader
 	hub            *service.Hub
 }
 
 func NewHandler(
-	authMiddleware *Middleware,
+	authMiddleware *SecurityMiddleware,
 	upgrader websocket.Upgrader,
 	hub *service.Hub,
 ) *Handler {

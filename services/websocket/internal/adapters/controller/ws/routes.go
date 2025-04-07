@@ -8,6 +8,7 @@ import (
 )
 
 func SetupRoute(
+	mux *http.ServeMux,
 	hub *service.Hub,
 	hubName string,
 	jwtService jwt.Validate,
@@ -22,5 +23,5 @@ func SetupRoute(
 
 	handler := NewHandler(middleware, upgrader, hub)
 
-	http.HandleFunc("/websocket/"+hubName, handler.GetHandler())
+	mux.HandleFunc("/websocket/"+hubName, handler.GetHandler())
 }

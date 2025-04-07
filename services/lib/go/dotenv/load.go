@@ -12,7 +12,7 @@ func LoadEnv() {
 	err := godotenv.Load(*envFile)
 	if err != nil {
 		log.Printf(
-			"Warning: Error loading .env file from %s: %v. Is it specified correctly? use -env-file=... flag",
+			"Warning: Error loading .env file from %s: %v. Is it specified correctly? use --env-file=... flag",
 			*envFile,
 			err,
 		)
