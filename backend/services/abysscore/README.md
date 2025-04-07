@@ -1,0 +1,2 @@
+TODO:
+- SonarQube-like analysis

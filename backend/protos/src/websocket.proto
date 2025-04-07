@@ -1,0 +1,39 @@
+syntax = "proto3";
+
+package websocket;
+
+// protoc --go_out=websocketgen --go-grpc_out=websocketgen src/websocket.proto
+
+import "google/protobuf/empty.proto";
+
+option go_package = "/";
+
+service WebsocketService {
+  rpc GetOnline(google.protobuf.Empty) returns (GetOnlineResponse);
+  rpc GetOnlineUsers(google.protobuf.Empty) returns (GetOnlineUsersResponse);
+  rpc SendMessage(SendMessageRequest) returns (google.protobuf.Empty);
+  rpc Broadcast(BroadcastRequest) returns (google.protobuf.Empty);
+}
+
+message GetOnlineResponse {
+  int64 online = 1;
+}
+
+message OnlineUser {
+  int64 id = 1;
+  string username = 2;
+  string hardwareID = 3;
+}
+
+message GetOnlineUsersResponse {
+  repeated OnlineUser users = 1;
+}
+
+message SendMessageRequest {
+  int64 user_id = 1;
+  bytes jsonPayload = 2;
+}
+
+message BroadcastRequest {
+  bytes jsonPayload = 2;
+}
