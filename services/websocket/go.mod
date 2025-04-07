@@ -13,9 +13,9 @@ require (
 	google.golang.org/protobuf v1.36.6
 )
 
-replace abysslib => ../lib/go
+replace abysslib => ./../lib/go
 
-replace abyssproto => ../../protos/
+replace abyssproto => ./../../protos/
 
 require (
 	github.com/andybalholm/brotli v1.1.1 // indirect
