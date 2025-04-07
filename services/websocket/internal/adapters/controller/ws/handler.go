@@ -5,19 +5,19 @@ import (
 	"log"
 	"net/http"
 	"websocket/internal/domain/entity"
-	"websocket/internal/domain/service"
+	"websocket/internal/infrastructure/hub"
 )
 
 type Handler struct {
 	authMiddleware *SecurityMiddleware
 	upgrader       websocket.Upgrader
-	hub            *service.Hub
+	hub            *hub.Hub
 }
 
 func NewHandler(
 	authMiddleware *SecurityMiddleware,
 	upgrader websocket.Upgrader,
-	hub *service.Hub,
+	hub *hub.Hub,
 ) *Handler {
 	return &Handler{
 		authMiddleware: authMiddleware,

@@ -4,12 +4,12 @@ import (
 	"abysslib/jwt"
 	"github.com/fasthttp/websocket"
 	"net/http"
-	"websocket/internal/domain/service"
+	"websocket/internal/infrastructure/hub"
 )
 
 func SetupRoute(
 	mux *http.ServeMux,
-	hub *service.Hub,
+	hub *hub.Hub,
 	hubName string,
 	jwtService jwt.Validate,
 ) {

@@ -6,13 +6,14 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
+	"websocket/internal/infrastructure/hub"
+	"websocket/internal/infrastructure/service"
 
 	"abysslib/jwt"
 	"websocket/cmd/app"
 	"websocket/internal/adapters/config"
 	"websocket/internal/adapters/controller/grpcapi"
 	"websocket/internal/adapters/controller/ws"
-	"websocket/internal/domain/service"
 )
 
 func main() {
@@ -26,11 +27,11 @@ func main() {
 	appConfig := config.Configure()
 	jwtService := jwt.New(appConfig)
 
-	mainHub := service.NewHub()
-	go mainHub.Run()
+	mainHub := hub.NewHub()
+	go mainHub.Run(ctx)
 
-	draftHub := service.NewHub()
-	go draftHub.Run()
+	draftHub := hub.NewHub()
+	go draftHub.Run(ctx)
 
 	httpApp := app.NewHttpApp(appConfig)
 	ws.SetupRoute(httpApp.Mux, mainHub, "main", jwtService)

@@ -8,7 +8,7 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/emptypb"
-	"websocket/internal/domain/service"
+	"websocket/internal/infrastructure/service"
 )
 
 //import (
