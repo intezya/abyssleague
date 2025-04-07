@@ -23,10 +23,21 @@ func NewHttpApp(config *config.Config) *HttpApp {
 		IdleTimeout:  60 * time.Second,
 	}
 
+	includePingHandler()
+
 	return &HttpApp{
 		config: config,
 		server: server,
 	}
+}
+
+func includePingHandler() {
+	http.HandleFunc(
+		"/ping", func(w http.ResponseWriter, r *http.Request) {
+			_, _ = w.Write([]byte("pong!"))
+		},
+	)
+
 }
 
 func (a *HttpApp) Start(ctx context.Context) {
