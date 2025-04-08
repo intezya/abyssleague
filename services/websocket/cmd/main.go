@@ -49,7 +49,7 @@ func main() {
 	}()
 
 	mainWebsocketService := service.NewWebsocketService(mainHub)
-	mainGRPCApp := app.NewGRPCApp(appConfig.MainGRPCHost, appConfig.MainGRPCPort)
+	mainGRPCApp := app.NewGRPCApp(appConfig.MainGRPCPort)
 	grpcapi.Setup(mainGRPCApp.GRPCServer, mainWebsocketService)
 	mainGRPCAppDone := make(chan struct{})
 	go func() {
@@ -58,7 +58,7 @@ func main() {
 	}()
 
 	draftWebsocketService := service.NewWebsocketService(draftHub)
-	draftGRPCApp := app.NewGRPCApp(appConfig.DraftGRPCHost, appConfig.DraftGRPCPort)
+	draftGRPCApp := app.NewGRPCApp(appConfig.DraftGRPCPort)
 	grpcapi.Setup(draftGRPCApp.GRPCServer, draftWebsocketService)
 	draftGRPCAppDone := make(chan struct{})
 	go func() {

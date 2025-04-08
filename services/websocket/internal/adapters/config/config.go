@@ -7,10 +7,7 @@ import (
 )
 
 type Config struct {
-	MainGRPCHost string
-	MainGRPCPort int
-
-	DraftGRPCHost string
+	MainGRPCPort  int
 	DraftGRPCPort int
 
 	HTTPPort int
@@ -44,10 +41,8 @@ func Configure() *Config {
 	logger.Log.Info("Configure success")
 
 	return &Config{
-		MainGRPCHost: dotenv.GetEnv("MAIN_GRPC_HOST", "localhost"),
 		MainGRPCPort: dotenv.GetEnvInt("MAIN_GRPC_PORT", 50051),
 
-		DraftGRPCHost: dotenv.GetEnv("DRAFT_GRPC_HOST", "localhost"),
 		DraftGRPCPort: dotenv.GetEnvInt("DRAFT_GRPC_PORT", 50052),
 
 		HTTPPort: dotenv.GetEnvInt("HTTP_PORT", 8090),

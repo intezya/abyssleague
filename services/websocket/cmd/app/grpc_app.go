@@ -18,7 +18,6 @@ import (
 
 type GRPCApp struct {
 	GRPCServer *grpc.Server
-	host       string
 	port       int
 	listener   net.Listener
 }
@@ -43,7 +42,7 @@ func InterceptorLogger(l *zap.SugaredLogger) logging.Logger {
 	)
 }
 
-func NewGRPCApp(host string, port int) *GRPCApp {
+func NewGRPCApp(port int) *GRPCApp {
 	loggingOpts := []logging.Option{
 		logging.WithLogOnEvents(
 			logging.PayloadReceived, logging.PayloadSent,
@@ -83,7 +82,6 @@ func NewGRPCApp(host string, port int) *GRPCApp {
 
 	return &GRPCApp{
 		GRPCServer: GRPCServer,
-		host:       host,
 		port:       port,
 	}
 }
@@ -92,13 +90,13 @@ func (a *GRPCApp) Start(ctx context.Context) {
 	logger.Log.Info("Starting gRPC server...")
 
 	var err error
-	a.listener, err = net.Listen("tcp", fmt.Sprintf("%s:%d", a.host, a.port))
+	a.listener, err = net.Listen("tcp", fmt.Sprintf(":%d", a.port))
 	if err != nil {
 		logger.Log.Fatalf("Failed to listen on gRPC port: %v", err)
 		return
 	}
 
-	logger.Log.Info("gRPC server listening on ", a.host, ":", a.port)
+	logger.Log.Info("gRPC server listening on :", a.port)
 
 	errCh := make(chan error, 1)
 	go func() {

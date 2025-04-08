@@ -19,24 +19,24 @@ COPY services/websocket/ /build/services/websocket/
 RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build \
     -trimpath \
     -ldflags="-w -s -extldflags '-static'" \
-    -o /build/websocket-service ./cmd
+    -o /build/websocket-api-gateway ./cmd
 
-FROM alpine:3.19 AS debug
+FROM alpine:3.21 AS debug
 
-RUN apk add --no-cache tzdata ca-certificates
+RUN apk add --no-cache tzdata ca-certificates curl
 
 WORKDIR /app
-COPY --from=builder /build/websocket-service .
+COPY --from=builder /build/websocket-api-gateway .
 ENV TZ=UTC
 
-ENTRYPOINT ["/app/websocket-service"]
+ENTRYPOINT ["/app/websocket-api-gateway"]
 
-FROM scratch
+FROM alpine:3.21 AS final
 
-COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
-COPY --from=builder /usr/share/zoneinfo /usr/share/zoneinfo
-COPY --from=builder /build/websocket-service /app/websocket-service
+RUN apk add --no-cache tzdata ca-certificates curl
+
+COPY --from=builder /build/websocket-api-gateway /app/websocket-api-gateway
 
 WORKDIR /app
 
-ENTRYPOINT ["/app/websocket-service"]
+ENTRYPOINT ["/app/websocket-api-gateway"]
