@@ -3,6 +3,7 @@ package hub
 import (
 	"context"
 	"websocket/internal/domain/entity"
+	"websocket/internal/infrastructure/metrics"
 )
 
 func (h *Hub) RegisterClient(client *Client) {
@@ -36,6 +37,15 @@ func (h *Hub) SendToUser(ctx context.Context, userId int, jsonPayload []byte) bo
 	if !exists {
 		return false
 	}
+
+	switch {
+	case h.hubType == "main":
+		metrics.MainWebsocketMessagesSent.Inc()
+	case h.hubType == "draft":
+		metrics.DraftWebsocketMessagesSent.Inc()
+	}
+
+	metrics.MessageSize.Observe(float64(len(jsonPayload)))
 
 	select {
 	case client.Send <- jsonPayload:

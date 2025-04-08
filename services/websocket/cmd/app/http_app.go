@@ -5,6 +5,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"net/http"
 	"time"
 	"websocket/internal/adapters/config"
@@ -25,6 +26,8 @@ func NewHttpApp(config *config.Config) *HttpApp {
 			_, _ = w.Write([]byte("pong!"))
 		},
 	)
+
+	mux.HandleFunc("/metrics", promhttp.Handler().ServeHTTP)
 
 	loggedHandler := middleware.RequestIDMiddleware(middleware.LoggingMiddleware(mux))
 

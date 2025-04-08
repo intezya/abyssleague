@@ -4,11 +4,12 @@ import (
 	"sync"
 	"time"
 	"websocket/internal/domain/message"
+	"websocket/internal/infrastructure/metrics"
 )
 
 const (
 	writeWaitTimeout     = 5 * time.Second
-	connectionTimeout    = 60 * time.Second
+	connectionTimeout    = 10 * time.Second
 	connectionPingPeriod = (connectionTimeout * 9) / 10
 	maxMessageSize       = 1024
 )
@@ -27,15 +28,17 @@ type Hub struct {
 	register    chan *Client
 	unregister  chan *Client
 	broadcast   chan []byte
+	hubType     string
 }
 
-func NewHub() *Hub {
+func NewHub(hubType string) *Hub {
 	return &Hub{
 		clients:     make(map[*Client]bool),
 		clientsByID: make(map[int]*Client),
 		register:    make(chan *Client),
 		unregister:  make(chan *Client),
 		broadcast:   make(chan []byte),
+		hubType:     hubType,
 	}
 }
 func (h *Hub) Run() {
@@ -49,6 +52,17 @@ func (h *Hub) Run() {
 				delete(h.clients, existingClient)
 			}
 
+			client.connectTime = time.Now()
+
+			switch h.hubType {
+			case "main":
+				metrics.TotalMainConnections.Inc()
+				metrics.ActiveMainConnections.Inc()
+			case "draft":
+				metrics.TotalDraftConnections.Inc()
+				metrics.ActiveDraftConnections.Inc()
+			}
+
 			h.clients[client] = true
 			h.clientsByID[client.authentication.GetID()] = client
 			h.mu.Unlock()
@@ -56,6 +70,16 @@ func (h *Hub) Run() {
 		case client := <-h.unregister:
 			h.mu.Lock()
 			if _, ok := h.clients[client]; ok {
+				duration := time.Since(client.connectTime).Seconds()
+				metrics.ConnectionDuration.Observe(duration)
+
+				switch h.hubType {
+				case "main":
+					metrics.ActiveMainConnections.Desc()
+				case "draft":
+					metrics.ActiveDraftConnections.Desc()
+				}
+
 				delete(h.clients, client)
 				if h.clientsByID[client.authentication.GetID()] == client {
 					delete(h.clientsByID, client.authentication.GetID())

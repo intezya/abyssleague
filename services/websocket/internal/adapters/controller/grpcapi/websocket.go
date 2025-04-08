@@ -91,7 +91,7 @@ func (h *WebsocketHandler) SendMessage(
 	err := h.websocketService.SendToUser(ctx, int(request.UserId), request.JsonPayload)
 
 	if err != nil {
-		return nil, status.Errorf(codes.Internal, "An unexpected error occured")
+		return nil, status.Errorf(codes.NotFound, "User not connected")
 	}
 
 	return nil, nil

@@ -13,6 +13,7 @@ type Client struct {
 	authentication entity.AuthenticationData
 	conn           *websocket.Conn
 	Send           chan []byte
+	connectTime    time.Time
 }
 
 func NewClient(

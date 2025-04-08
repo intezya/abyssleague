@@ -4,6 +4,7 @@ import (
 	"abysslib/logger"
 	"context"
 	"fmt"
+	grpc_prometheus "github.com/grpc-ecosystem/go-grpc-prometheus"
 	"net"
 	"time"
 
@@ -78,7 +79,11 @@ func NewGRPCApp(port int) *GRPCApp {
 		),
 		grpc.KeepaliveParams(kaParams),
 		grpc.KeepaliveEnforcementPolicy(kaPolicy),
+		grpc.UnaryInterceptor(grpc_prometheus.UnaryServerInterceptor),
+		grpc.StreamInterceptor(grpc_prometheus.StreamServerInterceptor),
 	)
+
+	grpc_prometheus.EnableHandlingTimeHistogram()
 
 	return &GRPCApp{
 		GRPCServer: GRPCServer,
@@ -97,6 +102,8 @@ func (a *GRPCApp) Start(ctx context.Context) {
 	}
 
 	logger.Log.Info("gRPC server listening on :", a.port)
+
+	grpc_prometheus.Register(a.GRPCServer)
 
 	errCh := make(chan error, 1)
 	go func() {

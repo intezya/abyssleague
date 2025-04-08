@@ -7,6 +7,7 @@ import (
 	"net"
 	"net/http"
 	"time"
+	"websocket/internal/infrastructure/metrics"
 )
 
 func LoggingMiddleware(next http.Handler) http.Handler {
@@ -19,13 +20,20 @@ func LoggingMiddleware(next http.Handler) http.Handler {
 			lrw := &loggingResponseWriter{ResponseWriter: w, statusCode: http.StatusOK}
 			next.ServeHTTP(lrw, r)
 
+			requestDuration := time.Since(start)
+
+			metrics.ApiRequestDuration.WithLabelValues(
+				r.Method,
+				r.URL.Path,
+			).Observe(float64(requestDuration.Milliseconds()))
+
 			logger.Log.Infow(
 				"http request",
 				"request_id", GetRequestID(r.Context()),
 				"method", r.Method,
 				"url", r.URL.String(),
 				"status", lrw.statusCode,
-				"duration", time.Since(start),
+				"duration", requestDuration,
 				"remote_addr", r.RemoteAddr,
 				"request_uri", r.RequestURI,
 				"body", r.Body,

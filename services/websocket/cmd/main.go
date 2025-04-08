@@ -33,10 +33,10 @@ func main() {
 	appConfig := config.Configure()
 	jwtService := jwt.New(appConfig)
 
-	mainHub := hub.NewHub()
+	mainHub := hub.NewHub("main")
 	go mainHub.Run()
 
-	draftHub := hub.NewHub()
+	draftHub := hub.NewHub("draft")
 	go draftHub.Run()
 
 	httpApp := app.NewHttpApp(appConfig)
