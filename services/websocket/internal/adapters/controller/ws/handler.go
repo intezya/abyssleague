@@ -2,10 +2,10 @@ package ws
 
 import (
 	"abysslib/logger"
+	"encoding/json"
 	"github.com/gorilla/websocket"
 	"net/http"
 	"websocket/internal/adapters/controller/http/middleware"
-	"websocket/internal/domain/entity"
 	"websocket/internal/infrastructure/hub"
 )
 
@@ -43,10 +43,15 @@ func (h *Handler) GetHandler() http.HandlerFunc {
 			return
 		}
 
-		client := entity.NewClient(h.hub, authData, conn)
+		client := hub.NewClient(h.hub, authData, conn)
 		client.Hub.RegisterClient(client)
 
+		welcomeMsg := map[string]string{"message": "Welcome!", "user": authData.GetUsername()}
+		msgBytes, _ := json.Marshal(welcomeMsg)
+		client.Send <- msgBytes
+
 		go client.WritePump()
+		go client.ReadPump()
 	}
 
 }

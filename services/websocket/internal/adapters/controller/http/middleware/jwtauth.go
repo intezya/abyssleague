@@ -4,6 +4,7 @@ import (
 	"abysslib/jwt"
 	"abysslib/logger"
 	"net/http"
+	"websocket/internal/domain/entity"
 )
 
 type SecurityMiddleware struct {
@@ -14,7 +15,7 @@ func NewMiddleware(jwtService jwt.Validate) *SecurityMiddleware {
 	return &SecurityMiddleware{jwtService: jwtService}
 }
 
-func (m *SecurityMiddleware) JwtAuth(w http.ResponseWriter, r *http.Request) (authData jwt.AuthenticationData) {
+func (m *SecurityMiddleware) JwtAuth(w http.ResponseWriter, r *http.Request) (authData entity.AuthenticationData) {
 	authHeader := r.Header.Get("Authorization")
 
 	if authHeader == "" {

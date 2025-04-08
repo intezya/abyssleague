@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"errors"
 	"websocket/internal/domain/entity"
 	hubpackage "websocket/internal/infrastructure/hub"
 )
@@ -13,8 +14,8 @@ type OnlineUser struct {
 }
 
 type Hub interface {
-	GetClients(ctx context.Context) []*entity.Client
-	SendToUser(ctx context.Context, s hubpackage.SendToUser)
+	GetClients(ctx context.Context) []entity.AuthenticationData
+	SendToUser(ctx context.Context, userId int, jsonPayload []byte) bool
 	Broadcast(ctx context.Context, jsonPayload []byte)
 }
 
@@ -34,24 +35,19 @@ func (s *WebsocketService) GetOnlineUsers(ctx context.Context) ([]*OnlineUser, e
 	clients := s.hub.GetClients(ctx)
 	result := make([]*OnlineUser, len(clients))
 	for idx, client := range clients {
-		authentication := client.GetAuthentication()
 		result[idx] = &OnlineUser{
-			Id:         int64(authentication.GetID()),
-			Username:   authentication.GetUsername(),
-			HardwareID: authentication.GetHardwareID(),
+			Id:         int64(client.GetID()),
+			Username:   client.GetUsername(),
+			HardwareID: client.GetHardwareID(),
 		}
 	}
 	return result, nil
 }
 
 func (s *WebsocketService) SendToUser(ctx context.Context, userID int, jsonPayload []byte) error {
-	s.hub.SendToUser(
-		ctx,
-		hubpackage.SendToUser{
-			UserID:   userID,
-			JsonData: jsonPayload,
-		},
-	)
+	if !s.hub.SendToUser(ctx, userID, jsonPayload) {
+		return errors.New("failed to send message to user")
+	}
 	return nil
 }
 

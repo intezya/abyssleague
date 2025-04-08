@@ -34,10 +34,10 @@ func main() {
 	jwtService := jwt.New(appConfig)
 
 	mainHub := hub.NewHub()
-	go mainHub.Run(ctx)
+	go mainHub.Run()
 
 	draftHub := hub.NewHub()
-	go draftHub.Run(ctx)
+	go draftHub.Run()
 
 	httpApp := app.NewHttpApp(appConfig)
 	ws.SetupRoute(httpApp.Mux, mainHub, "main", jwtService)
