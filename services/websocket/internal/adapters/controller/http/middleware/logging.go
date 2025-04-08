@@ -2,6 +2,9 @@ package middleware
 
 import (
 	"abysslib/logger"
+	"bufio"
+	"fmt"
+	"net"
 	"net/http"
 	"time"
 )
@@ -23,15 +26,14 @@ func LoggingMiddleware(next http.Handler) http.Handler {
 				"url", r.URL.String(),
 				"status", lrw.statusCode,
 				"duration", time.Since(start),
-				"remoteaddr", r.RemoteAddr,
-				"requesturi", r.RequestURI,
+				"remote_addr", r.RemoteAddr,
+				"request_uri", r.RequestURI,
 				"body", r.Body,
 				"host", r.Host,
 				"method", r.Method,
-				"url", r.URL,
 				"referer", r.Referer(),
-				"useragent", r.UserAgent(),
-				"contentlength", r.ContentLength,
+				"user_agent", r.UserAgent(),
+				"content_length", r.ContentLength,
 			)
 		},
 	)
@@ -45,4 +47,11 @@ type loggingResponseWriter struct {
 func (lrw *loggingResponseWriter) WriteHeader(code int) {
 	lrw.statusCode = code
 	lrw.ResponseWriter.WriteHeader(code)
+}
+
+func (lrw *loggingResponseWriter) Hijack() (net.Conn, *bufio.ReadWriter, error) {
+	if hijacker, ok := lrw.ResponseWriter.(http.Hijacker); ok {
+		return hijacker.Hijack()
+	}
+	return nil, nil, fmt.Errorf("underlying ResponseWriter does not support Hijack")
 }

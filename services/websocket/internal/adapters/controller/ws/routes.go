@@ -2,9 +2,9 @@ package ws
 
 import (
 	"abysslib/jwt"
-	"github.com/fasthttp/websocket"
+	"github.com/gorilla/websocket"
 	"net/http"
-	middleware2 "websocket/internal/adapters/controller/http/middleware"
+	"websocket/internal/adapters/controller/http/middleware"
 	"websocket/internal/infrastructure/hub"
 )
 
@@ -14,7 +14,7 @@ func SetupRoute(
 	hubName string,
 	jwtService jwt.Validate,
 ) {
-	middleware := middleware2.NewMiddleware(jwtService)
+	autHiddleware := middleware.NewMiddleware(jwtService)
 
 	upgrader := websocket.Upgrader{
 		ReadBufferSize:  1024,
@@ -22,7 +22,7 @@ func SetupRoute(
 		CheckOrigin:     func(r *http.Request) bool { return true },
 	}
 
-	handler := NewHandler(middleware, upgrader, hub)
+	handler := NewHandler(autHiddleware, upgrader, hub)
 
 	mux.HandleFunc("/websocket/"+hubName, handler.GetHandler())
 }

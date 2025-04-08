@@ -1,8 +1,8 @@
 package ws
 
 import (
-	"github.com/fasthttp/websocket"
-	"log"
+	"abysslib/logger"
+	"github.com/gorilla/websocket"
 	"net/http"
 	"websocket/internal/adapters/controller/http/middleware"
 	"websocket/internal/domain/entity"
@@ -35,9 +35,11 @@ func (h *Handler) GetHandler() http.HandlerFunc {
 			return
 		}
 
+		logger.Log.Info("Request headers:", r.Header)
+
 		conn, err := h.upgrader.Upgrade(w, r, nil)
 		if err != nil {
-			log.Println("Error upgrading connection:", err)
+			logger.Log.Warn("Error upgrading connection:", err)
 			return
 		}
 

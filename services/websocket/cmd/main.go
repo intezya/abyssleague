@@ -16,6 +16,12 @@ import (
 	"websocket/internal/adapters/controller/ws"
 )
 
+type a struct{}
+
+func (a) GetID() (id int)                { return 1 }
+func (a) GetUsername() (username string) { return "0" }
+func (a) GetHardwareID() (hwid string)   { return "0" }
+
 func main() {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()

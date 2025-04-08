@@ -2,7 +2,7 @@ package entity
 
 import (
 	"abysslib/jwt"
-	"github.com/fasthttp/websocket"
+	"github.com/gorilla/websocket"
 )
 
 type Hub interface {
