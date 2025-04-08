@@ -8,13 +8,13 @@ import (
 	"net/http"
 	"time"
 	"websocket/internal/adapters/config"
-	"websocket/internal/adapters/controller/ws"
+	"websocket/internal/adapters/controller/http/middleware"
 )
 
 type HttpApp struct {
 	Mux    *http.ServeMux
 	config *config.Config
-	server *http.Server
+	Server *http.Server
 }
 
 func NewHttpApp(config *config.Config) *HttpApp {
@@ -26,7 +26,7 @@ func NewHttpApp(config *config.Config) *HttpApp {
 		},
 	)
 
-	loggedHandler := ws.LoggingMiddleware(mux)
+	loggedHandler := middleware.RequestIDMiddleware(middleware.LoggingMiddleware(mux))
 
 	server := &http.Server{
 		Addr:         fmt.Sprintf(":%d", config.HTTPPort),
@@ -39,7 +39,7 @@ func NewHttpApp(config *config.Config) *HttpApp {
 	return &HttpApp{
 		Mux:    mux,
 		config: config,
-		server: server,
+		Server: server,
 	}
 }
 
@@ -48,7 +48,7 @@ func (a *HttpApp) Start(ctx context.Context) {
 
 	errCh := make(chan error, 1)
 	go func() {
-		if err := a.server.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
+		if err := a.Server.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
 			errCh <- fmt.Errorf("HTTP server error: %w", err)
 		}
 	}()
@@ -59,7 +59,7 @@ func (a *HttpApp) Start(ctx context.Context) {
 		shutdownCtx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
 		defer cancel()
 
-		if err := a.server.Shutdown(shutdownCtx); err != nil {
+		if err := a.Server.Shutdown(shutdownCtx); err != nil {
 			logger.Log.Errorf("HTTP server shutdown error: %v", err)
 		} else {
 			logger.Log.Info("HTTP server shutdown completed")

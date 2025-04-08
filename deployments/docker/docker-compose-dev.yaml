@@ -5,6 +5,8 @@ services:
       dockerfile: ./deployments/docker/websocket.Dockerfile
     ports:
       - "8090:8090"
+      - "50051:50051"
+      - "50052:50052"
     environment:
       - MAIN_GRPC_HOST=${WEBSOCKET_MAIN_GRPC_HOST:-localhost}
       - MAIN_GRPC_PORT=${WEBSOCKET_MAIN_GRPC_PORT:-50051}

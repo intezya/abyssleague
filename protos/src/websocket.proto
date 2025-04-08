@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package websocket;
 
-// protoc --go_out=websocketgen --go-grpc_out=websocketgen src/websocket.proto
+// protoc --go_out=websocket --go-grpc_out=websocket src/websocket.proto
 
 import "google/protobuf/empty.proto";
 
@@ -30,7 +30,7 @@ message GetOnlineUsersResponse {
 }
 
 message SendMessageRequest {
-  int64 user_id = 1;
+  int64 userId = 1;
   bytes jsonPayload = 2;
 }
 

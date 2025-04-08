@@ -2,7 +2,7 @@ package grpcapi
 
 import (
 	"abysslib/itertools"
-	websocketContract "abyssproto/websocketgen"
+	websocketpb "abyssproto/websocket"
 	"context"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
@@ -10,9 +10,6 @@ import (
 	"google.golang.org/protobuf/types/known/emptypb"
 	"websocket/internal/infrastructure/service"
 )
-
-//import (
-//)
 
 type WebsocketService interface {
 	GetOnline(ctx context.Context) (int, error)
@@ -22,7 +19,7 @@ type WebsocketService interface {
 }
 
 type WebsocketHandler struct {
-	websocketContract.UnimplementedWebsocketServiceServer
+	websocketpb.UnimplementedWebsocketServiceServer
 	websocketService WebsocketService
 }
 
@@ -34,7 +31,7 @@ func (h *WebsocketHandler) GetOnline(
 	ctx context.Context,
 	_ *emptypb.Empty,
 ) (
-	*websocketContract.GetOnlineResponse,
+	*websocketpb.GetOnlineResponse,
 	error,
 ) {
 	result, err := h.websocketService.GetOnline(ctx)
@@ -43,7 +40,7 @@ func (h *WebsocketHandler) GetOnline(
 		return nil, status.Errorf(codes.Internal, "An unexpected error occured")
 	}
 
-	return &websocketContract.GetOnlineResponse{
+	return &websocketpb.GetOnlineResponse{
 		Online: int64(result),
 	}, err
 }
@@ -52,7 +49,7 @@ func (h *WebsocketHandler) GetOnlineUsers(
 	ctx context.Context,
 	_ *emptypb.Empty,
 ) (
-	*websocketContract.GetOnlineUsersResponse,
+	*websocketpb.GetOnlineUsersResponse,
 	error,
 ) {
 	result, err := h.websocketService.GetOnlineUsers(ctx)
@@ -62,8 +59,8 @@ func (h *WebsocketHandler) GetOnlineUsers(
 	}
 
 	users := itertools.Map(
-		func(user *service.OnlineUser) *websocketContract.OnlineUser {
-			return &websocketContract.OnlineUser{
+		func(user *service.OnlineUser) *websocketpb.OnlineUser {
+			return &websocketpb.OnlineUser{
 				Id:         user.Id,
 				Username:   user.Username,
 				HardwareID: user.HardwareID,
@@ -71,18 +68,26 @@ func (h *WebsocketHandler) GetOnlineUsers(
 		}, result,
 	)
 
-	return &websocketContract.GetOnlineUsersResponse{
+	return &websocketpb.GetOnlineUsersResponse{
 		Users: users,
 	}, err
 }
 
 func (h *WebsocketHandler) SendMessage(
 	ctx context.Context,
-	request *websocketContract.SendMessageRequest,
+	request *websocketpb.SendMessageRequest,
 ) (
 	*emptypb.Empty,
 	error,
 ) {
+	if request.UserId == 0 {
+		return nil, status.Errorf(codes.InvalidArgument, "UserId is required")
+	}
+
+	if request.JsonPayload == nil {
+		return nil, status.Errorf(codes.InvalidArgument, "JsonPayload is required")
+	}
+
 	err := h.websocketService.SendToUser(ctx, int(request.UserId), request.JsonPayload)
 
 	if err != nil {
@@ -94,11 +99,15 @@ func (h *WebsocketHandler) SendMessage(
 
 func (h *WebsocketHandler) Broadcast(
 	ctx context.Context,
-	request *websocketContract.BroadcastRequest,
+	request *websocketpb.BroadcastRequest,
 ) (
 	*emptypb.Empty,
 	error,
 ) {
+	if request.JsonPayload == nil {
+		return nil, status.Errorf(codes.InvalidArgument, "JsonPayload is required")
+	}
+
 	err := h.websocketService.Broadcast(ctx, request.JsonPayload)
 
 	if err != nil {
@@ -109,5 +118,5 @@ func (h *WebsocketHandler) Broadcast(
 }
 
 func (h *WebsocketHandler) Setup(gRPCServer *grpc.Server) {
-	websocketContract.RegisterWebsocketServiceServer(gRPCServer, h)
+	websocketpb.RegisterWebsocketServiceServer(gRPCServer, h)
 }

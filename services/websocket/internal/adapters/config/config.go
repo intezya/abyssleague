@@ -34,7 +34,7 @@ func (c Config) ExpirationTime() time.Duration {
 
 func Configure() *Config {
 	logger.New(
-		false,
+		dotenv.GetEnv("ENV_TYPE", "dev") == "dev",
 		"",
 		dotenv.GetEnv("ENV_TYPE", "dev"),
 	)
