@@ -4,6 +4,7 @@ import (
 	"abysslib/jwt"
 	"github.com/fasthttp/websocket"
 	"net/http"
+	middleware2 "websocket/internal/adapters/controller/http/middleware"
 	"websocket/internal/infrastructure/hub"
 )
 
@@ -13,7 +14,7 @@ func SetupRoute(
 	hubName string,
 	jwtService jwt.Validate,
 ) {
-	middleware := NewMiddleware(jwtService)
+	middleware := middleware2.NewMiddleware(jwtService)
 
 	upgrader := websocket.Upgrader{
 		ReadBufferSize:  1024,

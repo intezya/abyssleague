@@ -4,18 +4,19 @@ import (
 	"github.com/fasthttp/websocket"
 	"log"
 	"net/http"
+	"websocket/internal/adapters/controller/http/middleware"
 	"websocket/internal/domain/entity"
 	"websocket/internal/infrastructure/hub"
 )
 
 type Handler struct {
-	authMiddleware *SecurityMiddleware
+	authMiddleware *middleware.SecurityMiddleware
 	upgrader       websocket.Upgrader
 	hub            *hub.Hub
 }
 
 func NewHandler(
-	authMiddleware *SecurityMiddleware,
+	authMiddleware *middleware.SecurityMiddleware,
 	upgrader websocket.Upgrader,
 	hub *hub.Hub,
 ) *Handler {
