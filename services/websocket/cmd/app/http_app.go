@@ -13,9 +13,10 @@ import (
 )
 
 type HttpApp struct {
-	Mux    *http.ServeMux
-	config *config.Config
-	Server *http.Server
+	Mux     *http.ServeMux
+	config  *config.Config
+	Server  *http.Server
+	running bool
 }
 
 func NewHttpApp(config *config.Config) *HttpApp {
@@ -40,34 +41,53 @@ func NewHttpApp(config *config.Config) *HttpApp {
 	}
 
 	return &HttpApp{
-		Mux:    mux,
-		config: config,
-		Server: server,
+		Mux:     mux,
+		config:  config,
+		Server:  server,
+		running: false,
 	}
 }
 
-func (a *HttpApp) Start(ctx context.Context) {
+func (a *HttpApp) Start(ctx context.Context) error {
 	logger.Log.Infof("HTTP Server starting on port %d", a.config.HTTPPort)
+	a.running = true
 
 	errCh := make(chan error, 1)
 	go func() {
 		if err := a.Server.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
 			errCh <- fmt.Errorf("HTTP server error: %w", err)
 		}
+		close(errCh)
 	}()
 
 	select {
 	case <-ctx.Done():
-		logger.Log.Info("Shutting down HTTP server...")
-		shutdownCtx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
-		defer cancel()
-
-		if err := a.Server.Shutdown(shutdownCtx); err != nil {
-			logger.Log.Errorf("HTTP server shutdown error: %v", err)
-		} else {
-			logger.Log.Info("HTTP server shutdown completed")
-		}
+		logger.Log.Info("HTTP server context cancelled")
+		return nil
 	case err := <-errCh:
-		logger.Log.Fatalf("HTTP server failed: %v", err)
+		a.running = false
+		if err != nil {
+			logger.Log.Errorf("HTTP server failed: %v", err)
+			return err
+		}
+		return nil
 	}
+}
+
+func (a *HttpApp) Shutdown(ctx context.Context) error {
+	if !a.running {
+		logger.Log.Info("HTTP server is not running, nothing to shutdown")
+		return nil
+	}
+
+	logger.Log.Info("Shutting down HTTP server...")
+
+	if err := a.Server.Shutdown(ctx); err != nil {
+		logger.Log.Errorf("HTTP server shutdown error: %v", err)
+		return err
+	}
+
+	a.running = false
+	logger.Log.Info("HTTP server shutdown completed")
+	return nil
 }

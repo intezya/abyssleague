@@ -1,11 +1,14 @@
 package main
 
 import (
-	"abysslib/dotenv"
+	"abysslib/logger"
 	"context"
+	"fmt"
 	"os"
 	"os/signal"
+	"sync"
 	"syscall"
+	"time"
 	"websocket/internal/infrastructure/hub"
 	"websocket/internal/infrastructure/service"
 
@@ -16,62 +19,148 @@ import (
 	"websocket/internal/adapters/controller/ws"
 )
 
-type a struct{}
-
-func (a) GetID() (id int)                { return 1 }
-func (a) GetUsername() (username string) { return "0" }
-func (a) GetHardwareID() (hwid string)   { return "0" }
-
 func main() {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
 	sigCh := make(chan os.Signal, 1)
 	signal.Notify(sigCh, os.Interrupt, syscall.SIGTERM)
+	defer signal.Stop(sigCh)
 
-	dotenv.LoadEnv()
-	appConfig := config.Configure()
+	appConfig := config.Setup()
 	jwtService := jwt.New(appConfig)
 
-	mainHub := hub.NewHub("main")
-	go mainHub.Run()
-
-	draftHub := hub.NewHub("draft")
-	go draftHub.Run()
-
 	httpApp := app.NewHttpApp(appConfig)
-	ws.SetupRoute(httpApp.Mux, mainHub, "main", jwtService)
-	ws.SetupRoute(httpApp.Mux, draftHub, "draft", jwtService)
-	httpAppDone := make(chan struct{})
-	go func() {
-		defer close(httpAppDone)
-		httpApp.Start(ctx)
-	}()
 
-	mainWebsocketService := service.NewWebsocketService(mainHub)
-	mainGRPCApp := app.NewGRPCApp(appConfig.MainGRPCPort)
-	grpcapi.Setup(mainGRPCApp.GRPCServer, mainWebsocketService)
-	mainGRPCAppDone := make(chan struct{})
-	go func() {
-		defer close(mainGRPCAppDone)
-		mainGRPCApp.Start(ctx)
-	}()
+	gRPCApps, hubs := setupHubs(ctx, httpApp, jwtService, appConfig)
 
-	draftWebsocketService := service.NewWebsocketService(draftHub)
-	draftGRPCApp := app.NewGRPCApp(appConfig.DraftGRPCPort)
-	grpcapi.Setup(draftGRPCApp.GRPCServer, draftWebsocketService)
-	draftGRPCAppDone := make(chan struct{})
+	httpErrCh := startHTTPServer(ctx, httpApp)
+
+	shutdownReason := waitForShutdownSignal(sigCh, httpErrCh)
+	logger.Log.Infof("Shutting down application: %s", shutdownReason)
+
+	gracefulShutdown(ctx, cancel, httpApp, gRPCApps, hubs)
+}
+
+func setupHubs(
+	ctx context.Context,
+	httpApp *app.HttpApp,
+	jwtService *jwt.Service,
+	appConfig *config.Config,
+) ([]*app.GRPCApp, []*hub.Hub) {
+	gRPCApps := make([]*app.GRPCApp, 0, len(appConfig.Hubs))
+	hubs := make([]*hub.Hub, 0, len(appConfig.Hubs))
+
+	var wg sync.WaitGroup
+
+	for idx, hubName := range appConfig.Hubs {
+		logger.Log.Info("Starting hub: ", hubName)
+
+		newHub := hub.NewHub(hubName)
+		hubs = append(hubs, newHub)
+		go newHub.Run()
+
+		ws.SetupRoute(httpApp.Mux, newHub, hubName, jwtService)
+
+		websocketService := service.NewWebsocketService(newHub)
+		gRPCApp := app.NewGRPCApp(appConfig.GRPCPortStartFrom + idx)
+		grpcapi.Setup(gRPCApp.GRPCServer, websocketService)
+
+		gRPCApps = append(gRPCApps, gRPCApp)
+
+		wg.Add(1)
+		go startGRPCServer(ctx, gRPCApp, &wg)
+	}
+
+	return gRPCApps, hubs
+}
+
+func startGRPCServer(ctx context.Context, app *app.GRPCApp, wg *sync.WaitGroup) {
+	defer wg.Done()
+	if err := app.Start(ctx); err != nil {
+		logger.Log.Errorf("gRPC server error: %v", err)
+	}
+}
+
+func startHTTPServer(ctx context.Context, httpApp *app.HttpApp) chan error {
+	httpErrCh := make(chan error, 1)
 	go func() {
-		defer close(draftGRPCAppDone)
-		draftGRPCApp.Start(ctx)
+		if err := httpApp.Start(ctx); err != nil {
+			httpErrCh <- err
+		}
+		close(httpErrCh)
+	}()
+	return httpErrCh
+}
+
+func waitForShutdownSignal(sigCh chan os.Signal, httpErrCh chan error) string {
+	select {
+	case <-sigCh:
+		return "Received shutdown signal"
+	case err := <-httpErrCh:
+		if err != nil {
+			return fmt.Sprintf("HTTP server error: %v", err)
+		}
+		return "HTTP server stopped unexpectedly"
+	}
+}
+
+func gracefulShutdown(
+	ctx context.Context,
+	cancel context.CancelFunc,
+	httpApp *app.HttpApp,
+	gRPCApps []*app.GRPCApp,
+	hubs []*hub.Hub,
+) {
+	shutdownCtx, shutdownCancel := context.WithTimeout(context.Background(), 10*time.Second)
+
+	defer shutdownCancel()
+	cancel()
+
+	shutdownHTTPServer(shutdownCtx, httpApp)
+	shutdownGRPCServers(shutdownCtx, gRPCApps)
+	shutdownHubs(hubs)
+
+	logger.Log.Info("Application shut down completed")
+}
+
+func shutdownHTTPServer(ctx context.Context, httpApp *app.HttpApp) {
+	if err := httpApp.Shutdown(ctx); err != nil {
+		logger.Log.Errorf("Error during HTTP server shutdown: %v", err)
+	} else {
+		logger.Log.Info("HTTP server shut down successfully")
+	}
+}
+
+func shutdownGRPCServers(ctx context.Context, gRPCApps []*app.GRPCApp) {
+	var wg sync.WaitGroup
+
+	for _, grpcApp := range gRPCApps {
+		wg.Add(1)
+		go func(a *app.GRPCApp) {
+			defer wg.Done()
+			if err := a.Shutdown(ctx); err != nil {
+				logger.Log.Errorf("Error during gRPC server shutdown: %v", err)
+			}
+		}(grpcApp)
+	}
+
+	wgDone := make(chan struct{})
+	go func() {
+		wg.Wait()
+		close(wgDone)
 	}()
 
 	select {
-	case <-sigCh:
-		cancel()
+	case <-wgDone:
+		logger.Log.Info("All gRPC servers shut down gracefully")
+	case <-ctx.Done():
+		logger.Log.Warn("Shutdown timeout reached for gRPC servers, forcing exit")
 	}
+}
 
-	<-httpAppDone
-	<-mainGRPCAppDone
-	<-draftGRPCAppDone
+func shutdownHubs(hubs []*hub.Hub) {
+	for _, h := range hubs {
+		logger.Log.Infof("Hub %s stopped", h.GetName())
+	}
 }

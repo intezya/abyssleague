@@ -1,6 +1,7 @@
 package hub
 
 import (
+	"abysslib/logger"
 	"sync"
 	"time"
 	"websocket/internal/domain/message"
@@ -14,6 +15,7 @@ const (
 	maxMessageSize       = 1024
 )
 
+// UserID typealias
 type UserID = int
 
 type SendToUser struct {
@@ -22,28 +24,41 @@ type SendToUser struct {
 }
 
 type Hub struct {
+	name        string
 	clients     map[*Client]bool
 	clientsByID map[int]*Client
 	mu          sync.Mutex
 	register    chan *Client
 	unregister  chan *Client
 	broadcast   chan []byte
-	hubType     string
+	done        chan struct{}
 }
 
-func NewHub(hubType string) *Hub {
+func NewHub(name string) *Hub {
 	return &Hub{
+		name:        name,
 		clients:     make(map[*Client]bool),
 		clientsByID: make(map[int]*Client),
 		register:    make(chan *Client),
 		unregister:  make(chan *Client),
 		broadcast:   make(chan []byte),
-		hubType:     hubType,
+		done:        make(chan struct{}),
 	}
 }
+
+func (h *Hub) GetName() string {
+	return h.name
+}
+
 func (h *Hub) Run() {
+	logger.Log.Infof("Hub %s started", h.name)
+
 	for {
 		select {
+		case <-h.done:
+			logger.Log.Infof("Hub %s received stop signal", h.name)
+			return
+
 		case client := <-h.register:
 			h.mu.Lock()
 			if existingClient, exists := h.clientsByID[client.authentication.GetID()]; exists {
@@ -53,15 +68,8 @@ func (h *Hub) Run() {
 			}
 
 			client.connectTime = time.Now()
-
-			switch h.hubType {
-			case "main":
-				metrics.TotalMainConnections.Inc()
-				metrics.ActiveMainConnections.Inc()
-			case "draft":
-				metrics.TotalDraftConnections.Inc()
-				metrics.ActiveDraftConnections.Inc()
-			}
+			metrics.TotalConnections.Inc()
+			metrics.ActiveConnections.Inc()
 
 			h.clients[client] = true
 			h.clientsByID[client.authentication.GetID()] = client
@@ -71,14 +79,9 @@ func (h *Hub) Run() {
 			h.mu.Lock()
 			if _, ok := h.clients[client]; ok {
 				duration := time.Since(client.connectTime).Seconds()
-				metrics.ConnectionDuration.Observe(duration)
 
-				switch h.hubType {
-				case "main":
-					metrics.ActiveMainConnections.Desc()
-				case "draft":
-					metrics.ActiveDraftConnections.Desc()
-				}
+				metrics.ConnectionDuration.Observe(duration)
+				metrics.ActiveConnections.Dec()
 
 				delete(h.clients, client)
 				if h.clientsByID[client.authentication.GetID()] == client {
@@ -88,11 +91,11 @@ func (h *Hub) Run() {
 			}
 			h.mu.Unlock()
 
-		case message := <-h.broadcast:
+		case msg := <-h.broadcast:
 			h.mu.Lock()
 			for client := range h.clients {
 				select {
-				case client.Send <- message:
+				case client.Send <- msg:
 				default:
 					close(client.Send)
 					delete(h.clients, client)
@@ -104,4 +107,26 @@ func (h *Hub) Run() {
 			h.mu.Unlock()
 		}
 	}
+}
+
+func (h *Hub) Stop() {
+	logger.Log.Infof("Stopping hub %s...", h.name)
+
+	close(h.done)
+
+	time.Sleep(100 * time.Millisecond)
+
+	h.mu.Lock()
+	defer h.mu.Unlock()
+
+	for client := range h.clients {
+		// TODO: Maybe send message that server is shutting down
+		// like client.Send <- message.ServerShutdown
+		close(client.Send)
+	}
+
+	h.clients = make(map[*Client]bool)
+	h.clientsByID = make(map[int]*Client)
+
+	logger.Log.Infof("Hub %s stopped successfully", h.name)
 }

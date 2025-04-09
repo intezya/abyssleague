@@ -38,12 +38,7 @@ func (h *Hub) SendToUser(ctx context.Context, userId int, jsonPayload []byte) bo
 		return false
 	}
 
-	switch {
-	case h.hubType == "main":
-		metrics.MainWebsocketMessagesSent.Inc()
-	case h.hubType == "draft":
-		metrics.DraftWebsocketMessagesSent.Inc()
-	}
+	metrics.WebsocketMessagesSent.Inc()
 
 	metrics.MessageSize.Observe(float64(len(jsonPayload)))
 

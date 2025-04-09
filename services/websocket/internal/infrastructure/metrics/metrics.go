@@ -6,45 +6,24 @@ import (
 )
 
 var (
-	ActiveMainConnections = promauto.NewGauge(
+	ActiveConnections = promauto.NewGauge(
 		prometheus.GaugeOpts{
-			Name: "websocket_active_main_connections",
-			Help: "The current number of active main WebSocket connections",
+			Name: "websocket_active_connections",
+			Help: "The current number of active WebSocket connections",
 		},
 	)
 
-	TotalMainConnections = promauto.NewCounter(
+	TotalConnections = promauto.NewCounter(
 		prometheus.CounterOpts{
-			Name: "websocket_main_connections_total",
-			Help: "The total number of main WebSocket connections established",
+			Name: "websocket_connections_total",
+			Help: "The total number of WebSocket connections established",
 		},
 	)
 
-	ActiveDraftConnections = promauto.NewGauge(
-		prometheus.GaugeOpts{
-			Name: "websocket_active_draft_connections",
-			Help: "The current number of active draft WebSocket connections",
-		},
-	)
-
-	TotalDraftConnections = promauto.NewCounter(
+	WebsocketMessagesSent = promauto.NewCounter(
 		prometheus.CounterOpts{
-			Name: "websocket_draft_connections_total",
-			Help: "The total number of draft WebSocket connections established",
-		},
-	)
-
-	MainWebsocketMessagesSent = promauto.NewCounter(
-		prometheus.CounterOpts{
-			Name: "main_websocket_messages_sent_total",
-			Help: "The total number of main WebSocket messages sent",
-		},
-	)
-
-	DraftWebsocketMessagesSent = promauto.NewCounter(
-		prometheus.CounterOpts{
-			Name: "draft_websocket_messages_sent_total",
-			Help: "The total number of draft WebSocket messages sent",
+			Name: "websocket_messages_sent_total",
+			Help: "The total number of WebSocket messages sent",
 		},
 	)
 

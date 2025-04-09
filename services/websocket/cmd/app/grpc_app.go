@@ -4,17 +4,8 @@ import (
 	"abysslib/logger"
 	"context"
 	"fmt"
-	grpc_prometheus "github.com/grpc-ecosystem/go-grpc-prometheus"
-	"net"
-	"time"
-
-	"github.com/grpc-ecosystem/go-grpc-middleware/v2/interceptors/logging"
-	"github.com/grpc-ecosystem/go-grpc-middleware/v2/interceptors/recovery"
-	"go.uber.org/zap"
 	"google.golang.org/grpc"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/keepalive"
-	"google.golang.org/grpc/status"
+	"net"
 )
 
 type GRPCApp struct {
@@ -23,118 +14,55 @@ type GRPCApp struct {
 	listener   net.Listener
 }
 
-func InterceptorLogger(l *zap.SugaredLogger) logging.Logger {
-	return logging.LoggerFunc(
-		func(ctx context.Context, lvl logging.Level, msg string, fields ...any) {
-			interceptorLogger := l.WithOptions(zap.AddCallerSkip(1)).With(fields...)
-			switch lvl {
-			case logging.LevelDebug:
-				interceptorLogger.Debug(msg)
-			case logging.LevelInfo:
-				interceptorLogger.Info(msg)
-			case logging.LevelWarn:
-				interceptorLogger.Warn(msg)
-			case logging.LevelError:
-				interceptorLogger.Error(msg)
-			default:
-				panic(fmt.Sprintf("unknown level %v", lvl))
-			}
-		},
-	)
-}
-
 func NewGRPCApp(port int) *GRPCApp {
-	loggingOpts := []logging.Option{
-		logging.WithLogOnEvents(
-			logging.PayloadReceived, logging.PayloadSent,
-		),
-	}
-
-	recoveryOpts := []recovery.Option{
-		recovery.WithRecoveryHandler(
-			func(p interface{}) (err error) {
-				logger.Log.Errorf("Recovered from panic: %v", p)
-				return status.Errorf(codes.Internal, "internal error")
-			},
-		),
-	}
-
-	kaParams := keepalive.ServerParameters{
-		MaxConnectionIdle:     15 * time.Minute,
-		MaxConnectionAge:      30 * time.Minute,
-		MaxConnectionAgeGrace: 5 * time.Minute,
-		Time:                  5 * time.Minute,
-		Timeout:               20 * time.Second,
-	}
-
-	kaPolicy := keepalive.EnforcementPolicy{
-		MinTime:             1 * time.Minute,
-		PermitWithoutStream: true,
-	}
-
-	GRPCServer := grpc.NewServer(
-		grpc.ChainUnaryInterceptor(
-			recovery.UnaryServerInterceptor(recoveryOpts...),
-			logging.UnaryServerInterceptor(InterceptorLogger(logger.Log.SugaredLogger), loggingOpts...),
-		),
-		grpc.KeepaliveParams(kaParams),
-		grpc.KeepaliveEnforcementPolicy(kaPolicy),
-		grpc.UnaryInterceptor(grpc_prometheus.UnaryServerInterceptor),
-		grpc.StreamInterceptor(grpc_prometheus.StreamServerInterceptor),
-	)
-
-	grpc_prometheus.EnableHandlingTimeHistogram()
+	grpcServer := grpc.NewServer()
 
 	return &GRPCApp{
-		GRPCServer: GRPCServer,
+		GRPCServer: grpcServer,
 		port:       port,
 	}
 }
 
-func (a *GRPCApp) Start(ctx context.Context) {
-	logger.Log.Info("Starting gRPC server...")
+func (a *GRPCApp) Start(ctx context.Context) error {
+	logger.Log.Infof("Starting gRPC server on port %d", a.port)
 
-	var err error
-	a.listener, err = net.Listen("tcp", fmt.Sprintf(":%d", a.port))
+	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", a.port))
 	if err != nil {
-		logger.Log.Fatalf("Failed to listen on gRPC port: %v", err)
-		return
+		return fmt.Errorf("failed to listen on port %d: %w", a.port, err)
 	}
-
-	logger.Log.Info("gRPC server listening on :", a.port)
-
-	grpc_prometheus.Register(a.GRPCServer)
+	a.listener = lis
 
 	errCh := make(chan error, 1)
 	go func() {
-		if err := a.GRPCServer.Serve(a.listener); err != nil {
+		if err := a.GRPCServer.Serve(lis); err != nil {
 			errCh <- fmt.Errorf("gRPC server error: %w", err)
 		}
 	}()
 
 	select {
 	case <-ctx.Done():
-		a.Stop()
+		logger.Log.Infof("Shutting down gRPC server on port %d...", a.port)
+		return nil
 	case err := <-errCh:
-		logger.Log.Fatal("gRPC server failed: ", err)
+		return err
 	}
 }
 
-func (a *GRPCApp) Stop() {
-	logger.Log.Info("Gracefully shutting down gRPC server...")
+func (a *GRPCApp) Shutdown(ctx context.Context) error {
+	shutdownComplete := make(chan struct{})
 
-	stopped := make(chan struct{})
 	go func() {
 		a.GRPCServer.GracefulStop()
-		close(stopped)
+		close(shutdownComplete)
 	}()
 
-	timeout := time.After(10 * time.Second)
 	select {
-	case <-stopped:
-		logger.Log.Info("gRPC server shutdown completed")
-	case <-timeout:
-		logger.Log.Warn("gRPC server shutdown timed out, forcing stop")
+	case <-shutdownComplete:
+		logger.Log.Infof("gRPC server on port %d shutdown completed", a.port)
+		return nil
+	case <-ctx.Done():
+		logger.Log.Warnf("gRPC server on port %d shutdown timed out, forcing stop", a.port)
 		a.GRPCServer.Stop()
+		return fmt.Errorf("shutdown timed out")
 	}
 }

@@ -3,18 +3,20 @@ package config
 import (
 	"abysslib/dotenv"
 	"abysslib/logger"
+	"strings"
 	"time"
 )
 
 type Config struct {
-	MainGRPCPort  int
-	DraftGRPCPort int
+	GRPCPortStartFrom int
 
 	HTTPPort int
 
 	jwtSecret         string
 	jwtIssuer         string
 	jwtExpirationTime time.Duration
+
+	Hubs []string
 }
 
 func (c Config) SecretKey() []byte {
@@ -41,14 +43,19 @@ func Configure() *Config {
 	logger.Log.Info("Configure success")
 
 	return &Config{
-		MainGRPCPort: dotenv.GetEnvInt("MAIN_GRPC_PORT", 50051),
-
-		DraftGRPCPort: dotenv.GetEnvInt("DRAFT_GRPC_PORT", 50052),
+		GRPCPortStartFrom: dotenv.GetEnvInt("GRPC_SERVER_PORT_START_FROM", 50051),
 
 		HTTPPort: dotenv.GetEnvInt("HTTP_PORT", 8090),
 
 		jwtSecret:         dotenv.GetEnv("JWT_SECRET", ""),
 		jwtIssuer:         dotenv.GetEnv("JWT_ISSUER", "issuer"),
 		jwtExpirationTime: time.Hour * 24,
+
+		Hubs: strings.Split(dotenv.GetEnv("WEBSOCKET_HUBS", "main"), ","),
 	}
+}
+
+func Setup() *Config {
+	dotenv.LoadEnv()
+	return Configure()
 }
