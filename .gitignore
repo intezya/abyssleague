@@ -17,5 +17,6 @@ fabric.properties
 *.out
 go.work
 .env
+.env.local
 *~
 *.iml

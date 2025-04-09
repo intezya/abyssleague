@@ -20,7 +20,7 @@ type logger struct {
 	*zap.SugaredLogger
 }
 
-func New(debug bool, timeZone string, envType string) {
+func New(debug bool, timeZone string, envType string, lokiConfig *LokiConfig) {
 	encoderConfig := zapcore.EncoderConfig{
 		MessageKey:     "message",
 		LevelKey:       "level",
@@ -53,7 +53,15 @@ func New(debug bool, timeZone string, envType string) {
 		encoder = zapcore.NewConsoleEncoder(encoderConfig)
 	}
 
-	core := zapcore.NewCore(encoder, zapcore.Lock(os.Stdout), level)
+	sinks := []zapcore.WriteSyncer{zapcore.Lock(os.Stdout)} // stdout
+
+	if lokiConfig != nil && lokiConfig.url != "" {
+		sinks = append(sinks, newLokiSink(*lokiConfig))
+	}
+
+	core := zapcore.NewTee(
+		zapcore.NewCore(encoder, zapcore.NewMultiWriteSyncer(sinks...), level),
+	)
 	log := zap.New(core, zap.AddCaller())
 
 	Log = &logger{

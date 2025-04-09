@@ -10,6 +10,7 @@ import (
 	"time"
 	"websocket/internal/adapters/config"
 	"websocket/internal/adapters/controller/http/middleware"
+	"websocket/internal/adapters/controller/http/routes"
 )
 
 type HttpApp struct {
@@ -23,12 +24,12 @@ func NewHttpApp(config *config.Config) *HttpApp {
 	mux := http.NewServeMux()
 
 	mux.HandleFunc(
-		"/ping", func(w http.ResponseWriter, r *http.Request) {
+		routes.PingPath, func(w http.ResponseWriter, r *http.Request) {
 			_, _ = w.Write([]byte("pong!"))
 		},
 	)
 
-	mux.HandleFunc("/metrics", promhttp.Handler().ServeHTTP)
+	mux.HandleFunc(routes.MetricsPath, promhttp.Handler().ServeHTTP)
 
 	loggedHandler := middleware.RequestIDMiddleware(middleware.LoggingMiddleware(mux))
 

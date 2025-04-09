@@ -5,6 +5,7 @@ import (
 	"github.com/gorilla/websocket"
 	"net/http"
 	"websocket/internal/adapters/controller/http/middleware"
+	"websocket/internal/adapters/controller/http/routes"
 	"websocket/internal/infrastructure/hub"
 )
 
@@ -24,5 +25,5 @@ func SetupRoute(
 
 	handler := NewHandler(autHiddleware, upgrader, hub)
 
-	mux.HandleFunc("/websocket/"+hubName, handler.GetHandler())
+	mux.HandleFunc(routes.WebsocketPathPrefix+"/"+hubName, handler.GetHandler())
 }
