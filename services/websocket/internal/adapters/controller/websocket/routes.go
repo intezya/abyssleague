@@ -1,4 +1,4 @@
-package ws
+package websocket
 
 import (
 	"abysslib/jwt"
@@ -15,7 +15,7 @@ func SetupRoute(
 	hubName string,
 	jwtService jwt.Validate,
 ) {
-	autHiddleware := middleware.NewMiddleware(jwtService)
+	authMiddleware := middleware.NewMiddleware(jwtService)
 
 	upgrader := websocket.Upgrader{
 		ReadBufferSize:  1024,
@@ -23,7 +23,7 @@ func SetupRoute(
 		CheckOrigin:     func(r *http.Request) bool { return true },
 	}
 
-	handler := NewHandler(autHiddleware, upgrader, hub)
+	handler := NewHandler(authMiddleware, upgrader, hub)
 
 	mux.HandleFunc(routes.WebsocketPathPrefix+"/"+hubName, handler.GetHandler())
 }

@@ -2,9 +2,12 @@ package config
 
 import (
 	"abysslib/dotenv"
+	"abysslib/itertools"
 	"abysslib/logger"
 	"encoding/json"
+	"fmt"
 	"log"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -23,8 +26,8 @@ const (
 )
 
 type Config struct {
-	GRPCPortStartFrom int
-	HTTPPort          int
+	GRPCPorts []int
+	HTTPPort  int
 
 	jwtSecret         string
 	jwtIssuer         string
@@ -85,15 +88,31 @@ func Configure() *Config {
 
 	initLogger(envType)
 
+	grpcPorts := itertools.Map(
+		func(s string) int {
+			if i, err := strconv.Atoi(s); err != nil {
+				panic(fmt.Sprintf("Error parsing GRPC_SERVER_PORTS: %s", err))
+			} else {
+				return i
+			}
+		},
+		strings.Split(dotenv.GetEnv("GRPC_SERVER_PORTS", string(int32(DefaultGRPCPort))), ","),
+	)
+	websocketHubs := strings.Split(dotenv.GetEnv("WEBSOCKET_HUBS", DefaultHub), ",")
+
+	if len(grpcPorts) != len(websocketHubs) {
+		panic("GRPC_SERVER_PORTS and WEBSOCKET_HUBS must have the same number of elements")
+	}
+
 	config := &Config{
-		GRPCPortStartFrom: dotenv.GetEnvInt("GRPC_SERVER_PORT_START_FROM", DefaultGRPCPort),
-		HTTPPort:          dotenv.GetEnvInt("HTTP_PORT", DefaultHTTPPort),
+		GRPCPorts: grpcPorts,
+		HTTPPort:  dotenv.GetEnvInt("HTTP_PORT", DefaultHTTPPort),
 
 		jwtSecret:         dotenv.GetEnv("JWT_SECRET", ""),
 		jwtIssuer:         dotenv.GetEnv("JWT_ISSUER", DefaultJWTIssuer),
 		jwtExpirationTime: DefaultJWTExpiration,
 
-		Hubs: strings.Split(dotenv.GetEnv("WEBSOCKET_HUBS", DefaultHub), ","),
+		Hubs: websocketHubs,
 
 		EnvType: envType,
 	}

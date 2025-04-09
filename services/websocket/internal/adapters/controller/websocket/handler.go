@@ -1,4 +1,4 @@
-package ws
+package websocket
 
 import (
 	"abysslib/logger"
@@ -53,5 +53,4 @@ func (h *Handler) GetHandler() http.HandlerFunc {
 		go client.WritePump()
 		go client.ReadPump()
 	}
-
 }

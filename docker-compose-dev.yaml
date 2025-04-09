@@ -10,13 +10,13 @@ services:
       - "127.0.0.1:50051:50051"
       - "127.0.0.1:50052:50052"
     environment:
-      - GRPC_SERVER_PORT_START_FROM=${GRPC_SERVER_PORT_START_FROM:-50051}
       - HTTP_PORT=${WEBSOCKET_HTTP_PORT:-8090}
       - JWT_SECRET=${JWT_SECRET}
       - JWT_ISSUER=${JWT_ISSUER}
       - ENV_TYPE=${ENV_TYPE:-dev}
       - LOKI_ENDPOINT_URL=http://loki:3100/loki/api/v1/push
       - LOKI_LABELS={"app":"websocket-api-gateway", "env":"${ENV_TYPE}"}
+      - GRPC_SERVER_PORTS=${GRPC_SERVER_PORT_START_FROM}
       - WEBSOCKET_HUBS=${WEBSOCKET_HUBS}
     logging:
       driver: "json-file"

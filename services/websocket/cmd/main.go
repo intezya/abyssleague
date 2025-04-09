@@ -9,6 +9,7 @@ import (
 	"sync"
 	"syscall"
 	"time"
+	"websocket/internal/adapters/controller/websocket"
 	"websocket/internal/infrastructure/hub"
 	"websocket/internal/infrastructure/service"
 
@@ -16,7 +17,6 @@ import (
 	"websocket/cmd/app"
 	"websocket/internal/adapters/config"
 	"websocket/internal/adapters/controller/grpcapi"
-	"websocket/internal/adapters/controller/ws"
 )
 
 func main() {
@@ -60,10 +60,10 @@ func setupHubs(
 		hubs = append(hubs, newHub)
 		go newHub.Run()
 
-		ws.SetupRoute(httpApp.Mux, newHub, hubName, jwtService)
+		websocket.SetupRoute(httpApp.Mux, newHub, hubName, jwtService)
 
 		websocketService := service.NewWebsocketService(newHub)
-		gRPCApp := app.NewGRPCApp(appConfig.GRPCPortStartFrom + idx)
+		gRPCApp := app.NewGRPCApp(appConfig.GRPCPorts[idx])
 		grpcapi.Setup(gRPCApp.GRPCServer, websocketService)
 
 		gRPCApps = append(gRPCApps, gRPCApp)

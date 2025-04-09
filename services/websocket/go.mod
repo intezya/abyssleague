@@ -4,9 +4,8 @@ go 1.24.2
 
 require go.uber.org/zap v1.27.0 // indirect
 
-require abysslib v0.0.0
-
 require (
+	abysslib v0.0.0
 	abyssproto v0.0.0
 	github.com/google/uuid v1.6.0
 	github.com/gorilla/websocket v1.5.3
