@@ -1,9 +1,9 @@
 package app
 
 import (
-	"abysslib/logger"
 	"context"
 	"fmt"
+	"github.com/intezya/pkglib/logger"
 	"google.golang.org/grpc"
 	"net"
 )

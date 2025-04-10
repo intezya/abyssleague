@@ -1,9 +1,9 @@
 package middleware
 
 import (
-	"abysslib/logger"
 	"bufio"
 	"fmt"
+	"github.com/intezya/pkglib/logger"
 	"net"
 	"net/http"
 	"time"

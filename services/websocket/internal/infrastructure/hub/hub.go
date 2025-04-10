@@ -1,7 +1,7 @@
 package hub
 
 import (
-	"abysslib/logger"
+	"github.com/intezya/pkglib/logger"
 	"sync"
 	"time"
 	"websocket/internal/domain/message"
@@ -61,7 +61,7 @@ func (h *Hub) Run() {
 
 		case client := <-h.register:
 			h.mu.Lock()
-			if existingClient, exists := h.clientsByID[client.authentication.GetID()]; exists {
+			if existingClient, exists := h.clientsByID[client.authentication.ID()]; exists {
 				existingClient.Send <- message.DisconnectByOtherClient
 				close(existingClient.Send)
 				delete(h.clients, existingClient)
@@ -72,7 +72,7 @@ func (h *Hub) Run() {
 			metrics.ActiveConnections.Inc()
 
 			h.clients[client] = true
-			h.clientsByID[client.authentication.GetID()] = client
+			h.clientsByID[client.authentication.ID()] = client
 			h.mu.Unlock()
 
 		case client := <-h.unregister:
@@ -84,8 +84,8 @@ func (h *Hub) Run() {
 				metrics.ActiveConnections.Dec()
 
 				delete(h.clients, client)
-				if h.clientsByID[client.authentication.GetID()] == client {
-					delete(h.clientsByID, client.authentication.GetID())
+				if h.clientsByID[client.authentication.ID()] == client {
+					delete(h.clientsByID, client.authentication.ID())
 				}
 				close(client.Send)
 			}
@@ -99,8 +99,8 @@ func (h *Hub) Run() {
 				default:
 					close(client.Send)
 					delete(h.clients, client)
-					if h.clientsByID[client.authentication.GetID()] == client {
-						delete(h.clientsByID, client.authentication.GetID())
+					if h.clientsByID[client.authentication.ID()] == client {
+						delete(h.clientsByID, client.authentication.ID())
 					}
 				}
 			}

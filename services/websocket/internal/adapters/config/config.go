@@ -1,16 +1,32 @@
 package config
 
 import (
-	"abysslib/dotenv"
-	"abysslib/itertools"
-	"abysslib/logger"
 	"encoding/json"
 	"fmt"
+	"github.com/intezya/pkglib/configloader"
+	"github.com/intezya/pkglib/itertools"
+	"github.com/intezya/pkglib/jwt"
+	"github.com/intezya/pkglib/logger"
 	"log"
 	"strconv"
 	"strings"
 	"time"
 )
+
+/*
+
+| Variable               | Description                                | Default                                  |
+|------------------------|--------------------------------------------|------------------------------------------|
+| `HTTP_PORT`            | HTTP server port                           | 8090                                     |
+| `JWT_SECRET`           | Secret key for JWT authentication          | Required                                 |
+| `JWT_ISSUER`           | Issuer for JWT tokens                      | "issuer"                                 |
+| `ENV_TYPE`             | Environment type (dev, prod)               | "dev"                                    |
+| `WEBSOCKET_HUBS`       | Comma-separated list of available hubs     | "main"                                   |
+| `GRPC_SERVER_PORTS`    | Comma-separated list of ports for each hub | 50051                                    |
+| `LOKI_ENDPOINT_URL`    | URL for Loki logging                       | "http://localhost:3100/loki/api/v1/push" |
+| `LOKI_LABELS`          | JSON-encoded map of labels for Loki        | {}                                       |
+
+*/
 
 const (
 	DefaultGRPCPort      = 50051
@@ -20,9 +36,7 @@ const (
 	DefaultEnvType       = "dev"
 	DefaultHub           = "main"
 
-	DefaultLokiURL       = "http://localhost:3100/loki/api/v1/push"
-	DefaultLokiBatchSize = 100
-	DefaultLokiTimeout   = 5
+	DefaultLokiURL = "http://localhost:3100/loki/api/v1/push"
 )
 
 type Config struct {
@@ -38,16 +52,8 @@ type Config struct {
 	EnvType string
 }
 
-func (c Config) SecretKey() []byte {
-	return []byte(c.jwtSecret)
-}
-
-func (c Config) Issuer() string {
-	return c.jwtIssuer
-}
-
-func (c Config) ExpirationTime() time.Duration {
-	return c.jwtExpirationTime
+func (c Config) JwtConfiguration() jwt.Configuration {
+	return jwt.NewConfiguration([]byte(c.jwtSecret), c.jwtIssuer, c.jwtExpirationTime)
 }
 
 func (c Config) IsDevMode() bool {
@@ -57,7 +63,8 @@ func (c Config) IsDevMode() bool {
 func initLogger(envType string) {
 	isDevMode := envType == "dev"
 
-	lokiLabelsStr := dotenv.GetEnv("LOKI_LABELS", "")
+	lokiLabelsStr := configloader.GetEnvOrFallback("LOKI_LABELS", "")
+
 	labels := make(map[string]string)
 
 	if lokiLabelsStr != "" {
@@ -67,24 +74,26 @@ func initLogger(envType string) {
 	}
 
 	lokiConfig := logger.NewLokiConfig(
-		dotenv.GetEnv("LOKI_ENDPOINT_URL", DefaultLokiURL),
+		configloader.GetEnvOrFallback("LOKI_ENDPOINT_URL", DefaultLokiURL),
 		labels,
-		dotenv.GetEnvInt("LOKI_BATCH_SIZE", DefaultLokiBatchSize),
-		time.Duration(dotenv.GetEnvInt("LOKI_TIMEOUT_SECONDS", DefaultLokiTimeout))*time.Second,
 	)
 
-	logger.New(
-		isDevMode,
-		"",
-		envType,
-		lokiConfig,
+	_, err := logger.New(
+		logger.WithDebug(isDevMode),
+		logger.WithCaller(true),
+		logger.WithEnvironment(envType),
+		logger.WithLoki(lokiConfig),
 	)
+
+	if err != nil {
+		log.Printf("Error initializing logger: %v", err)
+	}
 
 	logger.Log.Debugf("Debug mode: %t", isDevMode)
 }
 
 func Configure() *Config {
-	envType := dotenv.GetEnv("ENV_TYPE", DefaultEnvType)
+	envType := configloader.GetEnvOrFallback("ENV_TYPE", DefaultEnvType)
 
 	initLogger(envType)
 
@@ -96,21 +105,26 @@ func Configure() *Config {
 				return i
 			}
 		},
-		strings.Split(dotenv.GetEnv("GRPC_SERVER_PORTS", string(int32(DefaultGRPCPort))), ","),
+		strings.Split(configloader.GetEnvOrFallback("GRPC_SERVER_PORTS", string(int32(DefaultGRPCPort))), ","),
 	)
-	websocketHubs := strings.Split(dotenv.GetEnv("WEBSOCKET_HUBS", DefaultHub), ",")
+
+	websocketHubs := strings.Split(configloader.GetEnvOrFallback("WEBSOCKET_HUBS", DefaultHub), ",")
 
 	if len(grpcPorts) != len(websocketHubs) {
 		panic("GRPC_SERVER_PORTS and WEBSOCKET_HUBS must have the same number of elements")
 	}
 
+	jwtSecret := configloader.GetEnvOrPanic("JWT_SECRET")
+	jwtIssuer := configloader.GetEnvOrFallback("JWT_ISSUER", DefaultJWTIssuer)
+	jwtExpirationTime := DefaultJWTExpiration
+
 	config := &Config{
 		GRPCPorts: grpcPorts,
-		HTTPPort:  dotenv.GetEnvInt("HTTP_PORT", DefaultHTTPPort),
+		HTTPPort:  configloader.GetEnvIntOrFallback("HTTP_PORT", DefaultHTTPPort),
 
-		jwtSecret:         dotenv.GetEnv("JWT_SECRET", ""),
-		jwtIssuer:         dotenv.GetEnv("JWT_ISSUER", DefaultJWTIssuer),
-		jwtExpirationTime: DefaultJWTExpiration,
+		jwtSecret:         jwtSecret,
+		jwtIssuer:         jwtIssuer,
+		jwtExpirationTime: jwtExpirationTime,
 
 		Hubs: websocketHubs,
 
@@ -123,6 +137,6 @@ func Configure() *Config {
 }
 
 func Setup() *Config {
-	dotenv.LoadEnv()
+	configloader.LoadEnv()
 	return Configure()
 }

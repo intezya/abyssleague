@@ -1,9 +1,10 @@
 package main
 
 import (
-	"abysslib/logger"
 	"context"
 	"fmt"
+	"github.com/intezya/pkglib/jwt"
+	"github.com/intezya/pkglib/logger"
 	"os"
 	"os/signal"
 	"sync"
@@ -13,7 +14,6 @@ import (
 	"websocket/internal/infrastructure/hub"
 	"websocket/internal/infrastructure/service"
 
-	"abysslib/jwt"
 	"websocket/cmd/app"
 	"websocket/internal/adapters/config"
 	"websocket/internal/adapters/controller/grpcapi"
@@ -28,7 +28,7 @@ func main() {
 	defer signal.Stop(sigCh)
 
 	appConfig := config.Setup()
-	jwtService := jwt.New(appConfig)
+	jwtService := jwt.New(appConfig.JwtConfiguration())
 
 	httpApp := app.NewHttpApp(appConfig)
 

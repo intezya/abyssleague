@@ -1,9 +1,9 @@
 package middleware
 
 import (
-	"abysslib/logger"
 	"context"
 	"github.com/google/uuid"
+	"github.com/intezya/pkglib/logger"
 	"net/http"
 )
 

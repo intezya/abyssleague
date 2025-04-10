@@ -14,7 +14,7 @@ type OnlineUser struct {
 }
 
 type Hub interface {
-	GetClients(ctx context.Context) []entity.AuthenticationData
+	GetClients(ctx context.Context) []*entity.AuthenticationData
 	SendToUser(ctx context.Context, userId int, jsonPayload []byte) bool
 	Broadcast(ctx context.Context, jsonPayload []byte)
 }
@@ -36,9 +36,9 @@ func (s *WebsocketService) GetOnlineUsers(ctx context.Context) ([]*OnlineUser, e
 	result := make([]*OnlineUser, len(clients))
 	for idx, client := range clients {
 		result[idx] = &OnlineUser{
-			Id:         int64(client.GetID()),
-			Username:   client.GetUsername(),
-			HardwareID: client.GetHardwareID(),
+			Id:         int64(client.ID()),
+			Username:   client.Username(),
+			HardwareID: client.HardwareID(),
 		}
 	}
 	return result, nil

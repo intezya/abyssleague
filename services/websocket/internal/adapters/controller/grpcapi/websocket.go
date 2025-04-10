@@ -1,9 +1,9 @@
 package grpcapi
 
 import (
-	"abysslib/itertools"
 	websocketpb "abyssproto/websocket"
 	"context"
+	"github.com/intezya/pkglib/itertools"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
