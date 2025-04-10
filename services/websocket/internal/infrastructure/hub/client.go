@@ -1,16 +1,15 @@
 package hub
 
 import (
-	"abysslib/jwt"
-	"abysslib/logger"
 	"github.com/gorilla/websocket"
+	"github.com/intezya/pkglib/logger"
 	"time"
 	"websocket/internal/domain/entity"
 )
 
 type Client struct {
 	Hub            *Hub
-	authentication entity.AuthenticationData
+	authentication *entity.AuthenticationData
 	conn           *websocket.Conn
 	Send           chan []byte
 	connectTime    time.Time
@@ -18,7 +17,7 @@ type Client struct {
 
 func NewClient(
 	hub *Hub,
-	authentication jwt.AuthenticationData,
+	authentication *entity.AuthenticationData,
 	conn *websocket.Conn,
 ) *Client {
 	return &Client{
@@ -29,7 +28,7 @@ func NewClient(
 	}
 }
 
-func (c *Client) GetAuthentication() jwt.AuthenticationData {
+func (c *Client) GetAuthentication() *entity.AuthenticationData {
 	return c.authentication
 }
 
@@ -64,7 +63,7 @@ func (c *Client) ReadPump() {
 
 		c.conn.SetReadDeadline(time.Now().Add(connectionTimeout))
 
-		logger.Log.Debugf("Received message from user %d: %s", c.authentication.GetID(), message)
+		logger.Log.Debugf("Received message from user %d: %s", c.authentication.ID(), message)
 
 		c.Send <- message
 	}
@@ -104,10 +103,10 @@ func (c *Client) WritePump() {
 		case <-ticker.C:
 			c.conn.SetWriteDeadline(time.Now().Add(writeWaitTimeout))
 			if err := c.conn.WriteMessage(websocket.PingMessage, nil); err != nil {
-				logger.Log.Debugf("Error sending ping to user %d: %v", c.authentication.GetID(), err)
+				logger.Log.Debugf("Error sending ping to user %d: %v", c.authentication.ID(), err)
 				return
 			}
-			logger.Log.Debugf("Sent ping to user %d", c.authentication.GetID())
+			logger.Log.Debugf("Sent ping to user %d", c.authentication.ID())
 		}
 	}
 }

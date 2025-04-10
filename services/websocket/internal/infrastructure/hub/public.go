@@ -14,11 +14,11 @@ func (h *Hub) UnregisterClient(client *Client) {
 	h.unregister <- client
 }
 
-func (h *Hub) GetClients(ctx context.Context) []entity.AuthenticationData {
+func (h *Hub) GetClients(ctx context.Context) []*entity.AuthenticationData {
 	h.mu.Lock()
 	defer h.mu.Unlock()
 
-	result := make([]entity.AuthenticationData, 0, len(h.clients))
+	result := make([]*entity.AuthenticationData, 0, len(h.clients))
 
 	for client, ok := range h.clients {
 		if ok {

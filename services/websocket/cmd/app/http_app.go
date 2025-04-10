@@ -1,10 +1,10 @@
 package app
 
 import (
-	"abysslib/logger"
 	"context"
 	"errors"
 	"fmt"
+	"github.com/intezya/pkglib/logger"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"net/http"
 	"time"

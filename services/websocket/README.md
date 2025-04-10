@@ -95,12 +95,10 @@ The service can be configured using environment variables:
 | `GRPC_SERVER_PORTS`    | Comma-separated list of ports for each hub | 50051                                    |
 | `LOKI_ENDPOINT_URL`    | URL for Loki logging                       | "http://localhost:3100/loki/api/v1/push" |
 | `LOKI_LABELS`          | JSON-encoded map of labels for Loki        | {}                                       |
-| `LOKI_BATCH_SIZE`      | Batch size for Loki                        | 100                                      |
-| `LOKI_TIMEOUT_SECONDS` | Timeout for Loki in seconds                | 5                                        |
 
 ## Architecture
 
-Microservice uses shared local library, so you need to build it with that library. It also uses local protos.
+Microservice uses shared local protos, so you need to build it with that protos.
 
 ### Modules structure:
 ```
@@ -110,9 +108,6 @@ Microservice uses shared local library, so you need to build it with that librar
 │   └───websocket -- generated pb files
 └───services
     ├───...
-    ├───lib
-    │   └───go
-    │       └───...
     └───websocket
         ├───cmd
         ├───domain
@@ -125,7 +120,6 @@ Microservice uses shared local library, so you need to build it with that librar
 If you want to work with this, you should know that go.mod uses local paths:
 
 ```
-replace abysslib => ./../lib/go
 replace abyssproto => ./../../protos/
 ```
 

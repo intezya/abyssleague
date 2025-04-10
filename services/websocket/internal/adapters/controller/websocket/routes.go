@@ -1,8 +1,8 @@
 package websocket
 
 import (
-	"abysslib/jwt"
 	"github.com/gorilla/websocket"
+	"github.com/intezya/pkglib/jwt"
 	"net/http"
 	"websocket/internal/adapters/controller/http/middleware"
 	"websocket/internal/adapters/controller/http/routes"
