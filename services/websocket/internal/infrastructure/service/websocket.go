@@ -46,7 +46,7 @@ func (s *WebsocketService) GetOnlineUsers(ctx context.Context) ([]*OnlineUser, e
 
 func (s *WebsocketService) SendToUser(ctx context.Context, userID int, jsonPayload []byte) error {
 	if !s.hub.SendToUser(ctx, userID, jsonPayload) {
-		return errors.New("failed to send message to user")
+		return errors.New("failed to send message to userentity")
 	}
 	return nil
 }

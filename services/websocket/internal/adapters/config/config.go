@@ -1,7 +1,6 @@
 package config
 
 import (
-	"encoding/json"
 	"fmt"
 	"github.com/intezya/pkglib/configloader"
 	"github.com/intezya/pkglib/itertools"
@@ -63,19 +62,12 @@ func (c Config) IsDevMode() bool {
 func initLogger(envType string) {
 	isDevMode := envType == "dev"
 
-	lokiLabelsStr := configloader.GetEnvOrFallback("LOKI_LABELS", "")
-
-	labels := make(map[string]string)
-
-	if lokiLabelsStr != "" {
-		if err := json.Unmarshal([]byte(lokiLabelsStr), &labels); err != nil {
-			log.Printf("Error loading LOKI_LABELS: %v. Is it correct?", err)
-		}
-	}
+	lokiLabels := parseLokiLabels(configloader.GetEnvOrFallback("LOKI_LABELS", ""))
+	lokiLabels["environment"] = envType
 
 	lokiConfig := logger.NewLokiConfig(
 		configloader.GetEnvOrFallback("LOKI_ENDPOINT_URL", DefaultLokiURL),
-		labels,
+		lokiLabels,
 	)
 
 	_, err := logger.New(
@@ -139,4 +131,22 @@ func Configure() *Config {
 func Setup() *Config {
 	configloader.LoadEnv()
 	return Configure()
+}
+
+func parseLokiLabels(labelsStr string) map[string]string {
+	labels := make(map[string]string)
+	if labelsStr == "" {
+		return labels
+	}
+
+	pairs := strings.Split(labelsStr, ",")
+	for _, pair := range pairs {
+		parts := strings.SplitN(pair, "=", 2)
+		if len(parts) == 2 {
+			key := strings.TrimSpace(parts[0])
+			value := strings.TrimSpace(parts[1])
+			labels[key] = value
+		}
+	}
+	return labels
 }

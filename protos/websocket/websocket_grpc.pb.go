@@ -26,7 +26,7 @@ const (
 	WebsocketService_Broadcast_FullMethodName      = "/websocket.WebsocketService/Broadcast"
 )
 
-// WebsocketServiceClient is the client API for WebsocketService service.
+// WebsocketServiceClient is the client API for WebsocketService domainservice.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type WebsocketServiceClient interface {
@@ -84,7 +84,7 @@ func (c *websocketServiceClient) Broadcast(ctx context.Context, in *BroadcastReq
 	return out, nil
 }
 
-// WebsocketServiceServer is the server API for WebsocketService service.
+// WebsocketServiceServer is the server API for WebsocketService domainservice.
 // All implementations must embed UnimplementedWebsocketServiceServer
 // for forward compatibility.
 type WebsocketServiceServer interface {
@@ -117,7 +117,7 @@ func (UnimplementedWebsocketServiceServer) Broadcast(context.Context, *Broadcast
 func (UnimplementedWebsocketServiceServer) mustEmbedUnimplementedWebsocketServiceServer() {}
 func (UnimplementedWebsocketServiceServer) testEmbeddedByValue()                          {}
 
-// UnsafeWebsocketServiceServer may be embedded to opt out of forward compatibility for this service.
+// UnsafeWebsocketServiceServer may be embedded to opt out of forward compatibility for this domainservice.
 // Use of this interface is not recommended, as added methods to WebsocketServiceServer will
 // result in compilation errors.
 type UnsafeWebsocketServiceServer interface {
@@ -207,7 +207,7 @@ func _WebsocketService_Broadcast_Handler(srv interface{}, ctx context.Context, d
 	return interceptor(ctx, in, info, handler)
 }
 
-// WebsocketService_ServiceDesc is the grpc.ServiceDesc for WebsocketService service.
+// WebsocketService_ServiceDesc is the grpc.ServiceDesc for WebsocketService domainservice.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
 var WebsocketService_ServiceDesc = grpc.ServiceDesc{

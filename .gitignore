@@ -20,3 +20,5 @@ go.work
 .env.local
 *~
 *.iml
+
+.qodo

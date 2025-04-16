@@ -1,20 +1,74 @@
 package auth
 
-type AuthenticationData interface {
-	GetUsername() (username string)
-	GetHardwareID() (hwid string)
+import (
+	"abysscore/internal/domain/entity/userentity"
+	"fmt"
+	"github.com/golang-jwt/jwt/v5"
+	"time"
+)
+
+type JWTConfiguration struct {
+	secretKey      []byte
+	issuer         string
+	expirationTime time.Duration
 }
 
-type TokenProvider struct {
-	secretKey []byte
-	issuer    string
+func NewJWTConfiguration(secretKey string, issuer string, expirationTime time.Duration) *JWTConfiguration {
+	return &JWTConfiguration{secretKey: []byte(secretKey), issuer: issuer, expirationTime: expirationTime}
 }
 
-func NewTokenProvider(secretKey []byte) *TokenProvider {
-	return &TokenProvider{secretKey: secretKey}
+type Claim struct {
+	AuthenticationData *userentity.TokenData `json:"authentication_data"`
+	jwt.RegisteredClaims
 }
 
-func (t TokenProvider) GenerateToken(authentication AuthenticationData) map[string]string {
-	//TODO implement me
-	panic("implement me")
+type JWTHelper struct {
+	*JWTConfiguration
+}
+
+func NewJWTHelper(configuration *JWTConfiguration) *JWTHelper {
+	return &JWTHelper{JWTConfiguration: configuration}
+}
+
+func (j *JWTHelper) TokenGenerator(tokenData *userentity.TokenData) string {
+	claims := &Claim{
+		AuthenticationData: tokenData,
+		RegisteredClaims: jwt.RegisteredClaims{
+			ExpiresAt: jwt.NewNumericDate(time.Now().Add(j.expirationTime)),
+			IssuedAt:  jwt.NewNumericDate(time.Now()),
+			NotBefore: jwt.NewNumericDate(time.Now()),
+			Issuer:    j.issuer,
+		},
+	}
+
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+
+	tokenString, _ := token.SignedString(j.secretKey)
+
+	return tokenString
+}
+
+func (j *JWTHelper) ValidateToken(tokenString string) (*userentity.TokenData, error) {
+	claims := &Claim{}
+
+	token, err := jwt.ParseWithClaims(
+		tokenString,
+		claims,
+		func(token *jwt.Token) (interface{}, error) {
+			return j.secretKey, nil
+		},
+		jwt.WithIssuer(j.issuer),
+		jwt.WithStrictDecoding(),
+	)
+
+	if err != nil {
+		return nil, err
+	}
+
+	claims, ok := token.Claims.(*Claim)
+	if !ok || !token.Valid {
+		return nil, fmt.Errorf("invalid token")
+	}
+
+	return claims.AuthenticationData, nil
 }

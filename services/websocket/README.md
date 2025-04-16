@@ -139,7 +139,7 @@ The service follows a clean architecture approach, with directories like domain,
 ### Building from source
 
 ```bash
-go build -o websocket-api cmd/main.go (from root of service)
+go build -o websocket-api cmd/main.go (from root of domainservice)
 ```
 
 ### Generating protobuf files

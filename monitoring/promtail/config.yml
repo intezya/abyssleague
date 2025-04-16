@@ -15,14 +15,12 @@ scrape_configs:
           - localhost
         labels:
           job: docker
-          __path__: /var/lib/docker/containers/*/*-json.log
+          __path__: /var/lib/docker/containers/*/*.log
     pipeline_stages:
+      - docker: { }
       - json:
           expressions:
-            output: log
-            stream: stream
-            attrs: attrs
+            loki_labels: LOKI_LABELS
       - labels:
-          stream:
-      - output:
-          source: output
+          loki_labels:
+

@@ -63,7 +63,7 @@ func (c *Client) ReadPump() {
 
 		c.conn.SetReadDeadline(time.Now().Add(connectionTimeout))
 
-		logger.Log.Debugf("Received message from user %d: %s", c.authentication.ID(), message)
+		logger.Log.Debugf("Received message from userentity %d: %s", c.authentication.ID(), message)
 
 		c.Send <- message
 	}
@@ -103,10 +103,10 @@ func (c *Client) WritePump() {
 		case <-ticker.C:
 			c.conn.SetWriteDeadline(time.Now().Add(writeWaitTimeout))
 			if err := c.conn.WriteMessage(websocket.PingMessage, nil); err != nil {
-				logger.Log.Debugf("Error sending ping to user %d: %v", c.authentication.ID(), err)
+				logger.Log.Debugf("Error sending ping to userentity %d: %v", c.authentication.ID(), err)
 				return
 			}
-			logger.Log.Debugf("Sent ping to user %d", c.authentication.ID())
+			logger.Log.Debugf("Sent ping to userentity %d", c.authentication.ID())
 		}
 	}
 }

@@ -7,3 +7,10 @@ scrape_configs:
     scrape_interval: 5s
     static_configs:
       - targets: ['websocket-api-gateway:8090']
+    metrics_path: /metrics
+
+  - job_name: 'abysscore'
+    scrape_interval: 5s
+    static_configs:
+      - targets: ['abysscore:2112']
+    metrics_path: /metrics
