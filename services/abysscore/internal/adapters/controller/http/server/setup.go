@@ -16,6 +16,14 @@ import (
 )
 
 func Setup(dependencies *DependencyProvider) *fiber.App {
+	config := dependencies.config
+
+	// Setup /metrics on separated http server
+	go func() {
+		http.Handle("/metrics", promhttp.Handler())
+		logger.Log.Warn(http.ListenAndServe(fmt.Sprintf(":%d", config.MetricsPort), nil))
+	}()
+
 	server := fiber.New(
 		fiber.Config{
 			Prefork:                      false, // multicore support for performance
@@ -31,12 +39,10 @@ func Setup(dependencies *DependencyProvider) *fiber.App {
 			ReduceMemoryUsage:            false,
 			JSONEncoder:                  jsoniter.Marshal,
 			JSONDecoder:                  jsoniter.Unmarshal,
-			EnablePrintRoutes:            dependencies.config.IsDebug,
-			DisableStartupMessage:        !dependencies.config.IsDebug,
+			EnablePrintRoutes:            config.IsDebug,
+			DisableStartupMessage:        !config.IsDebug,
 		},
 	)
-
-	config := dependencies.config
 
 	rateLimitMiddleware := middleware.NewRateLimitMiddleware(
 		dependencies.redisClient,
@@ -50,10 +56,11 @@ func Setup(dependencies *DependencyProvider) *fiber.App {
 	)
 	loggingMiddleware := middleware.NewLoggingMiddleware(config)
 
-	go func() {
-		http.Handle("/metrics", promhttp.Handler())
-		logger.Log.Warn(http.ListenAndServe(fmt.Sprintf(":%d", config.MetricsPort), nil))
-	}()
+	if config.IsDebug {
+		logger.Log.Info("Setting up pprof middleware with endpoint: ", dependencies.config.FiberPprofConfig.Prefix)
+
+		server.Use(pprof.New())
+	}
 
 	server.Use(requestid.New(config.FiberRequestIDConfig))
 	server.Use(healthcheck.New(config.FiberHealthCheckConfig))
@@ -61,15 +68,6 @@ func Setup(dependencies *DependencyProvider) *fiber.App {
 	server.Use(recoverMiddleware.Handle())
 	server.Use(rateLimitMiddleware.HandleForAuth())
 	server.Use(rateLimitMiddleware.HandleDefault())
-
-	//prometheus.RegisterAt(server, config.Paths.Other.Metrics)
-
-	if config.IsDebug {
-		server.Use(pprof.New(pprof.Config{
-			Prefix: dependencies.config.FiberPprofConfig.Prefix,
-		}))
-	}
-
 	server.Use(authenticationMiddleware.Handle())
 
 	apiGroup := server.Group("/api")

@@ -11,7 +11,6 @@ import (
 	"abysscore/pkg/auth"
 	"abysscore/pkg/validator"
 	_ "github.com/lib/pq"
-	_ "net/http/pprof"
 )
 
 func main() {
