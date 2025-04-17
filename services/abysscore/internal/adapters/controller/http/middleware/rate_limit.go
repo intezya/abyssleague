@@ -14,11 +14,10 @@ import (
 	"time"
 )
 
-// RateLimitMiddleware предоставляет защиту от частых запросов
 type RateLimitMiddleware struct {
 	redisClient          *rediswrapper.ClientWrapper
-	unprotected          []*regexp.Regexp
 	config               *config.Config
+	authRouteRegexp      *regexp.Regexp
 	loginAttemptsCounter *prometheus.CounterVec
 	rateLimitCounter     *prometheus.CounterVec
 }
@@ -46,20 +45,28 @@ func NewRateLimitMiddleware(
 
 	prometheus.MustRegister(loginAttemptsCounter, rateLimitCounter)
 
+	var authRouteRegexp *regexp.Regexp
+
+	authRouteRegexp, err := regexp.Compile(cfg.Paths.Authentication.Self)
+
+	if err != nil {
+		logger.Log.Warn("Failed to get regexp from cfg.Paths.Authentication.Self: ", err)
+
+		authRouteRegexp = nil
+	}
+
 	return &RateLimitMiddleware{
 		redisClient:          redisClient,
-		unprotected:          cfg.UnprotectedAuthRequests,
 		config:               cfg,
 		loginAttemptsCounter: loginAttemptsCounter,
 		rateLimitCounter:     rateLimitCounter,
+		authRouteRegexp:      authRouteRegexp,
 	}
 }
 
-func (r *RateLimitMiddleware) isProtectedRoute(path string) bool {
-	for _, re := range r.unprotected {
-		if re != nil && re.MatchString(path) {
-			return true
-		}
+func (r *RateLimitMiddleware) isAuthRoute(path string) bool {
+	if r.authRouteRegexp != nil && r.authRouteRegexp.MatchString(path) {
+		return true
 	}
 	return false
 }
@@ -71,7 +78,7 @@ func (r *RateLimitMiddleware) HandleForAuth() fiber.Handler {
 			return c.Next()
 		}
 
-		if !r.isProtectedRoute(c.Path()) {
+		if !r.isAuthRoute(c.Path()) {
 			return c.Next()
 		}
 

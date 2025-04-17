@@ -57,7 +57,7 @@ func Setup(dependencies *DependencyProvider) *fiber.App {
 	loggingMiddleware := middleware.NewLoggingMiddleware(config)
 
 	if config.IsDebug {
-		logger.Log.Info("Setting up pprof middleware with endpoint: ", dependencies.config.FiberPprofConfig.Prefix)
+		logger.Log.Info("Setting up pprof middleware")
 
 		server.Use(pprof.New())
 	}

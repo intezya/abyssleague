@@ -13,7 +13,6 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/intezya/pkglib/logger"
 	"regexp"
-	"slices"
 	"strings"
 	"time"
 )
@@ -42,17 +41,20 @@ func NewAuthenticationMiddleware(
 	}
 }
 
+func (a *AuthenticationMiddleware) isUnprotectedRoute(path string) bool {
+	for _, re := range a.unprotectedRoutes {
+		if re != nil && re.MatchString(path) {
+			return true
+		}
+	}
+	return false
+}
+
 func (a *AuthenticationMiddleware) Handle() fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		logger.Log.Debug("Starting authentication middleware")
 
-		// Skip route if it is in the list of unprotected routes
-		if slices.ContainsFunc(
-			a.unprotectedRoutes,
-			func(regexp *regexp.Regexp) bool {
-				return regexp.MatchString(c.Path())
-			},
-		) {
+		if a.isUnprotectedRoute(c.Path()) {
 			return c.Next()
 		}
 

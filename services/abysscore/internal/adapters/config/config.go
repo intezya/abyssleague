@@ -7,7 +7,6 @@ import (
 	"abysscore/pkg/auth"
 	"errors"
 	"fmt"
-	"github.com/gofiber/fiber/v2/middleware/pprof"
 	"github.com/intezya/pkglib/logger"
 	"github.com/joho/godotenv"
 	"github.com/redis/go-redis/v9"
@@ -25,7 +24,6 @@ type Config struct {
 	UnprotectedAuthRequests []*regexp.Regexp
 	FiberHealthCheckConfig  healthcheck.Config
 	FiberRequestIDConfig    requestid.Config
-	FiberPprofConfig        pprof.Config
 	IsDebug                 bool
 	EnvType                 string
 
@@ -83,7 +81,7 @@ func LoadConfig() *Config {
 	// Setup Logger Configuration
 	config.LoggerConfig = &LoggerConfig{
 		lokiConfig: &logger.LokiConfig{
-			URL:         getEnvString("LOKI_ENDPOINT_URL", ""),
+			URL:         getEnvString("LOKI_ENDPOINT_URL", "localhost:3100"),
 			Labels:      parseLokiLabels(getEnvString("LOKI_LABELS", "")),
 			BatchSize:   getEnvInt("LOKI_BATCH_SIZE", 100),
 			MaxWait:     getEnvDuration("LOKI_MAX_WAIT", 5*time.Second),
@@ -119,10 +117,6 @@ func LoadConfig() *Config {
 		ContextKey: getEnvString("REQUEST_ID_KEY", "requestid"),
 	}
 
-	config.FiberPprofConfig = pprof.Config{
-		Prefix: getEnvString("PPROF_PREFIX", "/debug/pprof"),
-	}
-
 	config.RateLimitConfig = &RateLimitConfig{
 		LoginRateLimitKey:    getEnvString("RATE_LIMIT_LOGIN_KEY", "login_attempts_rate_limit:"),
 		LoginRateLimitTime:   getEnvDuration("RATE_LIMIT_LOGIN_TIME", 10*time.Second),
@@ -134,9 +128,22 @@ func LoadConfig() *Config {
 
 	pathConfig.Other.Liveness = config.FiberHealthCheckConfig.LivenessEndpoint
 	pathConfig.Other.Readliness = config.FiberHealthCheckConfig.ReadinessEndpoint
-	pathConfig.Other.Pprof = config.FiberPprofConfig.Prefix
 
 	config.Paths = pathConfig
+
+	registerPathRegexp, _ := regexp.Compile(config.Paths.Authentication.Register)
+	loginPathRegexp, _ := regexp.Compile(config.Paths.Authentication.Login)
+
+	config.UnprotectedAuthRequests = append(
+		config.UnprotectedAuthRequests,
+		registerPathRegexp,
+		loginPathRegexp,
+	)
+
+	if config.IsDebug {
+		pprofPathRegexp, _ := regexp.Compile(config.Paths.Other.Pprof)
+		config.UnprotectedAuthRequests = append(config.UnprotectedAuthRequests, pprofPathRegexp)
+	}
 
 	notInfoLogging = []string{
 		pathConfig.Other.Liveness,
@@ -149,7 +156,7 @@ func LoadConfig() *Config {
 	config.SlowRequestThresholdMs = 300
 
 	config.TracerConfig = &tracer.Config{
-		Endpoint:           getEnvString("TRACER_ENDPOINT", "otel-collector:4317"),
+		Endpoint:           getEnvString("TRACER_ENDPOINT", "localhost:4317"),
 		ServiceName:        getEnvString("TRACER_SERVICE_NAME", ""),
 		ServiceVersion:     getEnvString("TRACER_SERVICE_VERSION", "v1"),
 		ServiceEnvironment: config.EnvType,

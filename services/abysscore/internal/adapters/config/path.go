@@ -27,7 +27,7 @@ var pathConfig = &PathConfig{
 		Liveness   string
 		Readliness string
 		Pprof      string
-	}{Liveness: "", Readliness: "", Pprof: ""},
+	}{Liveness: "/live", Readliness: "/health", Pprof: "/debug/pprof"},
 }
 
 var notInfoLogging []string
