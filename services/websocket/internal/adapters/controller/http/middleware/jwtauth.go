@@ -1,18 +1,18 @@
 package middleware
 
 import (
-	"github.com/intezya/pkglib/jwt"
 	"github.com/intezya/pkglib/logger"
 	"net/http"
 	"strings"
 	"websocket/internal/domain/entity"
+	"websocket/internal/pkg/auth"
 )
 
 type SecurityMiddleware struct {
-	jwtService jwt.Validate
+	jwtService *auth.JWTHelper
 }
 
-func NewMiddleware(jwtService jwt.Validate) *SecurityMiddleware {
+func NewMiddleware(jwtService *auth.JWTHelper) *SecurityMiddleware {
 	return &SecurityMiddleware{jwtService: jwtService}
 }
 
@@ -29,7 +29,7 @@ func (m *SecurityMiddleware) JwtAuth(
 	}
 
 	token := softExtractTokenFromHeader(authHeader, "Bearer ")
-	tokenData, err := m.jwtService.Validate(token)
+	tokenData, err := m.jwtService.ValidateToken(token)
 
 	if err != nil {
 		logger.Log.Debug("validating token error: ", err)

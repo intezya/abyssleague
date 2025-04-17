@@ -4,13 +4,13 @@ import (
 	"fmt"
 	"github.com/intezya/pkglib/configloader"
 	"github.com/intezya/pkglib/itertools"
-	"github.com/intezya/pkglib/jwt"
 	"github.com/intezya/pkglib/logger"
 	"log"
 	"os"
 	"strconv"
 	"strings"
 	"time"
+	"websocket/internal/pkg/auth"
 )
 
 /*
@@ -52,8 +52,8 @@ type Config struct {
 	EnvType string
 }
 
-func (c Config) JwtConfiguration() jwt.Configuration {
-	return jwt.NewConfiguration([]byte(c.jwtSecret), c.jwtIssuer, c.jwtExpirationTime)
+func (c Config) JwtConfiguration() *auth.JWTConfiguration {
+	return auth.NewJWTConfiguration(c.jwtSecret, c.jwtIssuer, c.jwtExpirationTime)
 }
 
 func (c Config) IsDevMode() bool {

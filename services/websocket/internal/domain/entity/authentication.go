@@ -1,6 +1,9 @@
 package entity
 
-import "strconv"
+import (
+	"strconv"
+	"websocket/internal/pkg/auth"
+)
 
 type AuthenticationData struct {
 	id       int
@@ -36,16 +39,10 @@ func (a *AuthenticationData) Encode() map[string]string {
 	}
 }
 
-func DecodeToAuthenticationData(data map[string]string) *AuthenticationData {
-	id, err := strconv.Atoi(data["id"])
-
-	if err != nil {
-		return nil
+func DecodeToAuthenticationData(data *auth.TokenData) *AuthenticationData {
+	return &AuthenticationData{
+		id:       data.ID,
+		username: data.Username,
+		hwid:     data.Hwid,
 	}
-
-	return NewAuthenticationData(
-		id,
-		data["username"],
-		data["hwid"],
-	)
 }

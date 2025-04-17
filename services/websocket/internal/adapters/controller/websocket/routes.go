@@ -2,18 +2,18 @@ package websocket
 
 import (
 	"github.com/gorilla/websocket"
-	"github.com/intezya/pkglib/jwt"
 	"net/http"
 	"websocket/internal/adapters/controller/http/middleware"
 	"websocket/internal/adapters/controller/http/routes"
 	"websocket/internal/infrastructure/hub"
+	"websocket/internal/pkg/auth"
 )
 
 func SetupRoute(
 	mux *http.ServeMux,
 	hub *hub.Hub,
 	hubName string,
-	jwtService jwt.Validate,
+	jwtService *auth.JWTHelper,
 ) {
 	authMiddleware := middleware.NewMiddleware(jwtService)
 

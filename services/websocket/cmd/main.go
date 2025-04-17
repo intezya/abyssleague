@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"fmt"
-	"github.com/intezya/pkglib/jwt"
 	"github.com/intezya/pkglib/logger"
 	"os"
 	"os/signal"
@@ -13,6 +12,7 @@ import (
 	"websocket/internal/adapters/controller/websocket"
 	"websocket/internal/infrastructure/hub"
 	"websocket/internal/infrastructure/service"
+	"websocket/internal/pkg/auth"
 
 	"websocket/cmd/app"
 	"websocket/internal/adapters/config"
@@ -28,7 +28,7 @@ func main() {
 	defer signal.Stop(sigCh)
 
 	appConfig := config.Setup()
-	jwtService := jwt.New(appConfig.JwtConfiguration())
+	jwtService := auth.NewJWTHelper(appConfig.JwtConfiguration())
 
 	httpApp := app.NewHttpApp(appConfig)
 
@@ -45,7 +45,7 @@ func main() {
 func setupHubs(
 	ctx context.Context,
 	httpApp *app.HttpApp,
-	jwtService *jwt.Service,
+	jwtService *auth.JWTHelper,
 	appConfig *config.Config,
 ) ([]*app.GRPCApp, []*hub.Hub) {
 	gRPCApps := make([]*app.GRPCApp, 0, len(appConfig.Hubs))
