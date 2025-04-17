@@ -48,16 +48,16 @@ func (uic *UserItemCreate) SetNillableReceivedFromID(i *int) *UserItemCreate {
 	return uic
 }
 
-// SetCreatedAt sets the "created_at" field.
-func (uic *UserItemCreate) SetCreatedAt(t time.Time) *UserItemCreate {
-	uic.mutation.SetCreatedAt(t)
+// SetObtainedAt sets the "obtained_at" field.
+func (uic *UserItemCreate) SetObtainedAt(t time.Time) *UserItemCreate {
+	uic.mutation.SetObtainedAt(t)
 	return uic
 }
 
-// SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
-func (uic *UserItemCreate) SetNillableCreatedAt(t *time.Time) *UserItemCreate {
+// SetNillableObtainedAt sets the "obtained_at" field if the given value is not nil.
+func (uic *UserItemCreate) SetNillableObtainedAt(t *time.Time) *UserItemCreate {
 	if t != nil {
-		uic.SetCreatedAt(*t)
+		uic.SetObtainedAt(*t)
 	}
 	return uic
 }
@@ -117,9 +117,9 @@ func (uic *UserItemCreate) defaults() {
 		v := useritem.DefaultReceivedFromID
 		uic.mutation.SetReceivedFromID(v)
 	}
-	if _, ok := uic.mutation.CreatedAt(); !ok {
-		v := useritem.DefaultCreatedAt()
-		uic.mutation.SetCreatedAt(v)
+	if _, ok := uic.mutation.ObtainedAt(); !ok {
+		v := useritem.DefaultObtainedAt()
+		uic.mutation.SetObtainedAt(v)
 	}
 }
 
@@ -139,8 +139,8 @@ func (uic *UserItemCreate) check() error {
 			return &ValidationError{Name: "received_from_id", err: fmt.Errorf(`ent: validator failed for field "UserItem.received_from_id": %w`, err)}
 		}
 	}
-	if _, ok := uic.mutation.CreatedAt(); !ok {
-		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "UserItem.created_at"`)}
+	if _, ok := uic.mutation.ObtainedAt(); !ok {
+		return &ValidationError{Name: "obtained_at", err: errors.New(`ent: missing required field "UserItem.obtained_at"`)}
 	}
 	if len(uic.mutation.UserIDs()) == 0 {
 		return &ValidationError{Name: "user", err: errors.New(`ent: missing required edge "UserItem.user"`)}
@@ -184,9 +184,9 @@ func (uic *UserItemCreate) createSpec() (*UserItem, *sqlgraph.CreateSpec) {
 		_spec.SetField(useritem.FieldReceivedFromID, field.TypeInt, value)
 		_node.ReceivedFromID = value
 	}
-	if value, ok := uic.mutation.CreatedAt(); ok {
-		_spec.SetField(useritem.FieldCreatedAt, field.TypeTime, value)
-		_node.CreatedAt = value
+	if value, ok := uic.mutation.ObtainedAt(); ok {
+		_spec.SetField(useritem.FieldObtainedAt, field.TypeTime, value)
+		_node.ObtainedAt = value
 	}
 	if nodes := uic.mutation.UserIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{

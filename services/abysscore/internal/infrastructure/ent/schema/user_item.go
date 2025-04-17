@@ -23,7 +23,7 @@ func (UserItem) Fields() []ent.Field {
 
 		field.Int("received_from_id").Default(systemIssuerId).Positive(), // todo: relationship with trades
 
-		field.Time("created_at").Default(time.Now),
+		field.Time("obtained_at").Default(time.Now),
 	}
 }
 

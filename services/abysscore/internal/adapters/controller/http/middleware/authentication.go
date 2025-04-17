@@ -2,7 +2,7 @@ package middleware
 
 import (
 	adaptererror "abysscore/internal/common/errors/adapter"
-	"abysscore/internal/domain/entity/userentity"
+	"abysscore/internal/domain/dto"
 	"abysscore/internal/domain/service"
 	rediswrapper "abysscore/internal/infrastructure/cache/redis"
 	"context"
@@ -85,7 +85,7 @@ func (a *AuthenticationMiddleware) Handle() fiber.Handler {
 	}
 }
 
-func (a *AuthenticationMiddleware) checkTokenCache(token string) (*userentity.UserDTO, error) {
+func (a *AuthenticationMiddleware) checkTokenCache(token string) (*dto.UserDTO, error) {
 	ctx := context.Background()
 
 	cachedUser, err := a.redisClient.Client.Get(ctx, token).Result()
@@ -101,7 +101,7 @@ func (a *AuthenticationMiddleware) checkTokenCache(token string) (*userentity.Us
 	return nil, nil // not in cache
 }
 
-func (a *AuthenticationMiddleware) cacheToken(token string, user *userentity.UserDTO) {
+func (a *AuthenticationMiddleware) cacheToken(token string, user *dto.UserDTO) {
 	ctx := context.Background()
 
 	serializedUser := serializeUser(user)
@@ -113,13 +113,13 @@ func (a *AuthenticationMiddleware) cacheToken(token string, user *userentity.Use
 	}
 }
 
-func serializeUser(user *userentity.UserDTO) string {
+func serializeUser(user *dto.UserDTO) string {
 	b, _ := json.Marshal(user)
 	return string(b)
 }
 
-func deserializeUser(data string) *userentity.UserDTO {
-	var user userentity.UserDTO
+func deserializeUser(data string) *dto.UserDTO {
+	var user dto.UserDTO
 	_ = json.Unmarshal([]byte(data), &user)
 	return &user
 }

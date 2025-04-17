@@ -249,8 +249,8 @@ func init() {
 	useritem.DefaultReceivedFromID = useritemDescReceivedFromID.Default.(int)
 	// useritem.ReceivedFromIDValidator is a validator for the "received_from_id" field. It is called by the builders before save.
 	useritem.ReceivedFromIDValidator = useritemDescReceivedFromID.Validators[0].(func(int) error)
-	// useritemDescCreatedAt is the schema descriptor for created_at field.
-	useritemDescCreatedAt := useritemFields[4].Descriptor()
-	// useritem.DefaultCreatedAt holds the default value on creation for the created_at field.
-	useritem.DefaultCreatedAt = useritemDescCreatedAt.Default.(func() time.Time)
+	// useritemDescObtainedAt is the schema descriptor for obtained_at field.
+	useritemDescObtainedAt := useritemFields[4].Descriptor()
+	// useritem.DefaultObtainedAt holds the default value on creation for the obtained_at field.
+	useritem.DefaultObtainedAt = useritemDescObtainedAt.Default.(func() time.Time)
 }

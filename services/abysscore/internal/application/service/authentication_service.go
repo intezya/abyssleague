@@ -2,6 +2,7 @@ package applicationservice
 
 import (
 	applicationerror "abysscore/internal/common/errors/application"
+	"abysscore/internal/domain/dto"
 	"abysscore/internal/domain/entity/userentity"
 	drivenports "abysscore/internal/domain/ports/driven"
 	repositoryports "abysscore/internal/domain/repository"
@@ -120,7 +121,7 @@ func (a *AuthenticationService) Authenticate(ctx context.Context, credentials *u
 		return a.tokenHelper.TokenGenerator(authentication.TokenData())
 	})
 
-	user, err := tracer.TraceFnWithResult(ctx, "userRepository.FindFullDTOById", func(ctx context.Context) (*userentity.UserFullDTO, error) {
+	user, err := tracer.TraceFnWithResult(ctx, "userRepository.FindFullDTOById", func(ctx context.Context) (*dto.UserFullDTO, error) {
 		return a.userRepository.FindFullDTOById(authentication.UserID())
 	}) // Cannot return err cause it handled above
 
@@ -138,7 +139,7 @@ func (a *AuthenticationService) Authenticate(ctx context.Context, credentials *u
 	return domainservice.NewAuthenticationResult(token, user, online), nil
 }
 
-func (a *AuthenticationService) ValidateToken(ctx context.Context, token string) (*userentity.UserDTO, error) {
+func (a *AuthenticationService) ValidateToken(ctx context.Context, token string) (*dto.UserDTO, error) {
 	data, err := tracer.TraceFnWithResult(ctx, "tokenHelper.ValidateToken", func(ctx context.Context) (*userentity.TokenData, error) {
 		return a.tokenHelper.ValidateToken(token)
 	})
@@ -168,7 +169,7 @@ func (a *AuthenticationService) ValidateToken(ctx context.Context, token string)
 		return nil, applicationerror.ErrTokenHwidIsInvalid
 	}
 
-	user, err := tracer.TraceFnWithResult(ctx, "userRepository.FindDTOById", func(ctx context.Context) (*userentity.UserDTO, error) {
+	user, err := tracer.TraceFnWithResult(ctx, "userRepository.FindDTOById", func(ctx context.Context) (*dto.UserDTO, error) {
 		return a.userRepository.FindDTOById(authentication.UserID())
 	})
 

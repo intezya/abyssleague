@@ -20,8 +20,8 @@ const (
 	FieldItemID = "item_id"
 	// FieldReceivedFromID holds the string denoting the received_from_id field in the database.
 	FieldReceivedFromID = "received_from_id"
-	// FieldCreatedAt holds the string denoting the created_at field in the database.
-	FieldCreatedAt = "created_at"
+	// FieldObtainedAt holds the string denoting the obtained_at field in the database.
+	FieldObtainedAt = "obtained_at"
 	// EdgeUser holds the string denoting the user edge name in mutations.
 	EdgeUser = "user"
 	// EdgeItem holds the string denoting the item edge name in mutations.
@@ -50,7 +50,7 @@ var Columns = []string{
 	FieldUserID,
 	FieldItemID,
 	FieldReceivedFromID,
-	FieldCreatedAt,
+	FieldObtainedAt,
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -68,8 +68,8 @@ var (
 	DefaultReceivedFromID int
 	// ReceivedFromIDValidator is a validator for the "received_from_id" field. It is called by the builders before save.
 	ReceivedFromIDValidator func(int) error
-	// DefaultCreatedAt holds the default value on creation for the "created_at" field.
-	DefaultCreatedAt func() time.Time
+	// DefaultObtainedAt holds the default value on creation for the "obtained_at" field.
+	DefaultObtainedAt func() time.Time
 )
 
 // OrderOption defines the ordering options for the UserItem queries.
@@ -95,9 +95,9 @@ func ByReceivedFromID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldReceivedFromID, opts...).ToFunc()
 }
 
-// ByCreatedAt orders the results by the created_at field.
-func ByCreatedAt(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldCreatedAt, opts...).ToFunc()
+// ByObtainedAt orders the results by the obtained_at field.
+func ByObtainedAt(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldObtainedAt, opts...).ToFunc()
 }
 
 // ByUserField orders the results by user field.

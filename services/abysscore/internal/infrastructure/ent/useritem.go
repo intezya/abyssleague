@@ -25,8 +25,8 @@ type UserItem struct {
 	ItemID int `json:"item_id,omitempty"`
 	// ReceivedFromID holds the value of the "received_from_id" field.
 	ReceivedFromID int `json:"received_from_id,omitempty"`
-	// CreatedAt holds the value of the "created_at" field.
-	CreatedAt time.Time `json:"created_at,omitempty"`
+	// ObtainedAt holds the value of the "obtained_at" field.
+	ObtainedAt time.Time `json:"obtained_at,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the UserItemQuery when eager-loading is set.
 	Edges        UserItemEdges `json:"edges"`
@@ -73,7 +73,7 @@ func (*UserItem) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case useritem.FieldID, useritem.FieldUserID, useritem.FieldItemID, useritem.FieldReceivedFromID:
 			values[i] = new(sql.NullInt64)
-		case useritem.FieldCreatedAt:
+		case useritem.FieldObtainedAt:
 			values[i] = new(sql.NullTime)
 		default:
 			values[i] = new(sql.UnknownType)
@@ -114,11 +114,11 @@ func (ui *UserItem) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				ui.ReceivedFromID = int(value.Int64)
 			}
-		case useritem.FieldCreatedAt:
+		case useritem.FieldObtainedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
-				return fmt.Errorf("unexpected type %T for field created_at", values[i])
+				return fmt.Errorf("unexpected type %T for field obtained_at", values[i])
 			} else if value.Valid {
-				ui.CreatedAt = value.Time
+				ui.ObtainedAt = value.Time
 			}
 		default:
 			ui.selectValues.Set(columns[i], values[i])
@@ -175,8 +175,8 @@ func (ui *UserItem) String() string {
 	builder.WriteString("received_from_id=")
 	builder.WriteString(fmt.Sprintf("%v", ui.ReceivedFromID))
 	builder.WriteString(", ")
-	builder.WriteString("created_at=")
-	builder.WriteString(ui.CreatedAt.Format(time.ANSIC))
+	builder.WriteString("obtained_at=")
+	builder.WriteString(ui.ObtainedAt.Format(time.ANSIC))
 	builder.WriteByte(')')
 	return builder.String()
 }

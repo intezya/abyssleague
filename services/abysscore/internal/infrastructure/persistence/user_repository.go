@@ -2,6 +2,7 @@ package persistence
 
 import (
 	repositoryerrors "abysscore/internal/common/errors/repository"
+	"abysscore/internal/domain/dto"
 	"abysscore/internal/domain/entity/userentity"
 	"abysscore/internal/infrastructure/ent"
 	"abysscore/internal/infrastructure/ent/user"
@@ -37,10 +38,10 @@ func (r *UserRepository) Create(credentials *userentity.CredentialsDTO) (*useren
 		return nil, repositoryerrors.WrapUnexpectedError(err)
 	}
 
-	return userentity.MapToAuthenticationDataFromEnt(u), nil
+	return dto.MapToAuthenticationDataFromEnt(u), nil
 }
 
-func (r *UserRepository) FindDTOById(id int) (*userentity.UserDTO, error) {
+func (r *UserRepository) FindDTOById(id int) (*dto.UserDTO, error) {
 	ctx := context.Background()
 
 	u, err := r.client.User.
@@ -55,10 +56,10 @@ func (r *UserRepository) FindDTOById(id int) (*userentity.UserDTO, error) {
 		return nil, repositoryerrors.WrapUnexpectedError(err)
 	}
 
-	return userentity.MapToDTOFromEnt(u), nil
+	return dto.MapToUserDTOFromEnt(u), nil
 }
 
-func (r *UserRepository) FindFullDTOById(id int) (*userentity.UserFullDTO, error) {
+func (r *UserRepository) FindFullDTOById(id int) (*dto.UserFullDTO, error) {
 	ctx := context.Background()
 
 	u, err := r.client.User.
@@ -79,7 +80,7 @@ func (r *UserRepository) FindFullDTOById(id int) (*userentity.UserFullDTO, error
 		return nil, repositoryerrors.WrapUnexpectedError(err)
 	}
 
-	return userentity.MapToFullDTOFromEnt(u), nil
+	return dto.MapToFullDTOFromEnt(u), nil
 }
 
 func (r *UserRepository) FindAuthenticationByLowerUsername(lowerUsername string) (
@@ -100,7 +101,7 @@ func (r *UserRepository) FindAuthenticationByLowerUsername(lowerUsername string)
 		return nil, repositoryerrors.WrapUnexpectedError(err)
 	}
 
-	return userentity.MapToAuthenticationDataFromEnt(u), nil
+	return dto.MapToAuthenticationDataFromEnt(u), nil
 }
 
 func (r *UserRepository) UpdateHWIDByID(id int, hwid string) error {

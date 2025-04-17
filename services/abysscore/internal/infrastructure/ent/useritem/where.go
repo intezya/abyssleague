@@ -70,9 +70,9 @@ func ReceivedFromID(v int) predicate.UserItem {
 	return predicate.UserItem(sql.FieldEQ(FieldReceivedFromID, v))
 }
 
-// CreatedAt applies equality check predicate on the "created_at" field. It's identical to CreatedAtEQ.
-func CreatedAt(v time.Time) predicate.UserItem {
-	return predicate.UserItem(sql.FieldEQ(FieldCreatedAt, v))
+// ObtainedAt applies equality check predicate on the "obtained_at" field. It's identical to ObtainedAtEQ.
+func ObtainedAt(v time.Time) predicate.UserItem {
+	return predicate.UserItem(sql.FieldEQ(FieldObtainedAt, v))
 }
 
 // UserIDEQ applies the EQ predicate on the "user_id" field.
@@ -155,44 +155,44 @@ func ReceivedFromIDLTE(v int) predicate.UserItem {
 	return predicate.UserItem(sql.FieldLTE(FieldReceivedFromID, v))
 }
 
-// CreatedAtEQ applies the EQ predicate on the "created_at" field.
-func CreatedAtEQ(v time.Time) predicate.UserItem {
-	return predicate.UserItem(sql.FieldEQ(FieldCreatedAt, v))
+// ObtainedAtEQ applies the EQ predicate on the "obtained_at" field.
+func ObtainedAtEQ(v time.Time) predicate.UserItem {
+	return predicate.UserItem(sql.FieldEQ(FieldObtainedAt, v))
 }
 
-// CreatedAtNEQ applies the NEQ predicate on the "created_at" field.
-func CreatedAtNEQ(v time.Time) predicate.UserItem {
-	return predicate.UserItem(sql.FieldNEQ(FieldCreatedAt, v))
+// ObtainedAtNEQ applies the NEQ predicate on the "obtained_at" field.
+func ObtainedAtNEQ(v time.Time) predicate.UserItem {
+	return predicate.UserItem(sql.FieldNEQ(FieldObtainedAt, v))
 }
 
-// CreatedAtIn applies the In predicate on the "created_at" field.
-func CreatedAtIn(vs ...time.Time) predicate.UserItem {
-	return predicate.UserItem(sql.FieldIn(FieldCreatedAt, vs...))
+// ObtainedAtIn applies the In predicate on the "obtained_at" field.
+func ObtainedAtIn(vs ...time.Time) predicate.UserItem {
+	return predicate.UserItem(sql.FieldIn(FieldObtainedAt, vs...))
 }
 
-// CreatedAtNotIn applies the NotIn predicate on the "created_at" field.
-func CreatedAtNotIn(vs ...time.Time) predicate.UserItem {
-	return predicate.UserItem(sql.FieldNotIn(FieldCreatedAt, vs...))
+// ObtainedAtNotIn applies the NotIn predicate on the "obtained_at" field.
+func ObtainedAtNotIn(vs ...time.Time) predicate.UserItem {
+	return predicate.UserItem(sql.FieldNotIn(FieldObtainedAt, vs...))
 }
 
-// CreatedAtGT applies the GT predicate on the "created_at" field.
-func CreatedAtGT(v time.Time) predicate.UserItem {
-	return predicate.UserItem(sql.FieldGT(FieldCreatedAt, v))
+// ObtainedAtGT applies the GT predicate on the "obtained_at" field.
+func ObtainedAtGT(v time.Time) predicate.UserItem {
+	return predicate.UserItem(sql.FieldGT(FieldObtainedAt, v))
 }
 
-// CreatedAtGTE applies the GTE predicate on the "created_at" field.
-func CreatedAtGTE(v time.Time) predicate.UserItem {
-	return predicate.UserItem(sql.FieldGTE(FieldCreatedAt, v))
+// ObtainedAtGTE applies the GTE predicate on the "obtained_at" field.
+func ObtainedAtGTE(v time.Time) predicate.UserItem {
+	return predicate.UserItem(sql.FieldGTE(FieldObtainedAt, v))
 }
 
-// CreatedAtLT applies the LT predicate on the "created_at" field.
-func CreatedAtLT(v time.Time) predicate.UserItem {
-	return predicate.UserItem(sql.FieldLT(FieldCreatedAt, v))
+// ObtainedAtLT applies the LT predicate on the "obtained_at" field.
+func ObtainedAtLT(v time.Time) predicate.UserItem {
+	return predicate.UserItem(sql.FieldLT(FieldObtainedAt, v))
 }
 
-// CreatedAtLTE applies the LTE predicate on the "created_at" field.
-func CreatedAtLTE(v time.Time) predicate.UserItem {
-	return predicate.UserItem(sql.FieldLTE(FieldCreatedAt, v))
+// ObtainedAtLTE applies the LTE predicate on the "obtained_at" field.
+func ObtainedAtLTE(v time.Time) predicate.UserItem {
+	return predicate.UserItem(sql.FieldLTE(FieldObtainedAt, v))
 }
 
 // HasUser applies the HasEdge predicate on the "user" edge.

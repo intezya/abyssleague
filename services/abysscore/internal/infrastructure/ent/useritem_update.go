@@ -49,16 +49,16 @@ func (uiu *UserItemUpdate) AddReceivedFromID(i int) *UserItemUpdate {
 	return uiu
 }
 
-// SetCreatedAt sets the "created_at" field.
-func (uiu *UserItemUpdate) SetCreatedAt(t time.Time) *UserItemUpdate {
-	uiu.mutation.SetCreatedAt(t)
+// SetObtainedAt sets the "obtained_at" field.
+func (uiu *UserItemUpdate) SetObtainedAt(t time.Time) *UserItemUpdate {
+	uiu.mutation.SetObtainedAt(t)
 	return uiu
 }
 
-// SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
-func (uiu *UserItemUpdate) SetNillableCreatedAt(t *time.Time) *UserItemUpdate {
+// SetNillableObtainedAt sets the "obtained_at" field if the given value is not nil.
+func (uiu *UserItemUpdate) SetNillableObtainedAt(t *time.Time) *UserItemUpdate {
 	if t != nil {
-		uiu.SetCreatedAt(*t)
+		uiu.SetObtainedAt(*t)
 	}
 	return uiu
 }
@@ -129,8 +129,8 @@ func (uiu *UserItemUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if value, ok := uiu.mutation.AddedReceivedFromID(); ok {
 		_spec.AddField(useritem.FieldReceivedFromID, field.TypeInt, value)
 	}
-	if value, ok := uiu.mutation.CreatedAt(); ok {
-		_spec.SetField(useritem.FieldCreatedAt, field.TypeTime, value)
+	if value, ok := uiu.mutation.ObtainedAt(); ok {
+		_spec.SetField(useritem.FieldObtainedAt, field.TypeTime, value)
 	}
 	if n, err = sqlgraph.UpdateNodes(ctx, uiu.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
@@ -173,16 +173,16 @@ func (uiuo *UserItemUpdateOne) AddReceivedFromID(i int) *UserItemUpdateOne {
 	return uiuo
 }
 
-// SetCreatedAt sets the "created_at" field.
-func (uiuo *UserItemUpdateOne) SetCreatedAt(t time.Time) *UserItemUpdateOne {
-	uiuo.mutation.SetCreatedAt(t)
+// SetObtainedAt sets the "obtained_at" field.
+func (uiuo *UserItemUpdateOne) SetObtainedAt(t time.Time) *UserItemUpdateOne {
+	uiuo.mutation.SetObtainedAt(t)
 	return uiuo
 }
 
-// SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
-func (uiuo *UserItemUpdateOne) SetNillableCreatedAt(t *time.Time) *UserItemUpdateOne {
+// SetNillableObtainedAt sets the "obtained_at" field if the given value is not nil.
+func (uiuo *UserItemUpdateOne) SetNillableObtainedAt(t *time.Time) *UserItemUpdateOne {
 	if t != nil {
-		uiuo.SetCreatedAt(*t)
+		uiuo.SetObtainedAt(*t)
 	}
 	return uiuo
 }
@@ -283,8 +283,8 @@ func (uiuo *UserItemUpdateOne) sqlSave(ctx context.Context) (_node *UserItem, er
 	if value, ok := uiuo.mutation.AddedReceivedFromID(); ok {
 		_spec.AddField(useritem.FieldReceivedFromID, field.TypeInt, value)
 	}
-	if value, ok := uiuo.mutation.CreatedAt(); ok {
-		_spec.SetField(useritem.FieldCreatedAt, field.TypeTime, value)
+	if value, ok := uiuo.mutation.ObtainedAt(); ok {
+		_spec.SetField(useritem.FieldObtainedAt, field.TypeTime, value)
 	}
 	_node = &UserItem{config: uiuo.config}
 	_spec.Assign = _node.assignValues

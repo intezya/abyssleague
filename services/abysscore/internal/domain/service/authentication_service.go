@@ -1,24 +1,25 @@
 package domainservice
 
 import (
+	"abysscore/internal/domain/dto"
 	"abysscore/internal/domain/entity/userentity"
 	"context"
 )
 
 type AuthenticationResult struct {
-	Token       string                  `json:"token,omitempty"`
-	User        *userentity.UserFullDTO `json:"user,omitempty"`
-	OnlineCount int                     `json:"online_count"`
+	Token       string           `json:"token,omitempty"`
+	User        *dto.UserFullDTO `json:"user,omitempty"`
+	OnlineCount int              `json:"online_count"`
 }
 
-func NewAuthenticationResult(token string, user *userentity.UserFullDTO, onlineCount int) *AuthenticationResult {
+func NewAuthenticationResult(token string, user *dto.UserFullDTO, onlineCount int) *AuthenticationResult {
 	return &AuthenticationResult{Token: token, User: user, OnlineCount: onlineCount}
 }
 
 type AuthenticationService interface {
 	Register(ctx context.Context, credentials *userentity.CredentialsDTO) (*AuthenticationResult, error)
 	Authenticate(ctx context.Context, credentials *userentity.CredentialsDTO) (*AuthenticationResult, error)
-	ValidateToken(ctx context.Context, token string) (*userentity.UserDTO, error)
+	ValidateToken(ctx context.Context, token string) (*dto.UserDTO, error)
 }
 
 type TokenHelper interface {

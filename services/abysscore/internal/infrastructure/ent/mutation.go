@@ -7016,7 +7016,7 @@ type UserItemMutation struct {
 	id                  *int
 	received_from_id    *int
 	addreceived_from_id *int
-	created_at          *time.Time
+	obtained_at         *time.Time
 	clearedFields       map[string]struct{}
 	user                *int
 	cleareduser         bool
@@ -7259,40 +7259,40 @@ func (m *UserItemMutation) ResetReceivedFromID() {
 	m.addreceived_from_id = nil
 }
 
-// SetCreatedAt sets the "created_at" field.
-func (m *UserItemMutation) SetCreatedAt(t time.Time) {
-	m.created_at = &t
+// SetObtainedAt sets the "obtained_at" field.
+func (m *UserItemMutation) SetObtainedAt(t time.Time) {
+	m.obtained_at = &t
 }
 
-// CreatedAt returns the value of the "created_at" field in the mutation.
-func (m *UserItemMutation) CreatedAt() (r time.Time, exists bool) {
-	v := m.created_at
+// ObtainedAt returns the value of the "obtained_at" field in the mutation.
+func (m *UserItemMutation) ObtainedAt() (r time.Time, exists bool) {
+	v := m.obtained_at
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// OldCreatedAt returns the old "created_at" field's value of the UserItem entity.
+// OldObtainedAt returns the old "obtained_at" field's value of the UserItem entity.
 // If the UserItem object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *UserItemMutation) OldCreatedAt(ctx context.Context) (v time.Time, err error) {
+func (m *UserItemMutation) OldObtainedAt(ctx context.Context) (v time.Time, err error) {
 	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldCreatedAt is only allowed on UpdateOne operations")
+		return v, errors.New("OldObtainedAt is only allowed on UpdateOne operations")
 	}
 	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldCreatedAt requires an ID field in the mutation")
+		return v, errors.New("OldObtainedAt requires an ID field in the mutation")
 	}
 	oldValue, err := m.oldValue(ctx)
 	if err != nil {
-		return v, fmt.Errorf("querying old value for OldCreatedAt: %w", err)
+		return v, fmt.Errorf("querying old value for OldObtainedAt: %w", err)
 	}
-	return oldValue.CreatedAt, nil
+	return oldValue.ObtainedAt, nil
 }
 
-// ResetCreatedAt resets all changes to the "created_at" field.
-func (m *UserItemMutation) ResetCreatedAt() {
-	m.created_at = nil
+// ResetObtainedAt resets all changes to the "obtained_at" field.
+func (m *UserItemMutation) ResetObtainedAt() {
+	m.obtained_at = nil
 }
 
 // ClearUser clears the "user" edge to the User entity.
@@ -7393,8 +7393,8 @@ func (m *UserItemMutation) Fields() []string {
 	if m.received_from_id != nil {
 		fields = append(fields, useritem.FieldReceivedFromID)
 	}
-	if m.created_at != nil {
-		fields = append(fields, useritem.FieldCreatedAt)
+	if m.obtained_at != nil {
+		fields = append(fields, useritem.FieldObtainedAt)
 	}
 	return fields
 }
@@ -7410,8 +7410,8 @@ func (m *UserItemMutation) Field(name string) (ent.Value, bool) {
 		return m.ItemID()
 	case useritem.FieldReceivedFromID:
 		return m.ReceivedFromID()
-	case useritem.FieldCreatedAt:
-		return m.CreatedAt()
+	case useritem.FieldObtainedAt:
+		return m.ObtainedAt()
 	}
 	return nil, false
 }
@@ -7427,8 +7427,8 @@ func (m *UserItemMutation) OldField(ctx context.Context, name string) (ent.Value
 		return m.OldItemID(ctx)
 	case useritem.FieldReceivedFromID:
 		return m.OldReceivedFromID(ctx)
-	case useritem.FieldCreatedAt:
-		return m.OldCreatedAt(ctx)
+	case useritem.FieldObtainedAt:
+		return m.OldObtainedAt(ctx)
 	}
 	return nil, fmt.Errorf("unknown UserItem field %s", name)
 }
@@ -7459,12 +7459,12 @@ func (m *UserItemMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetReceivedFromID(v)
 		return nil
-	case useritem.FieldCreatedAt:
+	case useritem.FieldObtainedAt:
 		v, ok := value.(time.Time)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
-		m.SetCreatedAt(v)
+		m.SetObtainedAt(v)
 		return nil
 	}
 	return fmt.Errorf("unknown UserItem field %s", name)
@@ -7539,8 +7539,8 @@ func (m *UserItemMutation) ResetField(name string) error {
 	case useritem.FieldReceivedFromID:
 		m.ResetReceivedFromID()
 		return nil
-	case useritem.FieldCreatedAt:
-		m.ResetCreatedAt()
+	case useritem.FieldObtainedAt:
+		m.ResetObtainedAt()
 		return nil
 	}
 	return fmt.Errorf("unknown UserItem field %s", name)

@@ -195,7 +195,7 @@ var (
 	UserItemsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
 		{Name: "received_from_id", Type: field.TypeInt, Default: 0},
-		{Name: "created_at", Type: field.TypeTime},
+		{Name: "obtained_at", Type: field.TypeTime},
 		{Name: "item_id", Type: field.TypeInt},
 		{Name: "user_id", Type: field.TypeInt},
 	}
