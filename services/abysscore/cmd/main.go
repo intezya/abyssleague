@@ -10,8 +10,8 @@ import (
 	rediswrapper "abysscore/internal/infrastructure/cache/redis"
 	"abysscore/internal/infrastructure/metrics/tracer"
 	"abysscore/internal/infrastructure/persistence"
-	"abysscore/pkg/auth"
-	"abysscore/pkg/validator"
+	"abysscore/internal/pkg/auth"
+	"abysscore/internal/pkg/validator"
 	_ "github.com/lib/pq"
 )
 

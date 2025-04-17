@@ -1,12 +1,12 @@
 package handlers
 
 import (
-	"abysscore/common/errors/base"
 	"abysscore/internal/adapters/controller/http/dto/request"
 	"abysscore/internal/adapters/controller/http/dto/response"
+	"abysscore/internal/common/errors/base"
 	domainservice "abysscore/internal/domain/service"
 	"abysscore/internal/infrastructure/metrics/tracer"
-	"abysscore/pkg/validator"
+	"abysscore/internal/pkg/validator"
 	"context"
 	"github.com/gofiber/fiber/v2"
 )

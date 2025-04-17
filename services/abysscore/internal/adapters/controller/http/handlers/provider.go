@@ -2,7 +2,7 @@ package handlers
 
 import (
 	applicationservice "abysscore/internal/application/service"
-	"abysscore/pkg/validator"
+	"abysscore/internal/pkg/validator"
 )
 
 type DependencyProvider struct {

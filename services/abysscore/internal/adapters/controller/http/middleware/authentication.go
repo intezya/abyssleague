@@ -1,7 +1,7 @@
 package middleware
 
 import (
-	adaptererror "abysscore/common/errors/adapter"
+	adaptererror "abysscore/internal/common/errors/adapter"
 	"abysscore/internal/domain/entity/userentity"
 	"abysscore/internal/domain/service"
 	rediswrapper "abysscore/internal/infrastructure/cache/redis"

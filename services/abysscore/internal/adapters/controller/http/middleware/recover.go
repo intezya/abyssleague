@@ -1,8 +1,8 @@
 package middleware
 
 import (
-	adaptererror "abysscore/common/errors/adapter"
-	"abysscore/common/errors/base"
+	adaptererror "abysscore/internal/common/errors/adapter"
+	"abysscore/internal/common/errors/base"
 	"fmt"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/requestid"

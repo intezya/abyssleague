@@ -5,7 +5,7 @@ import (
 	rediswrapper "abysscore/internal/infrastructure/cache/redis"
 	"abysscore/internal/infrastructure/metrics/tracer"
 	"abysscore/internal/infrastructure/persistence"
-	"abysscore/pkg/auth"
+	"abysscore/internal/pkg/auth"
 	"errors"
 	"fmt"
 	"github.com/intezya/pkglib/itertools"

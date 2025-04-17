@@ -1,7 +1,7 @@
 package persistence
 
 import (
-	repositoryerrors "abysscore/common/errors/repository"
+	repositoryerrors "abysscore/internal/common/errors/repository"
 	"abysscore/internal/domain/entity/userentity"
 	"abysscore/internal/infrastructure/ent"
 	"abysscore/internal/infrastructure/ent/user"

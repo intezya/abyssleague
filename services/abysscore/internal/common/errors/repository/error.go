@@ -1,7 +1,7 @@
 package repositoryerrors
 
 import (
-	"abysscore/common/errors/base"
+	"abysscore/internal/common/errors/base"
 	"errors"
 )
 

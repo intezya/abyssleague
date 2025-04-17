@@ -1,7 +1,7 @@
 package applicationservice
 
 import (
-	applicationerror "abysscore/common/errors/application"
+	applicationerror "abysscore/internal/common/errors/application"
 	"abysscore/internal/domain/entity/userentity"
 	drivenports "abysscore/internal/domain/ports/driven"
 	repositoryports "abysscore/internal/domain/repository"

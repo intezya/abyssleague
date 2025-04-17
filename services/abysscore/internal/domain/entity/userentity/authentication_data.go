@@ -20,9 +20,9 @@ type AuthenticationData struct {
 }
 
 type TokenData struct {
-	ID       int
-	Username string
-	Hwid     string
+	ID       int    `json:"id"`
+	Username string `json:"username"`
+	Hwid     string `json:"hwid"`
 }
 
 func NewAuthenticationData(id int, username string, password string, hwid *string) *AuthenticationData {
