@@ -3,6 +3,7 @@ package repositoryports
 import (
 	"abysscore/internal/domain/dto"
 	"abysscore/internal/domain/entity/userentity"
+	"time"
 )
 
 type UserRepository interface {
@@ -14,4 +15,6 @@ type UserRepository interface {
 	FindAuthenticationByLowerUsername(lowerUsername string) (*userentity.AuthenticationData, error)
 
 	UpdateHWIDByID(id int, hwid string) error
+
+	SetLoginStreakLoginAtByID(id int, loginStreak int, loginAt time.Time) error
 }

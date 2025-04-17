@@ -8,6 +8,7 @@ import (
 	"abysscore/internal/infrastructure/ent/user"
 	"context"
 	"strings"
+	"time"
 )
 
 type UserRepository struct {
@@ -120,4 +121,16 @@ func (r *UserRepository) UpdateHWIDByID(id int, hwid string) error {
 	}
 
 	return nil
+}
+
+func (r *UserRepository) SetLoginStreakLoginAtByID(id int, loginStreak int, loginAt time.Time) error {
+	ctx := context.Background()
+
+	_, err := r.client.User.
+		UpdateOneID(id).
+		SetLoginStreak(loginStreak).
+		SetLoginAt(loginAt).
+		Save(ctx)
+
+	return repositoryerrors.WrapUnexpectedError(err)
 }

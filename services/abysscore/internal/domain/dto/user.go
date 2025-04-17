@@ -25,11 +25,10 @@ type UserDTO struct {
 	CreatedAt              time.Time                `json:"created_at"`
 	SearchBlockedUntil     *time.Time               `json:"-"`
 	AccountBlockedUntil    *time.Time               `json:"-"`
-	//TODO: Edges        UserEdges `json:"edges"`
 }
 
 type UserFullDTO struct {
-	UserDTO
+	*UserDTO
 
 	//Statistics []*Statistic `json:"statistics"`
 	Friends []*UserDTO `json:"friends"`
@@ -81,7 +80,7 @@ func MapToFullDTOFromEnt(u *ent.User) *UserFullDTO {
 	)
 
 	return &UserFullDTO{
-		UserDTO: *MapToUserDTOFromEnt(u),
+		UserDTO: MapToUserDTOFromEnt(u),
 		// Edges
 		Friends:     mappedFriends,
 		Items:       mappedItems,

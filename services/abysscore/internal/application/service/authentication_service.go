@@ -8,9 +8,11 @@ import (
 	repositoryports "abysscore/internal/domain/repository"
 	domainservice "abysscore/internal/domain/service"
 	"abysscore/internal/infrastructure/metrics/tracer"
+	"abysscore/internal/pkg/timeutils"
 	"context"
 	"github.com/intezya/pkglib/logger"
 	"strings"
+	"time"
 )
 
 type AuthenticationService struct {
@@ -131,6 +133,8 @@ func (a *AuthenticationService) Authenticate(ctx context.Context, credentials *u
 		// The token is still valid and can be used for authentication
 	}
 
+	go a.postLoginProcessing(ctx, user.UserDTO)
+
 	online := tracer.TraceValue(ctx, "mainWebsocketService.GetOnlineSoft", func(ctx context.Context) int {
 		res := a.mainWebsocketService.GetOnlineSoft(ctx)
 		return int(res.Online)
@@ -179,4 +183,23 @@ func (a *AuthenticationService) ValidateToken(ctx context.Context, token string)
 	}
 
 	return user, nil
+}
+
+func (a *AuthenticationService) postLoginProcessing(ctx context.Context, user *dto.UserDTO) {
+	if !timeutils.IsDayBeforeToday(user.LoginAt) {
+		return
+	}
+
+	user.LoginStreak++
+	user.LoginAt = time.Now()
+
+	// TODO: here will be added bonuses for user (maybe some money, xp in stats, or badge if login streak too high)
+
+	err := tracer.TraceValue(ctx, "userRepository.SetLoginStreakLoginAtByID", func(ctx context.Context) error {
+		return a.userRepository.SetLoginStreakLoginAtByID(user.ID, user.LoginStreak, user.LoginAt)
+	})
+
+	if err != nil {
+		logger.Log.Warnf("Unexpected error occurred: %v", err)
+	}
 }
