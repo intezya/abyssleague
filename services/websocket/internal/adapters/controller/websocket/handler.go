@@ -46,7 +46,7 @@ func (h *Handler) GetHandler() http.HandlerFunc {
 		client := hub.NewClient(h.hub, authData, conn)
 		client.Hub.RegisterClient(client)
 
-		welcomeMsg := map[string]string{"message": "Welcome!", "userentity": authData.Username()}
+		welcomeMsg := map[string]string{"message": "Welcome!", "user": authData.Username()}
 		msgBytes, _ := json.Marshal(welcomeMsg)
 		client.Send <- msgBytes
 
