@@ -4,8 +4,12 @@ go 1.24.2
 
 require (
 	abyssproto v0.0.0
+	github.com/golang-jwt/jwt/v5 v5.2.2
 	github.com/google/uuid v1.6.0
 	github.com/gorilla/websocket v1.5.3
+	github.com/intezya/pkglib/configloader v0.1.2
+	github.com/intezya/pkglib/itertools v0.0.0-20250410065517-3ee711d98e3e
+	github.com/intezya/pkglib/logger v0.0.0-20250409194040-62a04a1def9d
 	github.com/prometheus/client_golang v1.22.0
 	google.golang.org/grpc v1.71.1
 	google.golang.org/protobuf v1.36.6
@@ -16,11 +20,6 @@ replace abyssproto => ./../../protos/
 require (
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
-	github.com/golang-jwt/jwt/v5 v5.2.2 // indirect
-	github.com/intezya/pkglib/configloader v0.1.2 // indirect
-	github.com/intezya/pkglib/itertools v0.0.0-20250410065517-3ee711d98e3e // indirect
-	github.com/intezya/pkglib/jwt v0.1.1 // indirect
-	github.com/intezya/pkglib/logger v0.0.0-20250409194040-62a04a1def9d // indirect
 	github.com/joho/godotenv v1.5.1 // indirect
 	github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822 // indirect
 	github.com/prometheus/client_model v0.6.1 // indirect
