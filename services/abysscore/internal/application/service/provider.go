@@ -1,28 +1,37 @@
 package applicationservice
 
 import (
+	"abysscore/internal/adapters/controller/grpc/wrapper"
 	domainservice "abysscore/internal/domain/service"
 	"abysscore/internal/infrastructure/persistence"
 )
 
 type DependencyProvider struct {
-	dependencyProvider *persistence.DependencyProvider
-	passwordHelper     domainservice.CredentialsHelper
-	tokenHelper        domainservice.TokenHelper
+	repositoryDependencyProvider *persistence.DependencyProvider
+	gRPCDependencyProvider       *wrapper.DependencyProvider
+	passwordHelper               domainservice.CredentialsHelper
+	tokenHelper                  domainservice.TokenHelper
 
 	AuthenticationService domainservice.AuthenticationService
 }
 
 func NewDependencyProvider(
-	dependencyProvider *persistence.DependencyProvider,
+	repositoryDependencyProvider *persistence.DependencyProvider,
+	gRPCDependencyProvider *wrapper.DependencyProvider,
 	passwordHelper domainservice.CredentialsHelper,
 	tokenHelper domainservice.TokenHelper,
 ) *DependencyProvider {
 	return &DependencyProvider{
-		dependencyProvider: dependencyProvider,
-		passwordHelper:     passwordHelper,
-		tokenHelper:        tokenHelper,
+		repositoryDependencyProvider: repositoryDependencyProvider,
+		gRPCDependencyProvider:       gRPCDependencyProvider,
+		passwordHelper:               passwordHelper,
+		tokenHelper:                  tokenHelper,
 
-		AuthenticationService: NewAuthenticationService(dependencyProvider.UserRepository, passwordHelper, tokenHelper),
+		AuthenticationService: NewAuthenticationService(
+			repositoryDependencyProvider.UserRepository,
+			gRPCDependencyProvider.MainWebsocketService,
+			passwordHelper,
+			tokenHelper,
+		),
 	}
 }

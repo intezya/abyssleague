@@ -3,6 +3,7 @@ package applicationservice
 import (
 	applicationerror "abysscore/common/errors/application"
 	"abysscore/internal/domain/entity/userentity"
+	drivenports "abysscore/internal/domain/ports/driven"
 	repositoryports "abysscore/internal/domain/repository"
 	domainservice "abysscore/internal/domain/service"
 	"abysscore/internal/infrastructure/metrics/tracer"
@@ -12,24 +13,30 @@ import (
 )
 
 type AuthenticationService struct {
-	userRepository    repositoryports.UserRepository
-	credentialsHelper domainservice.CredentialsHelper
-	tokenHelper       domainservice.TokenHelper
+	userRepository       repositoryports.UserRepository
+	mainWebsocketService drivenports.WebsocketService
+	credentialsHelper    domainservice.CredentialsHelper
+	tokenHelper          domainservice.TokenHelper
 }
 
 func NewAuthenticationService(
 	userRepository repositoryports.UserRepository,
+	mainWebsocketService drivenports.WebsocketService,
 	credentialsHelper domainservice.CredentialsHelper,
 	tokenHelper domainservice.TokenHelper,
 ) *AuthenticationService {
 	return &AuthenticationService{
-		userRepository:    userRepository,
-		credentialsHelper: credentialsHelper,
-		tokenHelper:       tokenHelper,
+		userRepository:       userRepository,
+		mainWebsocketService: mainWebsocketService,
+		credentialsHelper:    credentialsHelper,
+		tokenHelper:          tokenHelper,
 	}
 }
 
-func (a *AuthenticationService) Register(ctx context.Context, credentials *userentity.CredentialsDTO) (
+func (a *AuthenticationService) Register(
+	ctx context.Context,
+	credentials *userentity.CredentialsDTO,
+) (
 	*domainservice.AuthenticationResult,
 	error,
 ) {
@@ -54,7 +61,12 @@ func (a *AuthenticationService) Register(ctx context.Context, credentials *usere
 		return a.tokenHelper.TokenGenerator(user.TokenData())
 	})
 
-	return domainservice.NewAuthenticationResult(token, nil), nil
+	online := tracer.TraceValue(ctx, "mainWebsocketService.GetOnlineSoft", func(ctx context.Context) int {
+		res := a.mainWebsocketService.GetOnlineSoft(ctx)
+		return int(res.Online)
+	})
+
+	return domainservice.NewAuthenticationResult(token, nil, online), nil
 }
 
 func (a *AuthenticationService) Authenticate(ctx context.Context, credentials *userentity.CredentialsDTO) (
@@ -118,7 +130,12 @@ func (a *AuthenticationService) Authenticate(ctx context.Context, credentials *u
 		// The token is still valid and can be used for authentication
 	}
 
-	return domainservice.NewAuthenticationResult(token, user), nil
+	online := tracer.TraceValue(ctx, "mainWebsocketService.GetOnlineSoft", func(ctx context.Context) int {
+		res := a.mainWebsocketService.GetOnlineSoft(ctx)
+		return int(res.Online)
+	})
+
+	return domainservice.NewAuthenticationResult(token, user, online), nil
 }
 
 func (a *AuthenticationService) ValidateToken(ctx context.Context, token string) (*userentity.UserDTO, error) {

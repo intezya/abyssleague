@@ -3,8 +3,8 @@ module abysscore
 go 1.24.2
 
 require (
+	abyssproto v0.0.0
 	entgo.io/ent v0.14.4
-	github.com/ansrivas/fiberprometheus/v2 v2.9.1
 	github.com/go-playground/validator/v10 v10.26.0
 	github.com/go-redis/redis/v8 v8.11.5
 	github.com/gofiber/fiber/v2 v2.52.6
@@ -17,7 +17,15 @@ require (
 	github.com/prometheus/client_golang v1.22.0
 	github.com/redis/go-redis/v9 v9.7.3
 	go.opentelemetry.io/otel v1.35.0
+	go.opentelemetry.io/otel/exporters/otlp/otlptrace v1.35.0
+	go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc v1.35.0
+	go.opentelemetry.io/otel/sdk v1.35.0
+	go.opentelemetry.io/otel/trace v1.35.0
+	go.uber.org/zap v1.27.0
+	google.golang.org/grpc v1.71.1
 )
+
+replace abyssproto => ./../../protos/
 
 require (
 	ariga.io/atlas v0.31.1-0.20250212144724-069be8033e83 // indirect
@@ -40,6 +48,7 @@ require (
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.26.1 // indirect
 	github.com/hashicorp/hcl/v2 v2.13.0 // indirect
+	github.com/intezya/pkglib/itertools v0.0.0-20250410075734-66680663f021 // indirect
 	github.com/klauspost/compress v1.18.0 // indirect
 	github.com/leodido/go-urn v1.4.0 // indirect
 	github.com/mattn/go-colorable v0.1.14 // indirect
@@ -58,14 +67,9 @@ require (
 	github.com/zclconf/go-cty v1.14.4 // indirect
 	github.com/zclconf/go-cty-yaml v1.1.0 // indirect
 	go.opentelemetry.io/auto/sdk v1.1.0 // indirect
-	go.opentelemetry.io/otel/exporters/otlp/otlptrace v1.35.0 // indirect
-	go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc v1.35.0 // indirect
 	go.opentelemetry.io/otel/metric v1.35.0 // indirect
-	go.opentelemetry.io/otel/sdk v1.35.0 // indirect
-	go.opentelemetry.io/otel/trace v1.35.0 // indirect
 	go.opentelemetry.io/proto/otlp v1.5.0 // indirect
 	go.uber.org/multierr v1.10.0 // indirect
-	go.uber.org/zap v1.27.0 // indirect
 	golang.org/x/crypto v0.37.0 // indirect
 	golang.org/x/mod v0.23.0 // indirect
 	golang.org/x/net v0.38.0 // indirect
@@ -73,6 +77,5 @@ require (
 	golang.org/x/text v0.24.0 // indirect
 	google.golang.org/genproto/googleapis/api v0.0.0-20250218202821-56aae31c358a // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20250218202821-56aae31c358a // indirect
-	google.golang.org/grpc v1.71.0 // indirect
-	google.golang.org/protobuf v1.36.5 // indirect
+	google.golang.org/protobuf v1.36.6 // indirect
 )

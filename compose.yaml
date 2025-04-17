@@ -58,6 +58,8 @@ services:
       - TRACER_SERVICE_NAME=abysscore
       - TRACER_SERVICE_VERSION=v1.0.0
       - TRACER_ENDPOINT=${TRACER_ENDPOINT:-otel-collector:4317}
+      - WEBSOCKET_API_GATEWAY_HOST=websocket-api-gateway
+      - WEBSOCKET_API_GATEWAY_PORTS=${GRPC_SERVER_PORTS}
     env_file:
       - .env
     healthcheck:

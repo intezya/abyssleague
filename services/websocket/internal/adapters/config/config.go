@@ -7,6 +7,7 @@ import (
 	"github.com/intezya/pkglib/jwt"
 	"github.com/intezya/pkglib/logger"
 	"log"
+	"os"
 	"strconv"
 	"strings"
 	"time"
@@ -59,9 +60,7 @@ func (c Config) IsDevMode() bool {
 	return c.EnvType == "dev"
 }
 
-func initLogger(envType string) {
-	isDevMode := envType == "dev"
-
+func initLogger(isDebug bool, envType string) {
 	lokiLabels := parseLokiLabels(configloader.GetEnvOrFallback("LOKI_LABELS", ""))
 	lokiLabels["environment"] = envType
 
@@ -71,7 +70,7 @@ func initLogger(envType string) {
 	)
 
 	_, err := logger.New(
-		logger.WithDebug(isDevMode),
+		logger.WithDebug(isDebug),
 		logger.WithCaller(true),
 		logger.WithEnvironment(envType),
 		logger.WithLoki(lokiConfig),
@@ -81,13 +80,13 @@ func initLogger(envType string) {
 		log.Printf("Error initializing logger: %v", err)
 	}
 
-	logger.Log.Debugf("Debug mode: %t", isDevMode)
+	logger.Log.Debugf("Debug mode: %t", isDebug)
 }
 
 func Configure() *Config {
 	envType := configloader.GetEnvOrFallback("ENV_TYPE", DefaultEnvType)
 
-	initLogger(envType)
+	initLogger(getEnvBool("DEBUG", false), envType)
 
 	grpcPorts := itertools.Map(
 		func(s string) int {
@@ -149,4 +148,13 @@ func parseLokiLabels(labelsStr string) map[string]string {
 		}
 	}
 	return labels
+}
+
+func getEnvBool(key string, fallback bool) bool {
+	if value, exists := os.LookupEnv(key); exists {
+		if boolVal, err := strconv.ParseBool(value); err == nil {
+			return boolVal
+		}
+	}
+	return fallback
 }

@@ -1,12 +1,14 @@
 package config
 
 import (
+	"abysscore/internal/adapters/controller/grpc/factory"
 	rediswrapper "abysscore/internal/infrastructure/cache/redis"
 	"abysscore/internal/infrastructure/metrics/tracer"
 	"abysscore/internal/infrastructure/persistence"
 	"abysscore/pkg/auth"
 	"errors"
 	"fmt"
+	"github.com/intezya/pkglib/itertools"
 	"github.com/intezya/pkglib/logger"
 	"github.com/joho/godotenv"
 	"github.com/redis/go-redis/v9"
@@ -33,6 +35,7 @@ type Config struct {
 	EntConfig        *persistence.EntConfig
 	JWTConfiguration *auth.JWTConfiguration
 	TracerConfig     *tracer.Config
+	GRPCConfig       *factory.GRPCConfig
 
 	MetricsPort int
 
@@ -124,6 +127,11 @@ func LoadConfig() *Config {
 		DefaultRateLimitKey:  getEnvString("RATE_LIMIT_DEFAULT_KEY", "rate_limit:"),
 		DefaultRateLimitTime: getEnvDuration("RATE_LIMIT_DEFAULT_TIME", 1*time.Second),
 		DefaultRateLimit:     getEnvInt("RATE_LIMIT_DEFAULT_MAX_REQUESTS", 4),
+	}
+
+	config.GRPCConfig = &factory.GRPCConfig{
+		WebsocketApiGatewayHost:  getEnvString("WEBSOCKET_API_GATEWAY_HOST", ""),
+		WebsocketApiGatewayPorts: getAndParseGrpcPorts(),
 	}
 
 	pathConfig.Other.Liveness = config.FiberHealthCheckConfig.LivenessEndpoint
@@ -233,4 +241,19 @@ func parseLokiLabels(labelsStr string) map[string]string {
 		}
 	}
 	return labels
+}
+
+func getAndParseGrpcPorts() []int {
+	return itertools.Map(
+		func(s string) int {
+			i, err := strconv.Atoi(s)
+
+			if err != nil {
+				panic(fmt.Sprintf("Error parsing GRPC_SERVER_PORTS: %s", err))
+			}
+
+			return i
+		},
+		strings.Split(getEnvString("WEBSOCKET_API_GATEWAY_PORTS", ""), ","),
+	)
 }

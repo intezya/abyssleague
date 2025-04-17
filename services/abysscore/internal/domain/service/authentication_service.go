@@ -6,12 +6,13 @@ import (
 )
 
 type AuthenticationResult struct {
-	Token string                  `json:"token,omitempty"`
-	User  *userentity.UserFullDTO `json:"user,omitempty"`
+	Token       string                  `json:"token,omitempty"`
+	User        *userentity.UserFullDTO `json:"user,omitempty"`
+	OnlineCount int                     `json:"online_count"`
 }
 
-func NewAuthenticationResult(token string, user *userentity.UserFullDTO) *AuthenticationResult {
-	return &AuthenticationResult{Token: token, User: user}
+func NewAuthenticationResult(token string, user *userentity.UserFullDTO, onlineCount int) *AuthenticationResult {
+	return &AuthenticationResult{Token: token, User: user, OnlineCount: onlineCount}
 }
 
 type AuthenticationService interface {

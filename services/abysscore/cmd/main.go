@@ -2,6 +2,8 @@ package main
 
 import (
 	"abysscore/internal/adapters/config"
+	"abysscore/internal/adapters/controller/grpc/factory"
+	"abysscore/internal/adapters/controller/grpc/wrapper"
 	"abysscore/internal/adapters/controller/http/handlers"
 	"abysscore/internal/adapters/controller/http/server"
 	applicationservice "abysscore/internal/application/service"
@@ -20,15 +22,23 @@ func main() {
 
 	tracerCleanup := tracer.Init(appConfig.TracerConfig)
 	defer tracerCleanup()
+
 	entClient := persistence.SetupEnt(appConfig.EntConfig)
 	defer entClient.Close()
+
 	redisClient := rediswrapper.NewClientWrapper(appConfig.RedisConfig)
 	defer redisClient.Close()
+
+	grpcFactory := factory.NewGrpcClientFactory()
+	defer grpcFactory.CloseAll()
+
+	gRPCDependencies := wrapper.NewDependencyProvider(appConfig.GRPCConfig, grpcFactory)
 
 	repositoryDependencies := persistence.NewDependencyProvider(entClient)
 
 	serviceDependencies := applicationservice.NewDependencyProvider(
 		repositoryDependencies,
+		gRPCDependencies,
 		auth.NewHashHelper(),
 		auth.NewJWTHelper(appConfig.JWTConfiguration),
 	)
