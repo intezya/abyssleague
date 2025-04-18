@@ -10,19 +10,16 @@ import (
 	"github.com/intezya/pkglib/logger"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/redis/go-redis/v9"
-	"regexp"
 	"time"
 )
 
 type RateLimitMiddleware struct {
 	redisClient          *rediswrapper.ClientWrapper
 	config               *config.Config
-	authRouteRegexp      *regexp.Regexp
 	loginAttemptsCounter *prometheus.CounterVec
 	rateLimitCounter     *prometheus.CounterVec
 }
 
-// NewRateLimitMiddleware создает новый экземпляр RateLimitMiddleware
 func NewRateLimitMiddleware(
 	redisClient *rediswrapper.ClientWrapper,
 	cfg *config.Config,
@@ -45,40 +42,18 @@ func NewRateLimitMiddleware(
 
 	prometheus.MustRegister(loginAttemptsCounter, rateLimitCounter)
 
-	var authRouteRegexp *regexp.Regexp
-
-	authRouteRegexp, err := regexp.Compile(cfg.Paths.Authentication.Self)
-
-	if err != nil {
-		logger.Log.Warn("Failed to get regexp from cfg.Paths.Authentication.Self: ", err)
-
-		authRouteRegexp = nil
-	}
-
 	return &RateLimitMiddleware{
 		redisClient:          redisClient,
 		config:               cfg,
 		loginAttemptsCounter: loginAttemptsCounter,
 		rateLimitCounter:     rateLimitCounter,
-		authRouteRegexp:      authRouteRegexp,
 	}
-}
-
-func (r *RateLimitMiddleware) isAuthRoute(path string) bool {
-	if r.authRouteRegexp != nil && r.authRouteRegexp.MatchString(path) {
-		return true
-	}
-	return false
 }
 
 func (r *RateLimitMiddleware) HandleForAuth() fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		if r.redisClient == nil {
 			logger.Log.Warn("Redis client is not available in RateLimitMiddleware")
-			return c.Next()
-		}
-
-		if !r.isAuthRoute(c.Path()) {
 			return c.Next()
 		}
 

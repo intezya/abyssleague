@@ -1,7 +1,7 @@
 package auth
 
 import (
-	"abysscore/internal/domain/entity/userentity"
+	"abysscore/internal/domain/entity"
 	"fmt"
 	"github.com/golang-jwt/jwt/v5"
 	"time"
@@ -18,7 +18,7 @@ func NewJWTConfiguration(secretKey string, issuer string, expirationTime time.Du
 }
 
 type Claim struct {
-	AuthenticationData *userentity.TokenData `json:"authentication_data"`
+	AuthenticationData *entity.TokenData `json:"authentication_data"`
 	jwt.RegisteredClaims
 }
 
@@ -30,7 +30,7 @@ func NewJWTHelper(configuration *JWTConfiguration) *JWTHelper {
 	return &JWTHelper{JWTConfiguration: configuration}
 }
 
-func (j *JWTHelper) TokenGenerator(tokenData *userentity.TokenData) string {
+func (j *JWTHelper) TokenGenerator(tokenData *entity.TokenData) string {
 	claims := &Claim{
 		AuthenticationData: tokenData,
 		RegisteredClaims: jwt.RegisteredClaims{
@@ -48,7 +48,7 @@ func (j *JWTHelper) TokenGenerator(tokenData *userentity.TokenData) string {
 	return tokenString
 }
 
-func (j *JWTHelper) ValidateToken(tokenString string) (*userentity.TokenData, error) {
+func (j *JWTHelper) ValidateToken(tokenString string) (*entity.TokenData, error) {
 	claims := &Claim{}
 
 	token, err := jwt.ParseWithClaims(

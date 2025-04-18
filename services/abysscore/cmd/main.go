@@ -49,13 +49,13 @@ func main() {
 	)
 
 	serverDependencies := server.NewDependencyProvider(
-		redisClient,
-		appConfig,
 		handlerDependencies,
 		serviceDependencies.AuthenticationService,
+		redisClient,
+		appConfig,
 	)
 
 	app := server.Setup(serverDependencies)
 
-	server.Run(app)
+	server.Run(app, appConfig)
 }

@@ -1,7 +1,7 @@
 package dto
 
 import (
-	"abysscore/internal/domain/entity/userentity"
+	"abysscore/internal/domain/entity"
 	"abysscore/internal/infrastructure/ent"
 	"abysscore/internal/infrastructure/ent/schema/access_level"
 	"github.com/intezya/pkglib/itertools"
@@ -60,8 +60,8 @@ func MapToUserDTOFromEnt(u *ent.User) *UserDTO {
 	}
 }
 
-func MapToAuthenticationDataFromEnt(u *ent.User) *userentity.AuthenticationData {
-	return userentity.NewAuthenticationData(u.ID, u.Username, u.Password, u.HardwareID)
+func MapToAuthenticationDataFromEnt(u *ent.User) *entity.AuthenticationData {
+	return entity.NewAuthenticationData(u.ID, u.Username, u.Password, u.HardwareID)
 }
 
 func MapToFullDTOFromEnt(u *ent.User) *UserFullDTO {

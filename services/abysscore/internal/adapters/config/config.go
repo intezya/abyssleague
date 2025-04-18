@@ -6,14 +6,12 @@ import (
 	"abysscore/internal/infrastructure/metrics/tracer"
 	"abysscore/internal/infrastructure/persistence"
 	"abysscore/internal/pkg/auth"
-	"errors"
 	"fmt"
 	"github.com/intezya/pkglib/itertools"
 	"github.com/intezya/pkglib/logger"
 	"github.com/joho/godotenv"
 	"github.com/redis/go-redis/v9"
 	"os"
-	"regexp"
 	"strconv"
 	"strings"
 	"time"
@@ -23,11 +21,10 @@ import (
 )
 
 type Config struct {
-	UnprotectedAuthRequests []*regexp.Regexp
-	FiberHealthCheckConfig  healthcheck.Config
-	FiberRequestIDConfig    requestid.Config
-	IsDebug                 bool
-	EnvType                 string
+	FiberHealthCheckConfig healthcheck.Config
+	FiberRequestIDConfig   requestid.Config
+	IsDebug                bool
+	EnvType                string
 
 	RateLimitConfig  *RateLimitConfig
 	LoggerConfig     *LoggerConfig
@@ -37,9 +34,8 @@ type Config struct {
 	TracerConfig     *tracer.Config
 	GRPCConfig       *factory.GRPCConfig
 
+	ServerPort  int
 	MetricsPort int
-
-	Paths *PathConfig
 
 	SlowRequestThresholdMs int
 }
@@ -54,9 +50,9 @@ func LoadConfig() *Config {
 	_ = godotenv.Load()
 
 	config := &Config{
-		IsDebug: getEnvBool("DEBUG", false),
-		EnvType: getEnvString("ENV_TYPE", "prod"),
-		Paths:   &PathConfig{},
+		IsDebug:    getEnvBool("DEBUG", false),
+		EnvType:    getEnvString("ENV_TYPE", "prod"),
+		ServerPort: getEnvInt("SERVER_PORT", 8080),
 	}
 
 	config.JWTConfiguration = auth.NewJWTConfiguration(
@@ -97,20 +93,6 @@ func LoadConfig() *Config {
 
 	config.LoggerConfig.lokiConfig.Labels["environment"] = config.EnvType
 
-	unprotected := strings.Split(getEnvString("UNPROTECTED_AUTH_ROUTES", "/api/v1/auth/.*"), ",")
-
-	config.UnprotectedAuthRequests = make([]*regexp.Regexp, 0, len(unprotected))
-	for _, route := range unprotected {
-		if route == "" {
-			continue
-		}
-		re, err := regexp.Compile(strings.TrimSpace(route))
-		if err != nil {
-			panic(errors.New(fmt.Sprintf("invalid unprotected route pattern %s: %v", route, err)))
-		}
-		config.UnprotectedAuthRequests = append(config.UnprotectedAuthRequests, re)
-	}
-
 	config.FiberHealthCheckConfig = healthcheck.Config{
 		LivenessEndpoint:  getEnvString("LIVENESS_ENDPOINT", "/live"),
 		ReadinessEndpoint: getEnvString("READINESS_ENDPOINT", "/health"),
@@ -132,31 +114,6 @@ func LoadConfig() *Config {
 	config.GRPCConfig = &factory.GRPCConfig{
 		WebsocketApiGatewayHost:  getEnvString("WEBSOCKET_API_GATEWAY_HOST", ""),
 		WebsocketApiGatewayPorts: getAndParseGrpcPorts(),
-	}
-
-	pathConfig.Other.Liveness = config.FiberHealthCheckConfig.LivenessEndpoint
-	pathConfig.Other.Readliness = config.FiberHealthCheckConfig.ReadinessEndpoint
-
-	config.Paths = pathConfig
-
-	registerPathRegexp, _ := regexp.Compile(config.Paths.Authentication.Register)
-	loginPathRegexp, _ := regexp.Compile(config.Paths.Authentication.Login)
-
-	config.UnprotectedAuthRequests = append(
-		config.UnprotectedAuthRequests,
-		registerPathRegexp,
-		loginPathRegexp,
-	)
-
-	if config.IsDebug {
-		pprofPathRegexp, _ := regexp.Compile(config.Paths.Other.Pprof)
-		config.UnprotectedAuthRequests = append(config.UnprotectedAuthRequests, pprofPathRegexp)
-	}
-
-	notInfoLogging = []string{
-		pathConfig.Other.Liveness,
-		pathConfig.Other.Readliness,
-		pathConfig.Other.Pprof,
 	}
 
 	config.MetricsPort = getEnvInt("METRICS_PORT", 2112)

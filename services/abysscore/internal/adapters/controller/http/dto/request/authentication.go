@@ -1,6 +1,8 @@
 package request
 
-import "abysscore/internal/domain/entity/userentity"
+import (
+	"abysscore/internal/domain/entity"
+)
 
 type AuthenticationRequest struct {
 	Username string `json:"username" validate:"required"`
@@ -8,6 +10,6 @@ type AuthenticationRequest struct {
 	Hwid     string `json:"hwid" validate:"required"`
 }
 
-func (a *AuthenticationRequest) ToCredentialsDTO() *userentity.CredentialsDTO {
-	return userentity.NewCredentialsDTO(a.Username, a.Password, a.Hwid)
+func (a *AuthenticationRequest) ToCredentialsDTO() *entity.CredentialsDTO {
+	return entity.NewCredentialsDTO(a.Username, a.Password, a.Hwid)
 }

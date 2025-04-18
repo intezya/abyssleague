@@ -126,7 +126,7 @@ func (l *LoggingMiddleware) Handle() fiber.Handler {
 
 		l.updateMetrics(c, statusCode, requestDuration)
 
-		logRequest(log, statusCode, requestDuration, l.slowRequestThreshold, c.Path(), l.config)
+		logRequest(log, statusCode, requestDuration, l.slowRequestThreshold)
 
 		updateSpanWithResponseData(span, statusCode, c, requestDuration, err)
 
@@ -209,10 +209,19 @@ func (l *LoggingMiddleware) updateMetrics(c *fiber.Ctx, statusCode int, duration
 
 	l.metrics.requestDuration.WithLabelValues(c.Method(), routePath, statusStr).Observe(duration.Seconds())
 	l.metrics.requestSize.WithLabelValues(c.Method(), routePath).Observe(float64(len(c.Body())))
-	l.metrics.responseSize.WithLabelValues(c.Method(), routePath, statusStr).Observe(float64(c.Response().Header.ContentLength()))
+	l.metrics.responseSize.WithLabelValues(
+		c.Method(),
+		routePath,
+		statusStr,
+	).Observe(float64(c.Response().Header.ContentLength()))
 }
 
-func logRequest(log *zap.SugaredLogger, statusCode int, duration time.Duration, slowThreshold time.Duration, path string, cfg *config.Config) {
+func logRequest(
+	log *zap.SugaredLogger,
+	statusCode int,
+	duration time.Duration,
+	slowThreshold time.Duration,
+) {
 	isError := statusCode >= 500
 	isWarning := statusCode >= 400 && statusCode < 500
 	isSlow := duration > slowThreshold
@@ -224,8 +233,9 @@ func logRequest(log *zap.SugaredLogger, statusCode int, duration time.Duration, 
 		log.Info("http request failed with client error")
 	case isSlow:
 		log.With("slow_request", true).Warn("slow http request")
-	case cfg.PathForLevelInfo(path):
-		log.Info("http request")
+	// TODO:
+	//case cfg.PathForLevelInfo(path):
+	//	log.Info("http request")
 	default:
 		log.Debug("http request")
 	}

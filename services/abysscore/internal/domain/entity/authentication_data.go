@@ -1,4 +1,4 @@
-package userentity
+package entity
 
 type comparator func(raw, hash string) bool
 

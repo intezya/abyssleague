@@ -12,7 +12,6 @@ import (
 	"github.com/go-redis/redis/v8"
 	"github.com/gofiber/fiber/v2"
 	"github.com/intezya/pkglib/logger"
-	"regexp"
 	"strings"
 	"time"
 )
@@ -24,39 +23,23 @@ const authorizationHeaderKey = "Authorization"
 const UserCtxKey ctxKey = "user"
 
 type AuthenticationMiddleware struct {
-	unprotectedRoutes     []*regexp.Regexp
 	authenticationService domainservice.AuthenticationService
 	redisClient           *rediswrapper.ClientWrapper
 }
 
 func NewAuthenticationMiddleware(
-	unprotectedRoutes []*regexp.Regexp,
 	authenticationService domainservice.AuthenticationService,
 	redisClient *rediswrapper.ClientWrapper,
 ) *AuthenticationMiddleware {
 	return &AuthenticationMiddleware{
-		unprotectedRoutes:     unprotectedRoutes,
 		authenticationService: authenticationService,
 		redisClient:           redisClient,
 	}
 }
 
-func (a *AuthenticationMiddleware) isUnprotectedRoute(path string) bool {
-	for _, re := range a.unprotectedRoutes {
-		if re != nil && re.MatchString(path) {
-			return true
-		}
-	}
-	return false
-}
-
 func (a *AuthenticationMiddleware) Handle() fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		logger.Log.Debug("Starting authentication middleware")
-
-		if a.isUnprotectedRoute(c.Path()) {
-			return c.Next()
-		}
 
 		authorizationHeaderValue := c.Get(authorizationHeaderKey)
 		authorizationHeaderValue = parseAuthorizationValue(authorizationHeaderValue)
@@ -72,7 +55,7 @@ func (a *AuthenticationMiddleware) Handle() fiber.Handler {
 
 			if err != nil {
 				logger.Log.Debug("Error validating token: ", err)
-				return adaptererror.ErrUnauthorized(err).ToErrorResponse(c)
+				return adaptererror.Unauthorized(err).ToErrorResponse(c)
 			}
 
 			a.cacheToken(authorizationHeaderValue, user)

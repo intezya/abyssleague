@@ -2,7 +2,7 @@ package domainservice
 
 import (
 	"abysscore/internal/domain/dto"
-	"abysscore/internal/domain/entity/userentity"
+	"abysscore/internal/domain/entity"
 	"context"
 )
 
@@ -17,14 +17,14 @@ func NewAuthenticationResult(token string, user *dto.UserFullDTO, onlineCount in
 }
 
 type AuthenticationService interface {
-	Register(ctx context.Context, credentials *userentity.CredentialsDTO) (*AuthenticationResult, error)
-	Authenticate(ctx context.Context, credentials *userentity.CredentialsDTO) (*AuthenticationResult, error)
+	Register(ctx context.Context, credentials *entity.CredentialsDTO) (*AuthenticationResult, error)
+	Authenticate(ctx context.Context, credentials *entity.CredentialsDTO) (*AuthenticationResult, error)
 	ValidateToken(ctx context.Context, token string) (*dto.UserDTO, error)
 }
 
 type TokenHelper interface {
-	TokenGenerator(tokenData *userentity.TokenData) string
-	ValidateToken(token string) (*userentity.TokenData, error)
+	TokenGenerator(tokenData *entity.TokenData) string
+	ValidateToken(token string) (*entity.TokenData, error)
 }
 
 type CredentialsHelper interface {

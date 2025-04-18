@@ -1,6 +1,7 @@
 package server
 
 import (
+	"abysscore/internal/adapters/config"
 	"abysscore/internal/adapters/controller/http/middleware"
 	"fmt"
 	"github.com/gofiber/fiber/v2"
@@ -10,27 +11,30 @@ import (
 	"github.com/intezya/pkglib/logger"
 	jsoniter "github.com/json-iterator/go"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
-	"log"
 	"net/http"
+	"os"
+	"os/signal"
+	"syscall"
 	"time"
 )
 
-func Setup(dependencies *DependencyProvider) *fiber.App {
-	config := dependencies.config
-
-	// Setup /metrics on separated http server
+// setupMetricsServer creates a separate HTTP server for Prometheus metrics
+func setupMetricsServer(port int) {
 	go func() {
 		http.Handle("/metrics", promhttp.Handler())
-		logger.Log.Warn(http.ListenAndServe(fmt.Sprintf(":%d", config.MetricsPort), nil))
+		logger.Log.Warn(http.ListenAndServe(fmt.Sprintf(":%d", port), nil))
 	}()
+}
 
-	server := fiber.New(
+// createFiberApp creates and configures a new Fiber application
+func createFiberApp(config *config.Config) *fiber.App {
+	return fiber.New(
 		fiber.Config{
-			Prefork:                      false, // multicore support for performance
+			Prefork:                      false,
 			StrictRouting:                true,
 			CaseSensitive:                true,
 			BodyLimit:                    10 * 1024 * 1024, // 10 MB
-			Concurrency:                  100,              // max concurrent connections (requests)
+			Concurrency:                  100,              // max concurrent connections
 			ReadTimeout:                  5 * time.Second,
 			WriteTimeout:                 5 * time.Second,
 			DisableKeepalive:             false,
@@ -43,42 +47,80 @@ func Setup(dependencies *DependencyProvider) *fiber.App {
 			DisableStartupMessage:        !config.IsDebug,
 		},
 	)
+}
 
+// setupCoreMiddleware sets up the common middleware for all routes
+func setupCoreMiddleware(app *fiber.App, config *config.Config) {
+	if config.IsDebug {
+		logger.Log.Info("Setting up pprof middleware")
+		app.Use(pprof.New())
+	}
+
+	app.Use(requestid.New(config.FiberRequestIDConfig))
+	app.Use(healthcheck.New(config.FiberHealthCheckConfig))
+}
+
+// createMiddlewareLinker creates all application middleware and links them
+func createMiddlewareLinker(dependencies *DependencyProvider, config *config.Config) *MiddlewareLinker {
+	loggingMiddleware := middleware.NewLoggingMiddleware(config)
+	recoverMiddleware := middleware.NewRecoverMiddleware(config.FiberRequestIDConfig)
 	rateLimitMiddleware := middleware.NewRateLimitMiddleware(
 		dependencies.redisClient,
 		config,
 	)
-	recoverMiddleware := middleware.NewRecoverMiddleware(config.FiberRequestIDConfig)
 	authenticationMiddleware := middleware.NewAuthenticationMiddleware(
-		config.UnprotectedAuthRequests,
 		dependencies.authenticationService,
 		dependencies.redisClient,
 	)
-	loggingMiddleware := middleware.NewLoggingMiddleware(config)
 
-	if config.IsDebug {
-		logger.Log.Info("Setting up pprof middleware")
+	return NewMiddlewareLinker(
+		loggingMiddleware,
+		recoverMiddleware,
+		rateLimitMiddleware,
+		authenticationMiddleware,
+	)
+}
 
-		server.Use(pprof.New())
+func Setup(dependencies *DependencyProvider) *fiber.App {
+	config := dependencies.config
+
+	// Set up metrics server on separate port
+	setupMetricsServer(config.MetricsPort)
+
+	// Create and configure main Fiber app
+	server := createFiberApp(config)
+
+	// Set up core middleware
+	setupCoreMiddleware(server, config)
+
+	// Create custom middleware linker
+	middlewareLinker := createMiddlewareLinker(dependencies, config)
+
+	// Register routes using route groups
+	for _, group := range dependencies.GetRouteGroups() {
+		group.Register(server, middlewareLinker)
 	}
-
-	server.Use(requestid.New(config.FiberRequestIDConfig))
-	server.Use(healthcheck.New(config.FiberHealthCheckConfig))
-	server.Use(loggingMiddleware.Handle())
-	server.Use(recoverMiddleware.Handle())
-	server.Use(rateLimitMiddleware.HandleForAuth())
-	server.Use(rateLimitMiddleware.HandleDefault())
-	server.Use(authenticationMiddleware.Handle())
-
-	apiGroup := server.Group("/api")
-
-	authGroup := apiGroup.Group(config.Paths.Authentication.Self)
-	authGroup.Post(config.Paths.Authentication.Register, dependencies.authenticationHandler.Register)
-	authGroup.Post(config.Paths.Authentication.Login, dependencies.authenticationHandler.Login)
 
 	return server
 }
 
-func Run(server *fiber.App) {
-	log.Fatal(server.Listen(":8080"))
+// Run starts the server with graceful shutdown support
+func Run(server *fiber.App, config *config.Config) {
+	// Setup graceful shutdown
+	c := make(chan os.Signal, 1)
+	signal.Notify(c, os.Interrupt, syscall.SIGTERM)
+
+	go func() {
+		<-c
+		logger.Log.Info("Gracefully shutting down...")
+		_ = server.Shutdown()
+	}()
+
+	// Start server
+	port := fmt.Sprintf(":%d", config.ServerPort)
+	logger.Log.Infof("Starting server on port %s", port)
+
+	if err := server.Listen(port); err != nil {
+		logger.Log.Fatalf("Server error: %v", err)
+	}
 }

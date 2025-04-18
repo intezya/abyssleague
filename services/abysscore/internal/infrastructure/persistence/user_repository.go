@@ -3,7 +3,7 @@ package persistence
 import (
 	repositoryerrors "abysscore/internal/common/errors/repository"
 	"abysscore/internal/domain/dto"
-	"abysscore/internal/domain/entity/userentity"
+	"abysscore/internal/domain/entity"
 	"abysscore/internal/infrastructure/ent"
 	"abysscore/internal/infrastructure/ent/user"
 	"context"
@@ -21,7 +21,7 @@ func NewUserRepository(client *ent.Client) *UserRepository {
 	}
 }
 
-func (r *UserRepository) Create(credentials *userentity.CredentialsDTO) (*userentity.AuthenticationData, error) {
+func (r *UserRepository) Create(credentials *entity.CredentialsDTO) (*entity.AuthenticationData, error) {
 	u, err := r.client.User.
 		Create().
 		SetUsername(credentials.Username).
@@ -85,7 +85,7 @@ func (r *UserRepository) FindFullDTOById(id int) (*dto.UserFullDTO, error) {
 }
 
 func (r *UserRepository) FindAuthenticationByLowerUsername(lowerUsername string) (
-	*userentity.AuthenticationData,
+	*entity.AuthenticationData,
 	error,
 ) {
 	ctx := context.Background()
