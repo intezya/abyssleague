@@ -54,17 +54,46 @@ func (rg *RouteGroup) Register(app *fiber.App, middlewareLinker *MiddlewareLinke
 
 	// Register all routes in the group
 	for _, entry := range rg.routes {
+		handlers := []fiber.Handler{
+			middlewareLinker.loggingMiddleware.Handle(),
+			middlewareLinker.recoverMiddleware.Handle(),
+		}
+
+		// Rate limiting middleware
+		switch entry.route.RateLimit {
+		case DefaultRateLimit:
+			handlers = append(handlers, middlewareLinker.rateLimitMiddleware.HandleDefault())
+		case AuthRateLimit:
+			handlers = append(handlers, middlewareLinker.rateLimitMiddleware.HandleForAuth())
+		default:
+		}
+
+		// Authentication middleware
+		if entry.route.RequireAuthentication {
+			handlers = append(handlers, middlewareLinker.authenticationMiddleware.Handle())
+
+			if entry.route.AccessLevel != nil {
+				handlers = append(handlers, createAccessLevelChecker(entry.route.AccessLevel))
+			}
+
+			if entry.route.MatchRequirement != MatchIrrelevant {
+				handlers = append(handlers, createMatchRequirementChecker(entry.route.MatchRequirement))
+			}
+		}
+
+		handlers = append(handlers, entry.route.Handler)
+
 		switch entry.route.Method {
 		case MethodGet:
-			group.Get(entry.path, middlewareLinker.buildMiddleware(entry.route))
+			group.Get(entry.path, handlers...)
 		case MethodPost:
-			group.Post(entry.path, middlewareLinker.buildMiddleware(entry.route))
+			group.Post(entry.path, handlers...)
 		case MethodPut:
-			group.Put(entry.path, middlewareLinker.buildMiddleware(entry.route))
+			group.Put(entry.path, handlers...)
 		case MethodPatch:
-			group.Patch(entry.path, middlewareLinker.buildMiddleware(entry.route))
+			group.Patch(entry.path, handlers...)
 		case MethodDelete:
-			group.Delete(entry.path, middlewareLinker.buildMiddleware(entry.route))
+			group.Delete(entry.path, handlers...)
 		}
 	}
 }

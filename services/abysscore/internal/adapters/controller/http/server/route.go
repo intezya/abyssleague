@@ -3,7 +3,6 @@ package server
 import (
 	"abysscore/internal/infrastructure/ent/schema/access_level"
 	"github.com/gofiber/fiber/v2"
-	"github.com/intezya/pkglib/logger"
 )
 
 type (
@@ -74,26 +73,5 @@ func WithMatchRequirement(req MatchRequirement) RouteOption {
 func WithRateLimit(rate RateLimit) RouteOption {
 	return func(r *Route) {
 		r.RateLimit = rate
-	}
-}
-
-func (r *Route) Link(
-	path string,
-	linker *MiddlewareLinker,
-	app *fiber.App,
-) {
-	switch r.Method {
-	case MethodGet:
-		app.Get(path, linker.buildMiddleware(r))
-	case MethodPost:
-		app.Post(path, linker.buildMiddleware(r))
-	case MethodPut:
-		app.Put(path, linker.buildMiddleware(r))
-	case MethodPatch:
-		app.Patch(path, linker.buildMiddleware(r))
-	case MethodDelete:
-		app.Delete(path, linker.buildMiddleware(r))
-	default:
-		logger.Log.Error("Undefined method supplied")
 	}
 }

@@ -69,7 +69,7 @@ func (f *GrpcClientFactory) GetWebsocketApiGatewayClient(address string) websock
 			),
 			grpc.WithKeepaliveParams(keepalive.ClientParameters{
 				Time:                20 * time.Second,
-				Timeout:             10 * time.Second,
+				Timeout:             time.Second,
 				PermitWithoutStream: true,
 			}),
 		)

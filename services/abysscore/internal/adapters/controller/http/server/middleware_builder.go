@@ -29,59 +29,6 @@ func NewMiddlewareLinker(
 	}
 }
 
-// buildMiddleware creates a chain of middleware for the given route
-func (m *MiddlewareLinker) buildMiddleware(route *Route) fiber.Handler {
-	return func(c *fiber.Ctx) error {
-		// Create middleware chain based on route requirements
-		var middlewareChain []fiber.Handler
-
-		// Core middleware always applied
-		middlewareChain = append(middlewareChain, m.loggingMiddleware.Handle())
-		middlewareChain = append(middlewareChain, m.recoverMiddleware.Handle())
-
-		// Add rate limiting based on route configuration
-		switch route.RateLimit {
-		case DefaultRateLimit:
-			middlewareChain = append(middlewareChain, m.rateLimitMiddleware.HandleDefault())
-		case AuthRateLimit:
-			middlewareChain = append(middlewareChain, m.rateLimitMiddleware.HandleForAuth())
-		default:
-		}
-
-		// Add authentication and authorization checks if required
-		if route.RequireAuthentication {
-			// Authentication check
-			middlewareChain = append(middlewareChain, m.authenticationMiddleware.Handle())
-
-			// Access level check if specified
-			if route.AccessLevel != nil {
-				middlewareChain = append(middlewareChain, createAccessLevelChecker(route.AccessLevel))
-			}
-
-			// Match requirement check if specified
-			if route.MatchRequirement != MatchIrrelevant {
-				middlewareChain = append(middlewareChain, createMatchRequirementChecker(route.MatchRequirement))
-			}
-		}
-
-		// Finally add the route handler
-		middlewareChain = append(middlewareChain, route.Handler)
-
-		// Execute the middleware chain
-		return executeMiddlewareChain(middlewareChain, c)
-	}
-}
-
-// executeMiddlewareChain runs each middleware in sequence
-func executeMiddlewareChain(chain []fiber.Handler, c *fiber.Ctx) error {
-	for _, middleware := range chain {
-		if err := middleware(c); err != nil {
-			return err
-		}
-	}
-	return nil
-}
-
 // createAccessLevelChecker creates a middleware to check user access level
 func createAccessLevelChecker(requiredLevel *access_level.AccessLevel) fiber.Handler {
 	return func(c *fiber.Ctx) error {
