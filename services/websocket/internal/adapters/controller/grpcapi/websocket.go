@@ -37,7 +37,7 @@ func (h *WebsocketHandler) GetOnline(
 	result, err := h.websocketService.GetOnline(ctx)
 
 	if err != nil {
-		return nil, status.Errorf(codes.Internal, "An unexpected error occured")
+		return nil, InternalError
 	}
 
 	return &websocketpb.GetOnlineResponse{
@@ -55,7 +55,7 @@ func (h *WebsocketHandler) GetOnlineUsers(
 	result, err := h.websocketService.GetOnlineUsers(ctx)
 
 	if err != nil {
-		return nil, status.Errorf(codes.Internal, "An unexpected error occured")
+		return nil, InternalError
 	}
 
 	users := itertools.Map(
@@ -111,7 +111,7 @@ func (h *WebsocketHandler) Broadcast(
 	err := h.websocketService.Broadcast(ctx, request.JsonPayload)
 
 	if err != nil {
-		return nil, status.Errorf(codes.Internal, "An unexpected error occured")
+		return nil, InternalError
 	}
 
 	return nil, nil

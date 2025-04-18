@@ -28,7 +28,7 @@ func (m *SecurityMiddleware) JwtAuth(
 		return
 	}
 
-	token := softExtractTokenFromHeader(authHeader, "Bearer ")
+	token := softExtractTokenFromHeader(authHeader, "Bearer ", "Token ")
 	tokenData, err := m.jwtService.ValidateToken(token)
 
 	if err != nil {
