@@ -33,10 +33,8 @@ func LoggingMiddleware(next http.Handler) http.Handler {
 					"duration", requestDuration,
 					"remote_addr", r.RemoteAddr,
 					"request_uri", r.RequestURI,
-					"body", r.Body, // TODO: body is always empty
 					"host", r.Host,
 					"method", r.Method,
-					"referer", r.Referer(), // TODO: referer is always empty
 					"user_agent", r.UserAgent(),
 					"content_length", r.ContentLength,
 				)
@@ -57,10 +55,8 @@ func LoggingMiddleware(next http.Handler) http.Handler {
 				"duration", requestDuration,
 				"remote_addr", r.RemoteAddr,
 				"request_uri", r.RequestURI,
-				"body", r.Body, // TODO: body is always empty
 				"host", r.Host,
 				"method", r.Method,
-				"referer", r.Referer(), // TODO: referer is always empty
 				"user_agent", r.UserAgent(),
 				"content_length", r.ContentLength,
 			)

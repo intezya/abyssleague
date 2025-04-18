@@ -16,8 +16,8 @@ func (GameItem) Fields() []ent.Field {
 
 		field.String("name").NotEmpty(),
 		field.String("collection").NotEmpty(),
-		field.Int("type").Positive(),   // TODO: learn about limit (use enum?)
-		field.Int("rarity").Positive(), // TODO: learn about limit
+		field.Int("type").Positive(),
+		field.Int("rarity").Positive(),
 	}
 }
 

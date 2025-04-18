@@ -48,7 +48,6 @@ func main() {
 		validator.NewValidator(),
 	)
 
-	// TODO: provide redisClient.Client to handlers (check for pointer behavior)
 	serverDependencies := server.NewDependencyProvider(
 		redisClient,
 		appConfig,

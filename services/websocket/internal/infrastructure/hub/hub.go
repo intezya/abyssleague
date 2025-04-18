@@ -120,8 +120,6 @@ func (h *Hub) Stop() {
 	defer h.mu.Unlock()
 
 	for client := range h.clients {
-		// TODO: Maybe send message that server is shutting down
-		// like client.Send <- message.ServerShutdown
 		close(client.Send)
 	}
 

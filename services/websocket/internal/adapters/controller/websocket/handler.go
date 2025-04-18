@@ -46,6 +46,7 @@ func (h *Handler) GetHandler() http.HandlerFunc {
 		client := hub.NewClient(h.hub, authData, conn)
 		client.Hub.RegisterClient(client)
 
+		// TODO: use system-like messages as variables of struct package
 		welcomeMsg := map[string]string{"message": "Welcome!", "user": authData.Username()}
 		msgBytes, _ := json.Marshal(welcomeMsg)
 		client.Send <- msgBytes
