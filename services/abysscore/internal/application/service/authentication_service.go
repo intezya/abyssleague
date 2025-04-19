@@ -141,12 +141,6 @@ func (a *AuthenticationService) Authenticate(ctx context.Context, credentials *e
 		}
 	}
 
-	token := tracer.TraceValue(
-		ctx, "authentication.TokenGenerator", func(ctx context.Context) string {
-			return a.tokenHelper.TokenGenerator(authentication.TokenData())
-		},
-	)
-
 	user, err := tracer.TraceFnWithResult(
 		ctx, "userRepository.FindFullDTOById", func(ctx context.Context) (*dto.UserFullDTO, error) {
 			return a.userRepository.FindFullDTOById(ctx, authentication.UserID())
@@ -155,9 +149,19 @@ func (a *AuthenticationService) Authenticate(ctx context.Context, credentials *e
 
 	if err != nil {
 		logger.Log.Warnw("Failed to retrieve full user data", "error", err, "userID", authentication.UserID())
-		// Continue with authentication even if user data retrieval fails
-		// The token is still valid and can be used for authentication
+
+		return nil, err
 	}
+
+	if a.checkAccountLocked(user.UserDTO) {
+		return nil, applicationerror.ErrAccountIsLocked
+	}
+
+	token := tracer.TraceValue(
+		ctx, "authentication.TokenGenerator", func(ctx context.Context) string {
+			return a.tokenHelper.TokenGenerator(authentication.TokenData())
+		},
+	)
 
 	go a.postLoginProcessing(ctx, user.UserDTO)
 
@@ -226,6 +230,10 @@ func (a *AuthenticationService) ValidateToken(ctx context.Context, token string)
 		return nil, err
 	}
 
+	if a.checkAccountLocked(user) {
+		return nil, applicationerror.ErrAccountIsLocked
+	}
+
 	return user, nil
 }
 
@@ -237,6 +245,7 @@ func (a *AuthenticationService) postLoginProcessing(ctx context.Context, user *d
 	user.LoginStreak++
 	user.LoginAt = time.Now()
 
+	// TODO: if user.SearchBlockedUntil + time for descend < now() need to decrement search block level (also with ban)
 	// TODO: here will be added bonuses for user (maybe some money, xp in stats, or badge if login streak too high)
 
 	err := tracer.TraceValue(
@@ -248,4 +257,12 @@ func (a *AuthenticationService) postLoginProcessing(ctx context.Context, user *d
 	if err != nil {
 		logger.Log.Warnf("Unexpected error occurred: %v", err)
 	}
+}
+
+func (a *AuthenticationService) checkAccountLocked(user *dto.UserDTO) bool {
+	if user.AccountBlockedUntil.After(time.Now()) {
+		return false
+	}
+
+	return true
 }
