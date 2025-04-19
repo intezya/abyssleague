@@ -1,4 +1,4 @@
-package server
+package routes
 
 import (
 	"abysscore/internal/adapters/controller/http/middleware"

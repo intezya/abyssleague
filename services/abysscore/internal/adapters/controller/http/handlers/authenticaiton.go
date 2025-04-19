@@ -23,6 +23,7 @@ func NewAuthenticationHandler(
 	}
 }
 
+// Register handles user registration
 func (a *AuthenticationHandler) Register(c *fiber.Ctx) error {
 	ctx := c.UserContext()
 
@@ -47,6 +48,7 @@ func (a *AuthenticationHandler) Register(c *fiber.Ctx) error {
 	return response.Success(result, c)
 }
 
+// Login handles user authentication
 func (a *AuthenticationHandler) Login(c *fiber.Ctx) error {
 	ctx := c.UserContext()
 

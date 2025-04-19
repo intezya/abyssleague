@@ -1,4 +1,4 @@
-package server
+package routes
 
 import (
 	"abysscore/internal/infrastructure/ent/schema/access_level"
@@ -58,9 +58,9 @@ func NewRoute(handler fiber.Handler, method Method, opts ...RouteOption) *Route 
 	return route
 }
 
-func WithAccessLevel(level *access_level.AccessLevel) RouteOption {
+func WithAccessLevel(level access_level.AccessLevel) RouteOption {
 	return func(r *Route) {
-		r.AccessLevel = level
+		r.AccessLevel = &level
 	}
 }
 

@@ -36,6 +36,7 @@ func NewGameItemHandler(gameItemService domainservice.GameItemService) *GameItem
 // Create handles creating a new game item
 func (g *GameItemHandler) Create(c *fiber.Ctx) error {
 	ctx := c.UserContext()
+
 	user, err := extractUserFromContext(ctx)
 	if err != nil {
 		return base.ParseErrorOrInternalResponse(err, c)

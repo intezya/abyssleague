@@ -6,6 +6,7 @@ import (
 	"abysscore/internal/adapters/controller/grpc/wrapper"
 	"abysscore/internal/adapters/controller/http/handlers"
 	"abysscore/internal/adapters/controller/http/server"
+	"abysscore/internal/adapters/controller/http/server/routes"
 	applicationservice "abysscore/internal/application/service"
 	rediswrapper "abysscore/internal/infrastructure/cache/redis"
 	"abysscore/internal/infrastructure/metrics/tracer"
@@ -44,7 +45,7 @@ func main() {
 
 	handlerDependencies := handlers.NewDependencyProvider(serviceDependencies)
 
-	serverDependencies := server.NewDependencyProvider(
+	serverDependencies := routes.NewDependencyProvider(
 		handlerDependencies,
 		serviceDependencies.AuthenticationService,
 		redisClient,

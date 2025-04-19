@@ -1,4 +1,4 @@
-package server
+package routes
 
 import (
 	"abysscore/internal/adapters/config"
@@ -47,29 +47,10 @@ func NewDependencyProvider(
 
 // setupRouteGroups organizes routes into logical groups
 func (dp *DependencyProvider) setupRouteGroups(handlers *handlers.DependencyProvider) {
-	// AuthenticationHandler routes group
-	authGroup := NewRouteGroup(path.Join(dp.apiPrefix, "auth"))
+	authGroup := GetAuthGroup(handlers, dp)
+	gameItemGroup := GetGameItemGroup(handlers, dp)
 
-	// Add routes to the auth group
-	authGroup.Add(
-		"/register", NewRoute(
-			handlers.AuthenticationHandler.Register,
-			MethodPost,
-			WithoutAuthenticationRequirement(),
-			WithRateLimit(AuthRateLimit),
-		),
-	)
-
-	authGroup.Add(
-		"/login", NewRoute(
-			handlers.AuthenticationHandler.Login, // Fixed: was using Register here
-			MethodPost,
-			WithoutAuthenticationRequirement(),
-			WithRateLimit(AuthRateLimit),
-		),
-	)
-
-	dp.routeGroups = []*RouteGroup{authGroup}
+	dp.routeGroups = []*RouteGroup{authGroup, gameItemGroup}
 }
 
 // WithoutAuthenticationRequirement disables authentication for a route
@@ -82,9 +63,9 @@ func WithoutAuthenticationRequirement() RouteOption {
 // populateRoutesMap converts route groups to the flat map for backward compatibility
 func (dp *DependencyProvider) populateRoutesMap() {
 	for _, group := range dp.routeGroups {
-		for _, entry := range group.routes {
-			fullPath := path.Join(group.prefix, entry.path)
-			dp.Routes[fullPath] = entry.route
+		for _, entry := range group.Routes {
+			fullPath := path.Join(group.Prefix, entry.Path)
+			dp.Routes[fullPath] = entry.Route
 		}
 	}
 }

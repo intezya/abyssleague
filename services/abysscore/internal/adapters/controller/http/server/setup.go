@@ -3,6 +3,7 @@ package server
 import (
 	"abysscore/internal/adapters/config"
 	"abysscore/internal/adapters/controller/http/middleware"
+	"abysscore/internal/adapters/controller/http/server/routes"
 	"fmt"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/healthcheck"
@@ -61,7 +62,7 @@ func setupCoreMiddleware(app *fiber.App, config *config.Config) {
 }
 
 // createMiddlewareLinker creates all application middleware and links them
-func createMiddlewareLinker(dependencies *DependencyProvider, config *config.Config) *MiddlewareLinker {
+func createMiddlewareLinker(dependencies *routes.DependencyProvider, config *config.Config) *routes.MiddlewareLinker {
 	loggingMiddleware := middleware.NewLoggingMiddleware(config)
 	recoverMiddleware := middleware.NewRecoverMiddleware(config.FiberRequestIDConfig)
 	rateLimitMiddleware := middleware.NewRateLimitMiddleware(
@@ -73,7 +74,7 @@ func createMiddlewareLinker(dependencies *DependencyProvider, config *config.Con
 		dependencies.redisClient,
 	)
 
-	return NewMiddlewareLinker(
+	return routes.NewMiddlewareLinker(
 		loggingMiddleware,
 		recoverMiddleware,
 		rateLimitMiddleware,
@@ -81,7 +82,7 @@ func createMiddlewareLinker(dependencies *DependencyProvider, config *config.Con
 	)
 }
 
-func Setup(dependencies *DependencyProvider) *fiber.App {
+func Setup(dependencies *routes.DependencyProvider) *fiber.App {
 	config := dependencies.config
 
 	// Set up metrics server on separate port
