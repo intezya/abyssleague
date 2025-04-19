@@ -17,6 +17,10 @@ var (
 	}
 
 	WrapUnexpectedError = func(err error) *base.Error {
-		return base.NewError(errors.New("unexpected error"), err, 500)
+		return base.NewError(errors.New("unexpected error"), err, 502)
+	}
+
+	WrapErrGameItemNotFound = func(err error) *base.Error {
+		return base.NewError(errors.New("game item not found"), err, 404)
 	}
 )

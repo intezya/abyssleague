@@ -1,7 +1,7 @@
 package dto
 
-type PaginatedResult struct {
-	Data interface{} `json:"data"`
+type PaginatedResult[T any] struct {
+	Data []T `json:"data"`
 
 	Page       int `json:"page"`
 	Size       int `json:"size"`

@@ -21,22 +21,28 @@ func NewUserRepository(client *ent.Client) *UserRepository {
 	}
 }
 
-func (r *UserRepository) Create(credentials *entity.CredentialsDTO) (*entity.AuthenticationData, error) {
+func (r *UserRepository) Create(ctx context.Context, credentials *entity.CredentialsDTO) (*entity.AuthenticationData, error) {
 	u, err := r.client.User.
 		Create().
 		SetUsername(credentials.Username).
 		SetLowerUsername(strings.ToLower(credentials.Username)).
 		SetPassword(credentials.Password).
 		SetHardwareID(credentials.Hwid).
-		Save(context.Background())
+		Save(ctx)
 
-	if err != nil && ent.IsConstraintError(err) {
-		if strings.Contains(err.Error(), "username") {
-			return nil, repositoryerrors.WrapErrUserAlreadyExists(err)
-		} else if strings.Contains(err.Error(), "hardware_id") {
-			return nil, repositoryerrors.WrapErrUserHwidConflict(err)
+	if err != nil {
+		if !ent.IsConstraintError(err) {
+			return nil, repositoryerrors.WrapUnexpectedError(err)
 		}
-		return nil, repositoryerrors.WrapUnexpectedError(err)
+
+		switch {
+		case strings.Contains(err.Error(), "username"):
+			return nil, repositoryerrors.WrapErrUserAlreadyExists(err)
+		case strings.Contains(err.Error(), "hardware_id"):
+			return nil, repositoryerrors.WrapErrUserHwidConflict(err)
+		default:
+			return nil, repositoryerrors.WrapUnexpectedError(err)
+		}
 	}
 
 	return dto.MapToAuthenticationDataFromEnt(u), nil
