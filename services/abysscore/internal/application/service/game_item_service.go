@@ -32,10 +32,9 @@ func (g *GameItemService) FindByID(ctx context.Context, id int) (*dto.GameItemDT
 
 func (g *GameItemService) FindAllPaged(
 	ctx context.Context,
-	page, size int,
-	sortBy gameitementity.OrderBy,
+	query *request.PaginationQuery[gameitementity.OrderBy],
 ) (*dto.PaginatedResult[*dto.GameItemDTO], error) {
-	return g.repository.FindAllPaged(ctx, page, size, sortBy)
+	return g.repository.FindAllPaged(ctx, query.Page, query.Size, query.OrderBy, query.OrderType)
 }
 
 func (g *GameItemService) Update(
@@ -53,7 +52,7 @@ func (g *GameItemService) Delete(
 	ctx context.Context,
 	id int,
 	performer *dto.UserDTO,
-) (*dto.GameItemDTO, error) {
+) error {
 	// TODO: log performer action
 
 	return g.repository.DeleteByID(ctx, id)

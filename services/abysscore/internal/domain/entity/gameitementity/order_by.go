@@ -1,33 +1,40 @@
 package gameitementity
 
-import "abysscore/internal/infrastructure/ent/gameitem"
+import (
+	"abysscore/internal/domain/entity/types"
+	"abysscore/internal/infrastructure/ent"
+	"abysscore/internal/infrastructure/ent/gameitem"
+)
 
 type OrderBy string
 
 const (
-	OrderByUnset      OrderBy = "unset"
-	OrderByCreatedAt          = "created_at"
-	OrderByName               = "name"
-	OrderByCollection         = "collection"
-	OrderByType               = "type"
-	OrderByRarity             = "rarity"
+	OrderByCreatedAt  = "created_at"
+	OrderByName       = "name"
+	OrderByCollection = "collection"
+	OrderByType       = "type"
+	OrderByRarity     = "rarity"
 )
 
-func (o OrderBy) ToOrderOption() gameitem.OrderOption {
+func (o OrderBy) ToOrderOption(orderType types.OrderType) gameitem.OrderOption {
+	var field string
+
 	switch o {
-	case OrderByUnset:
-		return nil
 	case OrderByCreatedAt:
-		return gameitem.ByCreatedAt()
+		field = gameitem.FieldCreatedAt
 	case OrderByName:
-		return gameitem.ByName()
+		field = gameitem.FieldName
 	case OrderByCollection:
-		return gameitem.ByCollection()
+		field = gameitem.FieldCollection
 	case OrderByType:
-		return gameitem.ByType()
+		field = gameitem.FieldType
 	case OrderByRarity:
-		return gameitem.ByRarity()
-	default:
-		return nil
+		field = gameitem.FieldRarity
 	}
+
+	if orderType == types.OrderAsc {
+		return ent.Asc(field)
+	}
+
+	return ent.Desc(field)
 }

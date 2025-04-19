@@ -11,7 +11,6 @@ import (
 	"abysscore/internal/infrastructure/metrics/tracer"
 	"abysscore/internal/infrastructure/persistence"
 	"abysscore/internal/pkg/auth"
-	"abysscore/internal/pkg/validator"
 	_ "github.com/lib/pq"
 )
 
@@ -43,10 +42,7 @@ func main() {
 		auth.NewJWTHelper(appConfig.JWTConfiguration),
 	)
 
-	handlerDependencies := handlers.NewDependencyProvider(
-		serviceDependencies,
-		validator.NewValidator(),
-	)
+	handlerDependencies := handlers.NewDependencyProvider(serviceDependencies)
 
 	serverDependencies := server.NewDependencyProvider(
 		handlerDependencies,

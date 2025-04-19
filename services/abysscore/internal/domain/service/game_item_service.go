@@ -18,8 +18,7 @@ type GameItemService interface {
 
 	FindAllPaged(
 		ctx context.Context,
-		page, size int,
-		sortBy gameitementity.OrderBy,
+		query *request.PaginationQuery[gameitementity.OrderBy],
 	) (*dto.PaginatedResult[*dto.GameItemDTO], error)
 
 	Update(
@@ -33,5 +32,5 @@ type GameItemService interface {
 		ctx context.Context,
 		id int,
 		performer *dto.UserDTO,
-	) (*dto.GameItemDTO, error)
+	) error
 }

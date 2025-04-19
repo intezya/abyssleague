@@ -16,11 +16,11 @@ import (
 	"time"
 )
 
-type ctxKey string
+type CtxKey string
 
 const authorizationHeaderKey = "Authorization"
 
-const UserCtxKey ctxKey = "user"
+const UserCtxKey CtxKey = "user"
 
 type AuthenticationMiddleware struct {
 	authenticationService domainservice.AuthenticationService

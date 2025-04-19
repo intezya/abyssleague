@@ -4,6 +4,7 @@ import (
 	repositoryerrors "abysscore/internal/common/errors/repository"
 	"abysscore/internal/domain/dto"
 	"abysscore/internal/domain/entity/gameitementity"
+	"abysscore/internal/domain/entity/types"
 	"abysscore/internal/infrastructure/ent"
 	"context"
 	"github.com/intezya/pkglib/itertools"
@@ -49,32 +50,24 @@ func (g *GameItemRepository) UpdateByID(ctx context.Context, id int, gameItem *d
 	return nil
 }
 
-func (g *GameItemRepository) DeleteByID(ctx context.Context, id int) (*dto.GameItemDTO, error) {
-	return withTx(ctx, g.client, func(tx *ent.Tx) (*dto.GameItemDTO, error) {
-		gameItemEnt, err := tx.GameItem.Get(ctx, id)
+func (g *GameItemRepository) DeleteByID(ctx context.Context, id int) error {
+	err := g.client.GameItem.DeleteOneID(id).Exec(ctx)
 
-		if err != nil {
-			if ent.IsNotFound(err) {
-				return nil, repositoryerrors.WrapErrGameItemNotFound(err)
-			}
-			return nil, repositoryerrors.WrapUnexpectedError(err)
+	if err != nil {
+		if ent.IsNotFound(err) {
+			return repositoryerrors.WrapErrGameItemNotFound(err)
 		}
+		return repositoryerrors.WrapUnexpectedError(err)
+	}
 
-		err = tx.GameItem.DeleteOneID(id).Exec(ctx)
-
-		if err != nil {
-			// There is cannot be not found
-			return nil, repositoryerrors.WrapUnexpectedError(err)
-		}
-
-		return dto.MapToGameItemDTOFromEnt(gameItemEnt), nil
-	})
+	return nil
 }
 
 func (g *GameItemRepository) FindAllPaged(
 	ctx context.Context,
 	page, size int,
 	orderBy gameitementity.OrderBy,
+	orderType types.OrderType,
 ) (*dto.PaginatedResult[*dto.GameItemDTO], error) {
 	page = getValidPage(page)
 	size = getValidSize(size)
@@ -92,7 +85,7 @@ func (g *GameItemRepository) FindAllPaged(
 		Query().
 		Limit(size).
 		Offset(offset).
-		Order(orderBy.ToOrderOption()).
+		Order(orderBy.ToOrderOption(orderType)).
 		All(ctx)
 
 	if err != nil {

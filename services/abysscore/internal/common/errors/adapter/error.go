@@ -9,7 +9,10 @@ var (
 	TooManyRequests     = base.NewError(errors.New("too many requests"), nil, 429)
 	InternalServerError = base.NewError(errors.New("internal server error"), nil, 500)
 	BadRequest          = base.NewError(errors.New("bad request"), nil, 400)
-	Unauthorized        = func(wrapped error) *base.Error {
+	BadRequestFunc      = func(wrapped error) *base.Error {
+		return base.NewError(errors.New("bad request"), wrapped, 400)
+	}
+	Unauthorized = func(wrapped error) *base.Error {
 		return base.NewError(errors.New("unauthorized"), wrapped, 401)
 	}
 	InsufficientAccessLevel = base.NewError(errors.New("insufficient access level"), nil, 401)

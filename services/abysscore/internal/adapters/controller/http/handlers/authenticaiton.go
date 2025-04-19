@@ -13,30 +13,25 @@ import (
 
 type AuthenticationHandler struct {
 	authenticationService domainservice.AuthenticationService
-	v                     *validator.Validator
 }
 
 func NewAuthenticationHandler(
 	authenticationService domainservice.AuthenticationService,
-	v *validator.Validator,
 ) *AuthenticationHandler {
 	return &AuthenticationHandler{
 		authenticationService: authenticationService,
-		v:                     v,
 	}
 }
 
 func (a *AuthenticationHandler) Register(c *fiber.Ctx) error {
 	ctx := c.UserContext()
 
-	var r request.AuthenticationRequest
-
+	var r = &request.AuthenticationRequest{}
 	err := tracer.TraceFn(ctx, "validator.ValidateJSON", func(ctx context.Context) error {
-		return validator.ValidateJSON(c, &r)
+		return validator.ValidateJSON(r, c)
 	})
-
 	if err != nil {
-		return err
+		return base.ParseErrorOrInternalResponse(err, c)
 	}
 
 	var result *domainservice.AuthenticationResult
@@ -49,27 +44,29 @@ func (a *AuthenticationHandler) Register(c *fiber.Ctx) error {
 		return base.ParseErrorOrInternalResponse(err, c)
 	}
 
-	return response.Success(c, result)
+	return response.Success(result, c)
 }
 
 func (a *AuthenticationHandler) Login(c *fiber.Ctx) error {
 	ctx := c.UserContext()
 
-	var r request.AuthenticationRequest
+	var r = &request.AuthenticationRequest{}
 
 	err := tracer.TraceFn(ctx, "validator.ValidateJSON", func(ctx context.Context) error {
-		return validator.ValidateJSON(c, &r)
+		return validator.ValidateJSON(r, c)
 	})
-
-	var result *domainservice.AuthenticationResult
-
-	result, err = tracer.TraceFnWithResult(ctx, "authenticationService.Authenticate", func(ctx context.Context) (*domainservice.AuthenticationResult, error) {
-		return a.authenticationService.Authenticate(c.UserContext(), r.ToCredentialsDTO())
-	})
-
 	if err != nil {
 		return base.ParseErrorOrInternalResponse(err, c)
 	}
 
-	return response.Success(c, result)
+	var result *domainservice.AuthenticationResult
+
+	result, err = tracer.TraceFnWithResult(ctx, "authenticationService.Authenticate", func(ctx context.Context) (*domainservice.AuthenticationResult, error) {
+		return a.authenticationService.Authenticate(ctx, r.ToCredentialsDTO())
+	})
+	if err != nil {
+		return base.ParseErrorOrInternalResponse(err, c)
+	}
+
+	return response.Success(result, c)
 }
