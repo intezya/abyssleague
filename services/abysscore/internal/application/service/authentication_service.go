@@ -57,7 +57,7 @@ func (a *AuthenticationService) Register(
 
 	user, err := tracer.TraceFnWithResult(
 		ctx, "userRepository.Create", func(ctx context.Context) (*entity.AuthenticationData, error) {
-			return a.userRepository.Create(credentials)
+			return a.userRepository.Create(ctx, credentials)
 		},
 	)
 
@@ -92,7 +92,7 @@ func (a *AuthenticationService) Authenticate(ctx context.Context, credentials *e
 		ctx,
 		"userRepository.FindAuthenticationByLowerUsername",
 		func(ctx context.Context) (*entity.AuthenticationData, error) {
-			return a.userRepository.FindAuthenticationByLowerUsername(lowerUsername)
+			return a.userRepository.FindAuthenticationByLowerUsername(ctx, lowerUsername)
 		},
 	)
 
@@ -132,7 +132,7 @@ func (a *AuthenticationService) Authenticate(ctx context.Context, credentials *e
 
 		err = tracer.TraceValue(
 			ctx, "userRepository.UpdateHWIDByID", func(ctx context.Context) error {
-				return a.userRepository.UpdateHWIDByID(authentication.UserID(), newHwid)
+				return a.userRepository.UpdateHWIDByID(ctx, authentication.UserID(), newHwid)
 			},
 		)
 
@@ -149,7 +149,7 @@ func (a *AuthenticationService) Authenticate(ctx context.Context, credentials *e
 
 	user, err := tracer.TraceFnWithResult(
 		ctx, "userRepository.FindFullDTOById", func(ctx context.Context) (*dto.UserFullDTO, error) {
-			return a.userRepository.FindFullDTOById(authentication.UserID())
+			return a.userRepository.FindFullDTOById(ctx, authentication.UserID())
 		},
 	) // Cannot return err cause it handled above
 
@@ -190,7 +190,7 @@ func (a *AuthenticationService) ValidateToken(ctx context.Context, token string)
 		ctx,
 		"userRepository.FindAuthenticationByLowerUsername",
 		func(ctx context.Context) (*entity.AuthenticationData, error) {
-			return a.userRepository.FindAuthenticationByLowerUsername(lowerUsername)
+			return a.userRepository.FindAuthenticationByLowerUsername(ctx, lowerUsername)
 		},
 	)
 
@@ -211,7 +211,7 @@ func (a *AuthenticationService) ValidateToken(ctx context.Context, token string)
 
 	user, err := tracer.TraceFnWithResult(
 		ctx, "userRepository.FindDTOById", func(ctx context.Context) (*dto.UserDTO, error) {
-			return a.userRepository.FindDTOById(authentication.UserID())
+			return a.userRepository.FindDTOById(ctx, authentication.UserID())
 		},
 	)
 
@@ -241,7 +241,7 @@ func (a *AuthenticationService) postLoginProcessing(ctx context.Context, user *d
 
 	err := tracer.TraceValue(
 		ctx, "userRepository.SetLoginStreakLoginAtByID", func(ctx context.Context) error {
-			return a.userRepository.SetLoginStreakLoginAtByID(user.ID, user.LoginStreak, user.LoginAt)
+			return a.userRepository.SetLoginStreakLoginAtByID(ctx, user.ID, user.LoginStreak, user.LoginAt)
 		},
 	)
 
