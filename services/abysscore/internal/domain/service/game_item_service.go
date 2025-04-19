@@ -14,6 +14,8 @@ type GameItemService interface {
 		performer *dto.UserDTO,
 	) (*dto.GameItemDTO, error)
 
+	FindByID(ctx context.Context, id int) (*dto.GameItemDTO, error)
+
 	FindAllPaged(
 		ctx context.Context,
 		page, size int,

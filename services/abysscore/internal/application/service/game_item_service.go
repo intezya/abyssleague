@@ -22,6 +22,10 @@ func (g *GameItemService) Create(
 	return g.repository.Create(ctx, request.ToDTO())
 }
 
+func (g *GameItemService) FindByID(ctx context.Context, id int) (*dto.GameItemDTO, error) {
+	return g.repository.FindByID(ctx, id)
+}
+
 func (g *GameItemService) FindAllPaged(
 	ctx context.Context,
 	page, size int,

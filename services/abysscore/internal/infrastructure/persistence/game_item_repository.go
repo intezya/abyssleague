@@ -107,3 +107,16 @@ func (g *GameItemRepository) FindAllPaged(
 		TotalPages: totalPages,
 	}, nil
 }
+
+func (g *GameItemRepository) FindByID(ctx context.Context, id int) (*dto.GameItemDTO, error) {
+	result, err := g.client.GameItem.Get(ctx, id)
+
+	if err != nil {
+		if ent.IsNotFound(err) {
+			return nil, repositoryerrors.WrapErrGameItemNotFound(err)
+		}
+		return nil, repositoryerrors.WrapUnexpectedError(err)
+	}
+
+	return dto.MapToGameItemDTOFromEnt(result), nil
+}
