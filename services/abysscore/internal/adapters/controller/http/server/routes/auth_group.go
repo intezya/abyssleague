@@ -27,5 +27,15 @@ func GetAuthGroup(handlers *handlers.DependencyProvider, provider *DependencyPro
 		),
 	)
 
+	authGroup.Add(
+		"/change_password",
+		NewRoute(
+			handlers.AuthenticationHandler.ChangePassword,
+			MethodPost,
+			WithoutAuthenticationRequirement(),
+			WithRateLimit(AuthRateLimit),
+		),
+	)
+
 	return authGroup
 }

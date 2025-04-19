@@ -68,3 +68,9 @@ func (a *AuthenticationData) SetHWID(hwid string) {
 func (a *AuthenticationData) UserID() int {
 	return a.id
 }
+
+type ChangePasswordDTO struct {
+	Username    string
+	OldPassword string
+	NewPassword string
+}

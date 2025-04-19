@@ -83,7 +83,7 @@ func (r *UserRepository) FindFullDTOById(ctx context.Context, id int) (*dto.User
 		return nil, repositoryerrors.WrapUnexpectedError(err)
 	}
 
-	return dto.MapToFullDTOFromEnt(u), nil
+	return dto.MapToUserFullDTOFromEnt(u), nil
 }
 
 func (r *UserRepository) FindAuthenticationByLowerUsername(ctx context.Context, lowerUsername string) (
@@ -134,4 +134,20 @@ func (r *UserRepository) SetLoginStreakLoginAtByID(
 		Save(ctx)
 
 	return repositoryerrors.WrapUnexpectedError(err)
+}
+
+func (r *UserRepository) UpdatePasswordByID(ctx context.Context, id int, password string) (*dto.UserFullDTO, error) {
+	u, err := r.client.User.
+		UpdateOneID(id).
+		SetPassword(password).
+		Save(ctx)
+
+	if err != nil {
+		if ent.IsNotFound(err) {
+			return nil, repositoryerrors.WrapErrUserNotFound(err)
+		}
+		return nil, repositoryerrors.WrapErrUserNotFound(err)
+	}
+
+	return dto.MapToUserFullDTOFromEnt(u), nil
 }

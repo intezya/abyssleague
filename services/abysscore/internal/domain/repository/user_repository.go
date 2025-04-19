@@ -15,5 +15,6 @@ type UserRepository interface {
 	FindAuthenticationByLowerUsername(ctx context.Context, lowerUsername string) (*entity.AuthenticationData, error)
 
 	UpdateHWIDByID(ctx context.Context, id int, hwid string) error
+	UpdatePasswordByID(ctx context.Context, id int, password string) (*dto.UserFullDTO, error)
 	SetLoginStreakLoginAtByID(ctx context.Context, id int, loginStreak int, loginAt time.Time) error
 }

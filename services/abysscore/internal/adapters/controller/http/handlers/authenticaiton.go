@@ -27,7 +27,8 @@ func NewAuthenticationHandler(
 func (a *AuthenticationHandler) Register(c *fiber.Ctx) error {
 	ctx := c.UserContext()
 
-	var r = &request.AuthenticationRequest{}
+	r := &request.AuthenticationRequest{}
+
 	err := tracer.TraceFn(ctx, "validator.ValidateJSON", func(ctx context.Context) error {
 		return validator.ValidateJSON(r, c)
 	})
@@ -52,7 +53,7 @@ func (a *AuthenticationHandler) Register(c *fiber.Ctx) error {
 func (a *AuthenticationHandler) Login(c *fiber.Ctx) error {
 	ctx := c.UserContext()
 
-	var r = &request.AuthenticationRequest{}
+	r := &request.AuthenticationRequest{}
 
 	err := tracer.TraceFn(ctx, "validator.ValidateJSON", func(ctx context.Context) error {
 		return validator.ValidateJSON(r, c)
@@ -65,6 +66,30 @@ func (a *AuthenticationHandler) Login(c *fiber.Ctx) error {
 
 	result, err = tracer.TraceFnWithResult(ctx, "authenticationService.Authenticate", func(ctx context.Context) (*domainservice.AuthenticationResult, error) {
 		return a.authenticationService.Authenticate(ctx, r.ToCredentialsDTO())
+	})
+	if err != nil {
+		return base.ParseErrorOrInternalResponse(err, c)
+	}
+
+	return response.Success(result, c)
+}
+
+func (a *AuthenticationHandler) ChangePassword(c *fiber.Ctx) error {
+	ctx := c.UserContext()
+
+	r := &request.PasswordChangeRequest{}
+
+	err := tracer.TraceFn(ctx, "validator.ValidateJSON", func(ctx context.Context) error {
+		return validator.ValidateJSON(r, c)
+	})
+	if err != nil {
+		return base.ParseErrorOrInternalResponse(err, c)
+	}
+
+	var result *domainservice.AuthenticationResult
+
+	result, err = tracer.TraceFnWithResult(ctx, "authenticationService.ChangePassword", func(ctx context.Context) (*domainservice.AuthenticationResult, error) {
+		return a.authenticationService.ChangePassword(ctx, r.ToDTO())
 	})
 	if err != nil {
 		return base.ParseErrorOrInternalResponse(err, c)

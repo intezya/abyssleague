@@ -51,7 +51,9 @@ func (g *GameItemRepository) UpdateByID(ctx context.Context, id int, gameItem *d
 }
 
 func (g *GameItemRepository) DeleteByID(ctx context.Context, id int) error {
-	err := g.client.GameItem.DeleteOneID(id).Exec(ctx)
+	err := g.client.GameItem.
+		DeleteOneID(id).
+		Exec(ctx)
 
 	if err != nil {
 		if ent.IsNotFound(err) {
@@ -73,7 +75,9 @@ func (g *GameItemRepository) FindAllPaged(
 	size = getValidSize(size)
 	offset := countOffset(page, size)
 
-	total, err := g.client.GameItem.Query().Count(ctx)
+	total, err := g.client.GameItem.
+		Query().
+		Count(ctx)
 
 	if err != nil {
 		return nil, repositoryerrors.WrapUnexpectedError(err)
@@ -106,7 +110,8 @@ func (g *GameItemRepository) FindAllPaged(
 }
 
 func (g *GameItemRepository) FindByID(ctx context.Context, id int) (*dto.GameItemDTO, error) {
-	result, err := g.client.GameItem.Get(ctx, id)
+	result, err := g.client.GameItem.
+		Get(ctx, id)
 
 	if err != nil {
 		if ent.IsNotFound(err) {

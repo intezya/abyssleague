@@ -64,7 +64,7 @@ func MapToAuthenticationDataFromEnt(u *ent.User) *entity.AuthenticationData {
 	return entity.NewAuthenticationData(u.ID, u.Username, u.Password, u.HardwareID)
 }
 
-func MapToFullDTOFromEnt(u *ent.User) *UserFullDTO {
+func MapToUserFullDTOFromEnt(u *ent.User) *UserFullDTO {
 	mappedFriends := itertools.Map(
 		func(v *ent.User) *UserDTO {
 			return MapToUserDTOFromEnt(u)

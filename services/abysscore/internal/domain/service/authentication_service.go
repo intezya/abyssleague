@@ -20,6 +20,7 @@ type AuthenticationService interface {
 	Register(ctx context.Context, credentials *entity.CredentialsDTO) (*AuthenticationResult, error)
 	Authenticate(ctx context.Context, credentials *entity.CredentialsDTO) (*AuthenticationResult, error)
 	ValidateToken(ctx context.Context, token string) (*dto.UserDTO, error)
+	ChangePassword(ctx context.Context, credentials *entity.ChangePasswordDTO) (*AuthenticationResult, error)
 }
 
 type TokenHelper interface {
