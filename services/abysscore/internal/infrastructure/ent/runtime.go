@@ -43,6 +43,10 @@ func init() {
 	gameitemDescRarity := gameitemFields[4].Descriptor()
 	// gameitem.RarityValidator is a validator for the "rarity" field. It is called by the builders before save.
 	gameitem.RarityValidator = gameitemDescRarity.Validators[0].(func(int) error)
+	// gameitemDescCreatedAt is the schema descriptor for created_at field.
+	gameitemDescCreatedAt := gameitemFields[5].Descriptor()
+	// gameitem.DefaultCreatedAt holds the default value on creation for the created_at field.
+	gameitem.DefaultCreatedAt = gameitemDescCreatedAt.Default.(func() time.Time)
 	matchFields := schema.Match{}.Fields()
 	_ = matchFields
 	// matchDescPlayer1PenaltyTime is the schema descriptor for player1_penalty_time field.

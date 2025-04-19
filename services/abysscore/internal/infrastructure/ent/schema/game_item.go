@@ -4,6 +4,7 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
+	"time"
 )
 
 type GameItem struct {
@@ -18,6 +19,8 @@ func (GameItem) Fields() []ent.Field {
 		field.String("collection").NotEmpty(),
 		field.Int("type").Positive(),
 		field.Int("rarity").Positive(),
+
+		field.Time("created_at").Default(time.Now).Immutable(),
 	}
 }
 

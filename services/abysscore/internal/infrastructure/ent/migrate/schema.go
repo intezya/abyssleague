@@ -42,6 +42,7 @@ var (
 		{Name: "collection", Type: field.TypeString},
 		{Name: "type", Type: field.TypeInt},
 		{Name: "rarity", Type: field.TypeInt},
+		{Name: "created_at", Type: field.TypeTime},
 	}
 	// GameItemsTable holds the schema information for the "game_items" table.
 	GameItemsTable = &schema.Table{

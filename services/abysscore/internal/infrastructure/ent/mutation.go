@@ -595,6 +595,7 @@ type GameItemMutation struct {
 	add_type          *int
 	rarity            *int
 	addrarity         *int
+	created_at        *time.Time
 	clearedFields     map[string]struct{}
 	user_items        map[int]struct{}
 	removeduser_items map[int]struct{}
@@ -892,6 +893,42 @@ func (m *GameItemMutation) ResetRarity() {
 	m.addrarity = nil
 }
 
+// SetCreatedAt sets the "created_at" field.
+func (m *GameItemMutation) SetCreatedAt(t time.Time) {
+	m.created_at = &t
+}
+
+// CreatedAt returns the value of the "created_at" field in the mutation.
+func (m *GameItemMutation) CreatedAt() (r time.Time, exists bool) {
+	v := m.created_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCreatedAt returns the old "created_at" field's value of the GameItem entity.
+// If the GameItem object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *GameItemMutation) OldCreatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCreatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCreatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreatedAt: %w", err)
+	}
+	return oldValue.CreatedAt, nil
+}
+
+// ResetCreatedAt resets all changes to the "created_at" field.
+func (m *GameItemMutation) ResetCreatedAt() {
+	m.created_at = nil
+}
+
 // AddUserItemIDs adds the "user_items" edge to the UserItem entity by ids.
 func (m *GameItemMutation) AddUserItemIDs(ids ...int) {
 	if m.user_items == nil {
@@ -980,7 +1017,7 @@ func (m *GameItemMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *GameItemMutation) Fields() []string {
-	fields := make([]string, 0, 4)
+	fields := make([]string, 0, 5)
 	if m.name != nil {
 		fields = append(fields, gameitem.FieldName)
 	}
@@ -992,6 +1029,9 @@ func (m *GameItemMutation) Fields() []string {
 	}
 	if m.rarity != nil {
 		fields = append(fields, gameitem.FieldRarity)
+	}
+	if m.created_at != nil {
+		fields = append(fields, gameitem.FieldCreatedAt)
 	}
 	return fields
 }
@@ -1009,6 +1049,8 @@ func (m *GameItemMutation) Field(name string) (ent.Value, bool) {
 		return m.GetType()
 	case gameitem.FieldRarity:
 		return m.Rarity()
+	case gameitem.FieldCreatedAt:
+		return m.CreatedAt()
 	}
 	return nil, false
 }
@@ -1026,6 +1068,8 @@ func (m *GameItemMutation) OldField(ctx context.Context, name string) (ent.Value
 		return m.OldType(ctx)
 	case gameitem.FieldRarity:
 		return m.OldRarity(ctx)
+	case gameitem.FieldCreatedAt:
+		return m.OldCreatedAt(ctx)
 	}
 	return nil, fmt.Errorf("unknown GameItem field %s", name)
 }
@@ -1062,6 +1106,13 @@ func (m *GameItemMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetRarity(v)
+		return nil
+	case gameitem.FieldCreatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreatedAt(v)
 		return nil
 	}
 	return fmt.Errorf("unknown GameItem field %s", name)
@@ -1150,6 +1201,9 @@ func (m *GameItemMutation) ResetField(name string) error {
 		return nil
 	case gameitem.FieldRarity:
 		m.ResetRarity()
+		return nil
+	case gameitem.FieldCreatedAt:
+		m.ResetCreatedAt()
 		return nil
 	}
 	return fmt.Errorf("unknown GameItem field %s", name)

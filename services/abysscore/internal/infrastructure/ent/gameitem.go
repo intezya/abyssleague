@@ -6,6 +6,7 @@ import (
 	"abysscore/internal/infrastructure/ent/gameitem"
 	"fmt"
 	"strings"
+	"time"
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
@@ -24,6 +25,8 @@ type GameItem struct {
 	Type int `json:"type,omitempty"`
 	// Rarity holds the value of the "rarity" field.
 	Rarity int `json:"rarity,omitempty"`
+	// CreatedAt holds the value of the "created_at" field.
+	CreatedAt time.Time `json:"created_at,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the GameItemQuery when eager-loading is set.
 	Edges        GameItemEdges `json:"edges"`
@@ -57,6 +60,8 @@ func (*GameItem) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullInt64)
 		case gameitem.FieldName, gameitem.FieldCollection:
 			values[i] = new(sql.NullString)
+		case gameitem.FieldCreatedAt:
+			values[i] = new(sql.NullTime)
 		default:
 			values[i] = new(sql.UnknownType)
 		}
@@ -101,6 +106,12 @@ func (gi *GameItem) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field rarity", values[i])
 			} else if value.Valid {
 				gi.Rarity = int(value.Int64)
+			}
+		case gameitem.FieldCreatedAt:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field created_at", values[i])
+			} else if value.Valid {
+				gi.CreatedAt = value.Time
 			}
 		default:
 			gi.selectValues.Set(columns[i], values[i])
@@ -154,6 +165,9 @@ func (gi *GameItem) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("rarity=")
 	builder.WriteString(fmt.Sprintf("%v", gi.Rarity))
+	builder.WriteString(", ")
+	builder.WriteString("created_at=")
+	builder.WriteString(gi.CreatedAt.Format(time.ANSIC))
 	builder.WriteByte(')')
 	return builder.String()
 }

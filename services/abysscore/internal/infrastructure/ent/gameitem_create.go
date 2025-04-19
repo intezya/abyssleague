@@ -8,6 +8,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
 
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
@@ -44,6 +45,20 @@ func (gic *GameItemCreate) SetRarity(i int) *GameItemCreate {
 	return gic
 }
 
+// SetCreatedAt sets the "created_at" field.
+func (gic *GameItemCreate) SetCreatedAt(t time.Time) *GameItemCreate {
+	gic.mutation.SetCreatedAt(t)
+	return gic
+}
+
+// SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
+func (gic *GameItemCreate) SetNillableCreatedAt(t *time.Time) *GameItemCreate {
+	if t != nil {
+		gic.SetCreatedAt(*t)
+	}
+	return gic
+}
+
 // SetID sets the "id" field.
 func (gic *GameItemCreate) SetID(i int) *GameItemCreate {
 	gic.mutation.SetID(i)
@@ -72,6 +87,7 @@ func (gic *GameItemCreate) Mutation() *GameItemMutation {
 
 // Save creates the GameItem in the database.
 func (gic *GameItemCreate) Save(ctx context.Context) (*GameItem, error) {
+	gic.defaults()
 	return withHooks(ctx, gic.sqlSave, gic.mutation, gic.hooks)
 }
 
@@ -94,6 +110,14 @@ func (gic *GameItemCreate) Exec(ctx context.Context) error {
 func (gic *GameItemCreate) ExecX(ctx context.Context) {
 	if err := gic.Exec(ctx); err != nil {
 		panic(err)
+	}
+}
+
+// defaults sets the default values of the builder before save.
+func (gic *GameItemCreate) defaults() {
+	if _, ok := gic.mutation.CreatedAt(); !ok {
+		v := gameitem.DefaultCreatedAt()
+		gic.mutation.SetCreatedAt(v)
 	}
 }
 
@@ -130,6 +154,9 @@ func (gic *GameItemCreate) check() error {
 		if err := gameitem.RarityValidator(v); err != nil {
 			return &ValidationError{Name: "rarity", err: fmt.Errorf(`ent: validator failed for field "GameItem.rarity": %w`, err)}
 		}
+	}
+	if _, ok := gic.mutation.CreatedAt(); !ok {
+		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "GameItem.created_at"`)}
 	}
 	return nil
 }
@@ -179,6 +206,10 @@ func (gic *GameItemCreate) createSpec() (*GameItem, *sqlgraph.CreateSpec) {
 		_spec.SetField(gameitem.FieldRarity, field.TypeInt, value)
 		_node.Rarity = value
 	}
+	if value, ok := gic.mutation.CreatedAt(); ok {
+		_spec.SetField(gameitem.FieldCreatedAt, field.TypeTime, value)
+		_node.CreatedAt = value
+	}
 	if nodes := gic.mutation.UserItemsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
@@ -216,6 +247,7 @@ func (gicb *GameItemCreateBulk) Save(ctx context.Context) ([]*GameItem, error) {
 	for i := range gicb.builders {
 		func(i int, root context.Context) {
 			builder := gicb.builders[i]
+			builder.defaults()
 			var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
 				mutation, ok := m.(*GameItemMutation)
 				if !ok {

@@ -3,6 +3,8 @@
 package gameitem
 
 import (
+	"time"
+
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 )
@@ -20,6 +22,8 @@ const (
 	FieldType = "type"
 	// FieldRarity holds the string denoting the rarity field in the database.
 	FieldRarity = "rarity"
+	// FieldCreatedAt holds the string denoting the created_at field in the database.
+	FieldCreatedAt = "created_at"
 	// EdgeUserItems holds the string denoting the user_items edge name in mutations.
 	EdgeUserItems = "user_items"
 	// Table holds the table name of the gameitem in the database.
@@ -40,6 +44,7 @@ var Columns = []string{
 	FieldCollection,
 	FieldType,
 	FieldRarity,
+	FieldCreatedAt,
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -61,6 +66,8 @@ var (
 	TypeValidator func(int) error
 	// RarityValidator is a validator for the "rarity" field. It is called by the builders before save.
 	RarityValidator func(int) error
+	// DefaultCreatedAt holds the default value on creation for the "created_at" field.
+	DefaultCreatedAt func() time.Time
 )
 
 // OrderOption defines the ordering options for the GameItem queries.
@@ -89,6 +96,11 @@ func ByType(opts ...sql.OrderTermOption) OrderOption {
 // ByRarity orders the results by the rarity field.
 func ByRarity(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldRarity, opts...).ToFunc()
+}
+
+// ByCreatedAt orders the results by the created_at field.
+func ByCreatedAt(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldCreatedAt, opts...).ToFunc()
 }
 
 // ByUserItemsCount orders the results by user_items count.
