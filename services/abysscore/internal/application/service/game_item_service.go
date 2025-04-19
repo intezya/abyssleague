@@ -12,6 +12,10 @@ type GameItemService struct {
 	repository repositoryports.GameItemRepository
 }
 
+func NewGameItemService(repository repositoryports.GameItemRepository) *GameItemService {
+	return &GameItemService{repository: repository}
+}
+
 func (g *GameItemService) Create(
 	ctx context.Context,
 	request *request.CreateUpdateGameItem,

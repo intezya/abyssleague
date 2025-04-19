@@ -47,7 +47,7 @@ func NewDependencyProvider(
 
 // setupRouteGroups organizes routes into logical groups
 func (dp *DependencyProvider) setupRouteGroups(handlers *handlers.DependencyProvider) {
-	// Authentication routes group
+	// AuthenticationHandler routes group
 	authGroup := NewRouteGroup(path.Join(dp.apiPrefix, "auth"))
 
 	// Add routes to the auth group

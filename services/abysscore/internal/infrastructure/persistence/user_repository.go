@@ -48,9 +48,7 @@ func (r *UserRepository) Create(ctx context.Context, credentials *entity.Credent
 	return dto.MapToAuthenticationDataFromEnt(u), nil
 }
 
-func (r *UserRepository) FindDTOById(id int) (*dto.UserDTO, error) {
-	ctx := context.Background()
-
+func (r *UserRepository) FindDTOById(ctx context.Context, id int) (*dto.UserDTO, error) {
 	u, err := r.client.User.
 		Query().
 		Where(user.IDEQ(id)).
@@ -66,9 +64,7 @@ func (r *UserRepository) FindDTOById(id int) (*dto.UserDTO, error) {
 	return dto.MapToUserDTOFromEnt(u), nil
 }
 
-func (r *UserRepository) FindFullDTOById(id int) (*dto.UserFullDTO, error) {
-	ctx := context.Background()
-
+func (r *UserRepository) FindFullDTOById(ctx context.Context, id int) (*dto.UserFullDTO, error) {
 	u, err := r.client.User.
 		Query().
 		Where(user.IDEQ(id)).
@@ -90,12 +86,10 @@ func (r *UserRepository) FindFullDTOById(id int) (*dto.UserFullDTO, error) {
 	return dto.MapToFullDTOFromEnt(u), nil
 }
 
-func (r *UserRepository) FindAuthenticationByLowerUsername(lowerUsername string) (
+func (r *UserRepository) FindAuthenticationByLowerUsername(ctx context.Context, lowerUsername string) (
 	*entity.AuthenticationData,
 	error,
 ) {
-	ctx := context.Background()
-
 	u, err := r.client.User.
 		Query().
 		Where(user.LowerUsernameEQ(lowerUsername)).
@@ -111,9 +105,7 @@ func (r *UserRepository) FindAuthenticationByLowerUsername(lowerUsername string)
 	return dto.MapToAuthenticationDataFromEnt(u), nil
 }
 
-func (r *UserRepository) UpdateHWIDByID(id int, hwid string) error {
-	ctx := context.Background()
-
+func (r *UserRepository) UpdateHWIDByID(ctx context.Context, id int, hwid string) error {
 	_, err := r.client.User.
 		UpdateOneID(id).
 		SetHardwareID(hwid).
@@ -129,9 +121,12 @@ func (r *UserRepository) UpdateHWIDByID(id int, hwid string) error {
 	return nil
 }
 
-func (r *UserRepository) SetLoginStreakLoginAtByID(id int, loginStreak int, loginAt time.Time) error {
-	ctx := context.Background()
-
+func (r *UserRepository) SetLoginStreakLoginAtByID(
+	ctx context.Context,
+	id int,
+	loginStreak int,
+	loginAt time.Time,
+) error {
 	_, err := r.client.User.
 		UpdateOneID(id).
 		SetLoginStreak(loginStreak).

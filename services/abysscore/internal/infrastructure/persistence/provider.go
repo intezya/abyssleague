@@ -8,12 +8,15 @@ import (
 type DependencyProvider struct {
 	client *ent.Client
 
-	UserRepository repositoryports.UserRepository
+	UserRepository     repositoryports.UserRepository
+	GameItemRepository repositoryports.GameItemRepository
 }
 
 func NewDependencyProvider(client *ent.Client) *DependencyProvider {
 	return &DependencyProvider{
-		client:         client,
-		UserRepository: NewUserRepository(client),
+		client: client,
+
+		UserRepository:     NewUserRepository(client),
+		GameItemRepository: NewGameItemRepository(client),
 	}
 }

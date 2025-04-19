@@ -13,6 +13,10 @@ type GameItemRepository struct {
 	client *ent.Client
 }
 
+func NewGameItemRepository(client *ent.Client) *GameItemRepository {
+	return &GameItemRepository{client: client}
+}
+
 func (g *GameItemRepository) Create(ctx context.Context, gameItem *dto.GameItemDTO) (*dto.GameItemDTO, error) {
 	result, err := g.client.GameItem.
 		Create().

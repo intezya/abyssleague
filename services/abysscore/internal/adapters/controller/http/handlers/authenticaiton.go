@@ -11,24 +11,22 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-type Authentication struct {
+type AuthenticationHandler struct {
 	authenticationService domainservice.AuthenticationService
 	v                     *validator.Validator
-	handlerName           string
 }
 
 func NewAuthenticationHandler(
 	authenticationService domainservice.AuthenticationService,
 	v *validator.Validator,
-) *Authentication {
-	return &Authentication{
+) *AuthenticationHandler {
+	return &AuthenticationHandler{
 		authenticationService: authenticationService,
 		v:                     v,
-		handlerName:           "authentication",
 	}
 }
 
-func (a *Authentication) Register(c *fiber.Ctx) error {
+func (a *AuthenticationHandler) Register(c *fiber.Ctx) error {
 	ctx := c.UserContext()
 
 	var r request.AuthenticationRequest
@@ -54,7 +52,7 @@ func (a *Authentication) Register(c *fiber.Ctx) error {
 	return response.Success(c, result)
 }
 
-func (a *Authentication) Login(c *fiber.Ctx) error {
+func (a *AuthenticationHandler) Login(c *fiber.Ctx) error {
 	ctx := c.UserContext()
 
 	var r request.AuthenticationRequest
