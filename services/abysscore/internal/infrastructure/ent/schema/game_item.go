@@ -26,6 +26,6 @@ func (GameItem) Fields() []ent.Field {
 
 func (GameItem) Edges() []ent.Edge {
 	return []ent.Edge{
-		edge.To("user_items", UserItem.Type),
+		edge.To("inventory_items", InventoryItem.Type),
 	}
 }

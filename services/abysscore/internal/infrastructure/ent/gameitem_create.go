@@ -4,7 +4,7 @@ package ent
 
 import (
 	"abysscore/internal/infrastructure/ent/gameitem"
-	"abysscore/internal/infrastructure/ent/useritem"
+	"abysscore/internal/infrastructure/ent/inventoryitem"
 	"context"
 	"errors"
 	"fmt"
@@ -65,19 +65,19 @@ func (gic *GameItemCreate) SetID(i int) *GameItemCreate {
 	return gic
 }
 
-// AddUserItemIDs adds the "user_items" edge to the UserItem entity by IDs.
-func (gic *GameItemCreate) AddUserItemIDs(ids ...int) *GameItemCreate {
-	gic.mutation.AddUserItemIDs(ids...)
+// AddInventoryItemIDs adds the "inventory_items" edge to the InventoryItem entity by IDs.
+func (gic *GameItemCreate) AddInventoryItemIDs(ids ...int) *GameItemCreate {
+	gic.mutation.AddInventoryItemIDs(ids...)
 	return gic
 }
 
-// AddUserItems adds the "user_items" edges to the UserItem entity.
-func (gic *GameItemCreate) AddUserItems(u ...*UserItem) *GameItemCreate {
-	ids := make([]int, len(u))
-	for i := range u {
-		ids[i] = u[i].ID
+// AddInventoryItems adds the "inventory_items" edges to the InventoryItem entity.
+func (gic *GameItemCreate) AddInventoryItems(i ...*InventoryItem) *GameItemCreate {
+	ids := make([]int, len(i))
+	for j := range i {
+		ids[j] = i[j].ID
 	}
-	return gic.AddUserItemIDs(ids...)
+	return gic.AddInventoryItemIDs(ids...)
 }
 
 // Mutation returns the GameItemMutation object of the builder.
@@ -210,15 +210,15 @@ func (gic *GameItemCreate) createSpec() (*GameItem, *sqlgraph.CreateSpec) {
 		_spec.SetField(gameitem.FieldCreatedAt, field.TypeTime, value)
 		_node.CreatedAt = value
 	}
-	if nodes := gic.mutation.UserItemsIDs(); len(nodes) > 0 {
+	if nodes := gic.mutation.InventoryItemsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   gameitem.UserItemsTable,
-			Columns: []string{gameitem.UserItemsColumn},
+			Table:   gameitem.InventoryItemsTable,
+			Columns: []string{gameitem.InventoryItemsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(useritem.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(inventoryitem.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {

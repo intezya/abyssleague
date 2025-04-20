@@ -4,8 +4,8 @@ package ent
 
 import (
 	"abysscore/internal/infrastructure/ent/gameitem"
+	"abysscore/internal/infrastructure/ent/inventoryitem"
 	"abysscore/internal/infrastructure/ent/user"
-	"abysscore/internal/infrastructure/ent/useritem"
 	"fmt"
 	"strings"
 	"time"
@@ -14,8 +14,8 @@ import (
 	"entgo.io/ent/dialect/sql"
 )
 
-// UserItem is the model entity for the UserItem schema.
-type UserItem struct {
+// InventoryItem is the model entity for the InventoryItem schema.
+type InventoryItem struct {
 	config `json:"-"`
 	// ID of the ent.
 	ID int `json:"id,omitempty"`
@@ -24,17 +24,17 @@ type UserItem struct {
 	// ItemID holds the value of the "item_id" field.
 	ItemID int `json:"item_id,omitempty"`
 	// ReceivedFromID holds the value of the "received_from_id" field.
-	ReceivedFromID int `json:"received_from_id,omitempty"`
+	ReceivedFromID *int `json:"received_from_id,omitempty"`
 	// ObtainedAt holds the value of the "obtained_at" field.
 	ObtainedAt time.Time `json:"obtained_at,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
-	// The values are being populated by the UserItemQuery when eager-loading is set.
-	Edges        UserItemEdges `json:"edges"`
+	// The values are being populated by the InventoryItemQuery when eager-loading is set.
+	Edges        InventoryItemEdges `json:"edges"`
 	selectValues sql.SelectValues
 }
 
-// UserItemEdges holds the relations/edges for other nodes in the graph.
-type UserItemEdges struct {
+// InventoryItemEdges holds the relations/edges for other nodes in the graph.
+type InventoryItemEdges struct {
 	// User holds the value of the user edge.
 	User *User `json:"user,omitempty"`
 	// Item holds the value of the item edge.
@@ -46,7 +46,7 @@ type UserItemEdges struct {
 
 // UserOrErr returns the User value or an error if the edge
 // was not loaded in eager-loading, or loaded but was not found.
-func (e UserItemEdges) UserOrErr() (*User, error) {
+func (e InventoryItemEdges) UserOrErr() (*User, error) {
 	if e.User != nil {
 		return e.User, nil
 	} else if e.loadedTypes[0] {
@@ -57,7 +57,7 @@ func (e UserItemEdges) UserOrErr() (*User, error) {
 
 // ItemOrErr returns the Item value or an error if the edge
 // was not loaded in eager-loading, or loaded but was not found.
-func (e UserItemEdges) ItemOrErr() (*GameItem, error) {
+func (e InventoryItemEdges) ItemOrErr() (*GameItem, error) {
 	if e.Item != nil {
 		return e.Item, nil
 	} else if e.loadedTypes[1] {
@@ -67,13 +67,13 @@ func (e UserItemEdges) ItemOrErr() (*GameItem, error) {
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
-func (*UserItem) scanValues(columns []string) ([]any, error) {
+func (*InventoryItem) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case useritem.FieldID, useritem.FieldUserID, useritem.FieldItemID, useritem.FieldReceivedFromID:
+		case inventoryitem.FieldID, inventoryitem.FieldUserID, inventoryitem.FieldItemID, inventoryitem.FieldReceivedFromID:
 			values[i] = new(sql.NullInt64)
-		case useritem.FieldObtainedAt:
+		case inventoryitem.FieldObtainedAt:
 			values[i] = new(sql.NullTime)
 		default:
 			values[i] = new(sql.UnknownType)
@@ -83,103 +83,106 @@ func (*UserItem) scanValues(columns []string) ([]any, error) {
 }
 
 // assignValues assigns the values that were returned from sql.Rows (after scanning)
-// to the UserItem fields.
-func (ui *UserItem) assignValues(columns []string, values []any) error {
+// to the InventoryItem fields.
+func (ii *InventoryItem) assignValues(columns []string, values []any) error {
 	if m, n := len(values), len(columns); m < n {
 		return fmt.Errorf("mismatch number of scan values: %d != %d", m, n)
 	}
 	for i := range columns {
 		switch columns[i] {
-		case useritem.FieldID:
+		case inventoryitem.FieldID:
 			value, ok := values[i].(*sql.NullInt64)
 			if !ok {
 				return fmt.Errorf("unexpected type %T for field id", value)
 			}
-			ui.ID = int(value.Int64)
-		case useritem.FieldUserID:
+			ii.ID = int(value.Int64)
+		case inventoryitem.FieldUserID:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for field user_id", values[i])
 			} else if value.Valid {
-				ui.UserID = int(value.Int64)
+				ii.UserID = int(value.Int64)
 			}
-		case useritem.FieldItemID:
+		case inventoryitem.FieldItemID:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for field item_id", values[i])
 			} else if value.Valid {
-				ui.ItemID = int(value.Int64)
+				ii.ItemID = int(value.Int64)
 			}
-		case useritem.FieldReceivedFromID:
+		case inventoryitem.FieldReceivedFromID:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for field received_from_id", values[i])
 			} else if value.Valid {
-				ui.ReceivedFromID = int(value.Int64)
+				ii.ReceivedFromID = new(int)
+				*ii.ReceivedFromID = int(value.Int64)
 			}
-		case useritem.FieldObtainedAt:
+		case inventoryitem.FieldObtainedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field obtained_at", values[i])
 			} else if value.Valid {
-				ui.ObtainedAt = value.Time
+				ii.ObtainedAt = value.Time
 			}
 		default:
-			ui.selectValues.Set(columns[i], values[i])
+			ii.selectValues.Set(columns[i], values[i])
 		}
 	}
 	return nil
 }
 
-// Value returns the ent.Value that was dynamically selected and assigned to the UserItem.
+// Value returns the ent.Value that was dynamically selected and assigned to the InventoryItem.
 // This includes values selected through modifiers, order, etc.
-func (ui *UserItem) Value(name string) (ent.Value, error) {
-	return ui.selectValues.Get(name)
+func (ii *InventoryItem) Value(name string) (ent.Value, error) {
+	return ii.selectValues.Get(name)
 }
 
-// QueryUser queries the "user" edge of the UserItem entity.
-func (ui *UserItem) QueryUser() *UserQuery {
-	return NewUserItemClient(ui.config).QueryUser(ui)
+// QueryUser queries the "user" edge of the InventoryItem entity.
+func (ii *InventoryItem) QueryUser() *UserQuery {
+	return NewInventoryItemClient(ii.config).QueryUser(ii)
 }
 
-// QueryItem queries the "item" edge of the UserItem entity.
-func (ui *UserItem) QueryItem() *GameItemQuery {
-	return NewUserItemClient(ui.config).QueryItem(ui)
+// QueryItem queries the "item" edge of the InventoryItem entity.
+func (ii *InventoryItem) QueryItem() *GameItemQuery {
+	return NewInventoryItemClient(ii.config).QueryItem(ii)
 }
 
-// Update returns a builder for updating this UserItem.
-// Note that you need to call UserItem.Unwrap() before calling this method if this UserItem
+// Update returns a builder for updating this InventoryItem.
+// Note that you need to call InventoryItem.Unwrap() before calling this method if this InventoryItem
 // was returned from a transaction, and the transaction was committed or rolled back.
-func (ui *UserItem) Update() *UserItemUpdateOne {
-	return NewUserItemClient(ui.config).UpdateOne(ui)
+func (ii *InventoryItem) Update() *InventoryItemUpdateOne {
+	return NewInventoryItemClient(ii.config).UpdateOne(ii)
 }
 
-// Unwrap unwraps the UserItem entity that was returned from a transaction after it was closed,
+// Unwrap unwraps the InventoryItem entity that was returned from a transaction after it was closed,
 // so that all future queries will be executed through the driver which created the transaction.
-func (ui *UserItem) Unwrap() *UserItem {
-	_tx, ok := ui.config.driver.(*txDriver)
+func (ii *InventoryItem) Unwrap() *InventoryItem {
+	_tx, ok := ii.config.driver.(*txDriver)
 	if !ok {
-		panic("ent: UserItem is not a transactional entity")
+		panic("ent: InventoryItem is not a transactional entity")
 	}
-	ui.config.driver = _tx.drv
-	return ui
+	ii.config.driver = _tx.drv
+	return ii
 }
 
 // String implements the fmt.Stringer.
-func (ui *UserItem) String() string {
+func (ii *InventoryItem) String() string {
 	var builder strings.Builder
-	builder.WriteString("UserItem(")
-	builder.WriteString(fmt.Sprintf("id=%v, ", ui.ID))
+	builder.WriteString("InventoryItem(")
+	builder.WriteString(fmt.Sprintf("id=%v, ", ii.ID))
 	builder.WriteString("user_id=")
-	builder.WriteString(fmt.Sprintf("%v", ui.UserID))
+	builder.WriteString(fmt.Sprintf("%v", ii.UserID))
 	builder.WriteString(", ")
 	builder.WriteString("item_id=")
-	builder.WriteString(fmt.Sprintf("%v", ui.ItemID))
+	builder.WriteString(fmt.Sprintf("%v", ii.ItemID))
 	builder.WriteString(", ")
-	builder.WriteString("received_from_id=")
-	builder.WriteString(fmt.Sprintf("%v", ui.ReceivedFromID))
+	if v := ii.ReceivedFromID; v != nil {
+		builder.WriteString("received_from_id=")
+		builder.WriteString(fmt.Sprintf("%v", *v))
+	}
 	builder.WriteString(", ")
 	builder.WriteString("obtained_at=")
-	builder.WriteString(ui.ObtainedAt.Format(time.ANSIC))
+	builder.WriteString(ii.ObtainedAt.Format(time.ANSIC))
 	builder.WriteByte(')')
 	return builder.String()
 }
 
-// UserItems is a parsable slice of UserItem.
-type UserItems []*UserItem
+// InventoryItems is a parsable slice of InventoryItem.
+type InventoryItems []*InventoryItem

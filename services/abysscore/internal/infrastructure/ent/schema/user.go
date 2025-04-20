@@ -68,9 +68,9 @@ func (User) Edges() []ent.Edge {
 		edge.To("sent_friend_requests", FriendRequest.Type),
 		edge.To("received_friend_requests", FriendRequest.Type),
 
-		edge.To("items", UserItem.Type),
+		edge.To("items", InventoryItem.Type),
 
-		edge.To("current_item", UserItem.Type).Field("current_item_in_profile_id").Unique(),
+		edge.To("current_item", InventoryItem.Type).Field("current_item_in_profile_id").Unique(),
 
 		edge.To("current_match", Match.Type).
 			Unique().

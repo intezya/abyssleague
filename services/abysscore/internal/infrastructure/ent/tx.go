@@ -16,6 +16,8 @@ type Tx struct {
 	FriendRequest *FriendRequestClient
 	// GameItem is the client for interacting with the GameItem builders.
 	GameItem *GameItemClient
+	// InventoryItem is the client for interacting with the InventoryItem builders.
+	InventoryItem *InventoryItemClient
 	// Match is the client for interacting with the Match builders.
 	Match *MatchClient
 	// MatchResult is the client for interacting with the MatchResult builders.
@@ -26,8 +28,6 @@ type Tx struct {
 	User *UserClient
 	// UserBalance is the client for interacting with the UserBalance builders.
 	UserBalance *UserBalanceClient
-	// UserItem is the client for interacting with the UserItem builders.
-	UserItem *UserItemClient
 
 	// lazily loaded.
 	client     *Client
@@ -161,12 +161,12 @@ func (tx *Tx) Client() *Client {
 func (tx *Tx) init() {
 	tx.FriendRequest = NewFriendRequestClient(tx.config)
 	tx.GameItem = NewGameItemClient(tx.config)
+	tx.InventoryItem = NewInventoryItemClient(tx.config)
 	tx.Match = NewMatchClient(tx.config)
 	tx.MatchResult = NewMatchResultClient(tx.config)
 	tx.Statistic = NewStatisticClient(tx.config)
 	tx.User = NewUserClient(tx.config)
 	tx.UserBalance = NewUserBalanceClient(tx.config)
-	tx.UserItem = NewUserItemClient(tx.config)
 }
 
 // txDriver wraps the given dialect.Tx with a nop dialect.Driver implementation.

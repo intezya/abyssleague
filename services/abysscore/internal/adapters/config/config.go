@@ -202,6 +202,7 @@ func parseLokiLabels(labelsStr string) map[string]string {
 
 func getAndParseGrpcPorts() []int {
 	return itertools.Map(
+		strings.Split(getEnvString("WEBSOCKET_API_GATEWAY_PORTS", ""), ","),
 		func(s string) int {
 			i, err := strconv.Atoi(s)
 
@@ -211,6 +212,5 @@ func getAndParseGrpcPorts() []int {
 
 			return i
 		},
-		strings.Split(getEnvString("WEBSOCKET_API_GATEWAY_PORTS", ""), ","),
 	)
 }

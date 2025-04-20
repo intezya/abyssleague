@@ -5,7 +5,7 @@ import (
 	"abysscore/internal/infrastructure/ent"
 )
 
-func MapToAuthenticationDataFromEnt(u *ent.User) *entity.AuthenticationData {
+func ToAuthenticationDataFromEnt(u *ent.User) *entity.AuthenticationData {
 	return entity.NewAuthenticationData(
 		u.ID,
 		u.Username,

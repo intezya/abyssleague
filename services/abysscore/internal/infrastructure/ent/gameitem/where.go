@@ -330,21 +330,21 @@ func CreatedAtLTE(v time.Time) predicate.GameItem {
 	return predicate.GameItem(sql.FieldLTE(FieldCreatedAt, v))
 }
 
-// HasUserItems applies the HasEdge predicate on the "user_items" edge.
-func HasUserItems() predicate.GameItem {
+// HasInventoryItems applies the HasEdge predicate on the "inventory_items" edge.
+func HasInventoryItems() predicate.GameItem {
 	return predicate.GameItem(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, UserItemsTable, UserItemsColumn),
+			sqlgraph.Edge(sqlgraph.O2M, false, InventoryItemsTable, InventoryItemsColumn),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
 
-// HasUserItemsWith applies the HasEdge predicate on the "user_items" edge with a given conditions (other predicates).
-func HasUserItemsWith(preds ...predicate.UserItem) predicate.GameItem {
+// HasInventoryItemsWith applies the HasEdge predicate on the "inventory_items" edge with a given conditions (other predicates).
+func HasInventoryItemsWith(preds ...predicate.InventoryItem) predicate.GameItem {
 	return predicate.GameItem(func(s *sql.Selector) {
-		step := newUserItemsStep()
+		step := newInventoryItemsStep()
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)

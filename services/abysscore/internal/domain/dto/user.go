@@ -37,7 +37,7 @@ type UserFullDTO struct {
 	Friends []*UserDTO `json:"friends"`
 	//SentFriendRequests []*FriendRequest `json:"sent_friend_requests"`
 	//ReceivedFriendRequests []*FriendRequest `json:"received_friend_requests"`
-	Items       []*UserItemDTO `json:"items"`
-	CurrentItem *UserItemDTO   `json:"current_item"`
+	Items       []*InventoryItemDTO `json:"items"`
+	CurrentItem *InventoryItemDTO   `json:"current_item"`
 	//CurrentMatch *Match      `json:"current_match"`
 }

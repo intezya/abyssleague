@@ -5,7 +5,7 @@ import (
 	"abysscore/internal/infrastructure/ent"
 )
 
-func MapToGameItemDTOFromEnt(g *ent.GameItem) *dto.GameItemDTO {
+func ToGameItemDTOFromEnt(g *ent.GameItem) *dto.GameItemDTO {
 	if g == nil {
 		return nil
 	}

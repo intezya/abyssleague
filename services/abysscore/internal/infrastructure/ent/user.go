@@ -3,11 +3,11 @@
 package ent
 
 import (
+	"abysscore/internal/infrastructure/ent/inventoryitem"
 	"abysscore/internal/infrastructure/ent/match"
 	"abysscore/internal/infrastructure/ent/schema/access_level"
 	"abysscore/internal/infrastructure/ent/user"
 	"abysscore/internal/infrastructure/ent/userbalance"
-	"abysscore/internal/infrastructure/ent/useritem"
 	"fmt"
 	"strings"
 	"time"
@@ -80,9 +80,9 @@ type UserEdges struct {
 	// ReceivedFriendRequests holds the value of the received_friend_requests edge.
 	ReceivedFriendRequests []*FriendRequest `json:"received_friend_requests,omitempty"`
 	// Items holds the value of the items edge.
-	Items []*UserItem `json:"items,omitempty"`
+	Items []*InventoryItem `json:"items,omitempty"`
 	// CurrentItem holds the value of the current_item edge.
-	CurrentItem *UserItem `json:"current_item,omitempty"`
+	CurrentItem *InventoryItem `json:"current_item,omitempty"`
 	// CurrentMatch holds the value of the current_match edge.
 	CurrentMatch *Match `json:"current_match,omitempty"`
 	// Balance holds the value of the balance edge.
@@ -130,7 +130,7 @@ func (e UserEdges) ReceivedFriendRequestsOrErr() ([]*FriendRequest, error) {
 
 // ItemsOrErr returns the Items value or an error if the edge
 // was not loaded in eager-loading.
-func (e UserEdges) ItemsOrErr() ([]*UserItem, error) {
+func (e UserEdges) ItemsOrErr() ([]*InventoryItem, error) {
 	if e.loadedTypes[4] {
 		return e.Items, nil
 	}
@@ -139,11 +139,11 @@ func (e UserEdges) ItemsOrErr() ([]*UserItem, error) {
 
 // CurrentItemOrErr returns the CurrentItem value or an error if the edge
 // was not loaded in eager-loading, or loaded but was not found.
-func (e UserEdges) CurrentItemOrErr() (*UserItem, error) {
+func (e UserEdges) CurrentItemOrErr() (*InventoryItem, error) {
 	if e.CurrentItem != nil {
 		return e.CurrentItem, nil
 	} else if e.loadedTypes[5] {
-		return nil, &NotFoundError{label: useritem.Label}
+		return nil, &NotFoundError{label: inventoryitem.Label}
 	}
 	return nil, &NotLoadedError{edge: "current_item"}
 }
@@ -377,12 +377,12 @@ func (u *User) QueryReceivedFriendRequests() *FriendRequestQuery {
 }
 
 // QueryItems queries the "items" edge of the User entity.
-func (u *User) QueryItems() *UserItemQuery {
+func (u *User) QueryItems() *InventoryItemQuery {
 	return NewUserClient(u.config).QueryItems(u)
 }
 
 // QueryCurrentItem queries the "current_item" edge of the User entity.
-func (u *User) QueryCurrentItem() *UserItemQuery {
+func (u *User) QueryCurrentItem() *InventoryItemQuery {
 	return NewUserClient(u.config).QueryCurrentItem(u)
 }
 

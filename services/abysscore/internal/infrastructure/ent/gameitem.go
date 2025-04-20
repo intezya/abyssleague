@@ -35,20 +35,20 @@ type GameItem struct {
 
 // GameItemEdges holds the relations/edges for other nodes in the graph.
 type GameItemEdges struct {
-	// UserItems holds the value of the user_items edge.
-	UserItems []*UserItem `json:"user_items,omitempty"`
+	// InventoryItems holds the value of the inventory_items edge.
+	InventoryItems []*InventoryItem `json:"inventory_items,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
 	loadedTypes [1]bool
 }
 
-// UserItemsOrErr returns the UserItems value or an error if the edge
+// InventoryItemsOrErr returns the InventoryItems value or an error if the edge
 // was not loaded in eager-loading.
-func (e GameItemEdges) UserItemsOrErr() ([]*UserItem, error) {
+func (e GameItemEdges) InventoryItemsOrErr() ([]*InventoryItem, error) {
 	if e.loadedTypes[0] {
-		return e.UserItems, nil
+		return e.InventoryItems, nil
 	}
-	return nil, &NotLoadedError{edge: "user_items"}
+	return nil, &NotLoadedError{edge: "inventory_items"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -126,9 +126,9 @@ func (gi *GameItem) Value(name string) (ent.Value, error) {
 	return gi.selectValues.Get(name)
 }
 
-// QueryUserItems queries the "user_items" edge of the GameItem entity.
-func (gi *GameItem) QueryUserItems() *UserItemQuery {
-	return NewGameItemClient(gi.config).QueryUserItems(gi)
+// QueryInventoryItems queries the "inventory_items" edge of the GameItem entity.
+func (gi *GameItem) QueryInventoryItems() *InventoryItemQuery {
+	return NewGameItemClient(gi.config).QueryInventoryItems(gi)
 }
 
 // Update returns a builder for updating this GameItem.

@@ -6,7 +6,7 @@ import (
 	"github.com/intezya/pkglib/itertools"
 )
 
-func MapToUserDTOFromEnt(u *ent.User) *dto.UserDTO {
+func ToUserDTOFromEnt(u *ent.User) *dto.UserDTO {
 	return &dto.UserDTO{
 		ID:                     u.ID,
 		Username:               u.Username,
@@ -31,26 +31,26 @@ func MapToUserDTOFromEnt(u *ent.User) *dto.UserDTO {
 	}
 }
 
-func MapToUserFullDTOFromEnt(u *ent.User) *dto.UserFullDTO {
+func ToUserFullDTOFromEnt(u *ent.User) *dto.UserFullDTO {
 	mappedFriends := itertools.Map(
-		func(v *ent.User) *dto.UserDTO {
-			return MapToUserDTOFromEnt(u)
-		},
 		u.Edges.Friends,
+		func(v *ent.User) *dto.UserDTO {
+			return ToUserDTOFromEnt(u)
+		},
 	)
 
 	mappedItems := itertools.Map(
-		func(v *ent.UserItem) *dto.UserItemDTO {
-			return MapToUserItemDTOFromEnt(v)
-		},
 		u.Edges.Items,
+		func(v *ent.InventoryItem) *dto.InventoryItemDTO {
+			return ToInventoryItemDTOFromEnt(v)
+		},
 	)
 
 	return &dto.UserFullDTO{
-		UserDTO: MapToUserDTOFromEnt(u),
+		UserDTO: ToUserDTOFromEnt(u),
 		// Edges
 		Friends:     mappedFriends,
 		Items:       mappedItems,
-		CurrentItem: MapToUserItemDTOFromEnt(u.Edges.CurrentItem),
+		CurrentItem: ToInventoryItemDTOFromEnt(u.Edges.CurrentItem),
 	}
 }

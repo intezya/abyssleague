@@ -4,13 +4,13 @@ package ent
 
 import (
 	"abysscore/internal/infrastructure/ent/friendrequest"
+	"abysscore/internal/infrastructure/ent/inventoryitem"
 	"abysscore/internal/infrastructure/ent/match"
 	"abysscore/internal/infrastructure/ent/predicate"
 	"abysscore/internal/infrastructure/ent/schema/access_level"
 	"abysscore/internal/infrastructure/ent/statistic"
 	"abysscore/internal/infrastructure/ent/user"
 	"abysscore/internal/infrastructure/ent/userbalance"
-	"abysscore/internal/infrastructure/ent/useritem"
 	"context"
 	"errors"
 	"fmt"
@@ -461,28 +461,28 @@ func (uu *UserUpdate) AddReceivedFriendRequests(f ...*FriendRequest) *UserUpdate
 	return uu.AddReceivedFriendRequestIDs(ids...)
 }
 
-// AddItemIDs adds the "items" edge to the UserItem entity by IDs.
+// AddItemIDs adds the "items" edge to the InventoryItem entity by IDs.
 func (uu *UserUpdate) AddItemIDs(ids ...int) *UserUpdate {
 	uu.mutation.AddItemIDs(ids...)
 	return uu
 }
 
-// AddItems adds the "items" edges to the UserItem entity.
-func (uu *UserUpdate) AddItems(u ...*UserItem) *UserUpdate {
-	ids := make([]int, len(u))
-	for i := range u {
-		ids[i] = u[i].ID
+// AddItems adds the "items" edges to the InventoryItem entity.
+func (uu *UserUpdate) AddItems(i ...*InventoryItem) *UserUpdate {
+	ids := make([]int, len(i))
+	for j := range i {
+		ids[j] = i[j].ID
 	}
 	return uu.AddItemIDs(ids...)
 }
 
-// SetCurrentItemID sets the "current_item" edge to the UserItem entity by ID.
+// SetCurrentItemID sets the "current_item" edge to the InventoryItem entity by ID.
 func (uu *UserUpdate) SetCurrentItemID(id int) *UserUpdate {
 	uu.mutation.SetCurrentItemID(id)
 	return uu
 }
 
-// SetNillableCurrentItemID sets the "current_item" edge to the UserItem entity by ID if the given value is not nil.
+// SetNillableCurrentItemID sets the "current_item" edge to the InventoryItem entity by ID if the given value is not nil.
 func (uu *UserUpdate) SetNillableCurrentItemID(id *int) *UserUpdate {
 	if id != nil {
 		uu = uu.SetCurrentItemID(*id)
@@ -490,9 +490,9 @@ func (uu *UserUpdate) SetNillableCurrentItemID(id *int) *UserUpdate {
 	return uu
 }
 
-// SetCurrentItem sets the "current_item" edge to the UserItem entity.
-func (uu *UserUpdate) SetCurrentItem(u *UserItem) *UserUpdate {
-	return uu.SetCurrentItemID(u.ID)
+// SetCurrentItem sets the "current_item" edge to the InventoryItem entity.
+func (uu *UserUpdate) SetCurrentItem(i *InventoryItem) *UserUpdate {
+	return uu.SetCurrentItemID(i.ID)
 }
 
 // SetCurrentMatch sets the "current_match" edge to the Match entity.
@@ -608,28 +608,28 @@ func (uu *UserUpdate) RemoveReceivedFriendRequests(f ...*FriendRequest) *UserUpd
 	return uu.RemoveReceivedFriendRequestIDs(ids...)
 }
 
-// ClearItems clears all "items" edges to the UserItem entity.
+// ClearItems clears all "items" edges to the InventoryItem entity.
 func (uu *UserUpdate) ClearItems() *UserUpdate {
 	uu.mutation.ClearItems()
 	return uu
 }
 
-// RemoveItemIDs removes the "items" edge to UserItem entities by IDs.
+// RemoveItemIDs removes the "items" edge to InventoryItem entities by IDs.
 func (uu *UserUpdate) RemoveItemIDs(ids ...int) *UserUpdate {
 	uu.mutation.RemoveItemIDs(ids...)
 	return uu
 }
 
-// RemoveItems removes "items" edges to UserItem entities.
-func (uu *UserUpdate) RemoveItems(u ...*UserItem) *UserUpdate {
-	ids := make([]int, len(u))
-	for i := range u {
-		ids[i] = u[i].ID
+// RemoveItems removes "items" edges to InventoryItem entities.
+func (uu *UserUpdate) RemoveItems(i ...*InventoryItem) *UserUpdate {
+	ids := make([]int, len(i))
+	for j := range i {
+		ids[j] = i[j].ID
 	}
 	return uu.RemoveItemIDs(ids...)
 }
 
-// ClearCurrentItem clears the "current_item" edge to the UserItem entity.
+// ClearCurrentItem clears the "current_item" edge to the InventoryItem entity.
 func (uu *UserUpdate) ClearCurrentItem() *UserUpdate {
 	uu.mutation.ClearCurrentItem()
 	return uu
@@ -994,7 +994,7 @@ func (uu *UserUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Columns: []string{user.ItemsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(useritem.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(inventoryitem.FieldID, field.TypeInt),
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
@@ -1007,7 +1007,7 @@ func (uu *UserUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Columns: []string{user.ItemsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(useritem.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(inventoryitem.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {
@@ -1023,7 +1023,7 @@ func (uu *UserUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Columns: []string{user.ItemsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(useritem.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(inventoryitem.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {
@@ -1039,7 +1039,7 @@ func (uu *UserUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Columns: []string{user.CurrentItemColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(useritem.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(inventoryitem.FieldID, field.TypeInt),
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
@@ -1052,7 +1052,7 @@ func (uu *UserUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Columns: []string{user.CurrentItemColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(useritem.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(inventoryitem.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {
@@ -1565,28 +1565,28 @@ func (uuo *UserUpdateOne) AddReceivedFriendRequests(f ...*FriendRequest) *UserUp
 	return uuo.AddReceivedFriendRequestIDs(ids...)
 }
 
-// AddItemIDs adds the "items" edge to the UserItem entity by IDs.
+// AddItemIDs adds the "items" edge to the InventoryItem entity by IDs.
 func (uuo *UserUpdateOne) AddItemIDs(ids ...int) *UserUpdateOne {
 	uuo.mutation.AddItemIDs(ids...)
 	return uuo
 }
 
-// AddItems adds the "items" edges to the UserItem entity.
-func (uuo *UserUpdateOne) AddItems(u ...*UserItem) *UserUpdateOne {
-	ids := make([]int, len(u))
-	for i := range u {
-		ids[i] = u[i].ID
+// AddItems adds the "items" edges to the InventoryItem entity.
+func (uuo *UserUpdateOne) AddItems(i ...*InventoryItem) *UserUpdateOne {
+	ids := make([]int, len(i))
+	for j := range i {
+		ids[j] = i[j].ID
 	}
 	return uuo.AddItemIDs(ids...)
 }
 
-// SetCurrentItemID sets the "current_item" edge to the UserItem entity by ID.
+// SetCurrentItemID sets the "current_item" edge to the InventoryItem entity by ID.
 func (uuo *UserUpdateOne) SetCurrentItemID(id int) *UserUpdateOne {
 	uuo.mutation.SetCurrentItemID(id)
 	return uuo
 }
 
-// SetNillableCurrentItemID sets the "current_item" edge to the UserItem entity by ID if the given value is not nil.
+// SetNillableCurrentItemID sets the "current_item" edge to the InventoryItem entity by ID if the given value is not nil.
 func (uuo *UserUpdateOne) SetNillableCurrentItemID(id *int) *UserUpdateOne {
 	if id != nil {
 		uuo = uuo.SetCurrentItemID(*id)
@@ -1594,9 +1594,9 @@ func (uuo *UserUpdateOne) SetNillableCurrentItemID(id *int) *UserUpdateOne {
 	return uuo
 }
 
-// SetCurrentItem sets the "current_item" edge to the UserItem entity.
-func (uuo *UserUpdateOne) SetCurrentItem(u *UserItem) *UserUpdateOne {
-	return uuo.SetCurrentItemID(u.ID)
+// SetCurrentItem sets the "current_item" edge to the InventoryItem entity.
+func (uuo *UserUpdateOne) SetCurrentItem(i *InventoryItem) *UserUpdateOne {
+	return uuo.SetCurrentItemID(i.ID)
 }
 
 // SetCurrentMatch sets the "current_match" edge to the Match entity.
@@ -1712,28 +1712,28 @@ func (uuo *UserUpdateOne) RemoveReceivedFriendRequests(f ...*FriendRequest) *Use
 	return uuo.RemoveReceivedFriendRequestIDs(ids...)
 }
 
-// ClearItems clears all "items" edges to the UserItem entity.
+// ClearItems clears all "items" edges to the InventoryItem entity.
 func (uuo *UserUpdateOne) ClearItems() *UserUpdateOne {
 	uuo.mutation.ClearItems()
 	return uuo
 }
 
-// RemoveItemIDs removes the "items" edge to UserItem entities by IDs.
+// RemoveItemIDs removes the "items" edge to InventoryItem entities by IDs.
 func (uuo *UserUpdateOne) RemoveItemIDs(ids ...int) *UserUpdateOne {
 	uuo.mutation.RemoveItemIDs(ids...)
 	return uuo
 }
 
-// RemoveItems removes "items" edges to UserItem entities.
-func (uuo *UserUpdateOne) RemoveItems(u ...*UserItem) *UserUpdateOne {
-	ids := make([]int, len(u))
-	for i := range u {
-		ids[i] = u[i].ID
+// RemoveItems removes "items" edges to InventoryItem entities.
+func (uuo *UserUpdateOne) RemoveItems(i ...*InventoryItem) *UserUpdateOne {
+	ids := make([]int, len(i))
+	for j := range i {
+		ids[j] = i[j].ID
 	}
 	return uuo.RemoveItemIDs(ids...)
 }
 
-// ClearCurrentItem clears the "current_item" edge to the UserItem entity.
+// ClearCurrentItem clears the "current_item" edge to the InventoryItem entity.
 func (uuo *UserUpdateOne) ClearCurrentItem() *UserUpdateOne {
 	uuo.mutation.ClearCurrentItem()
 	return uuo
@@ -2128,7 +2128,7 @@ func (uuo *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) 
 			Columns: []string{user.ItemsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(useritem.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(inventoryitem.FieldID, field.TypeInt),
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
@@ -2141,7 +2141,7 @@ func (uuo *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) 
 			Columns: []string{user.ItemsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(useritem.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(inventoryitem.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {
@@ -2157,7 +2157,7 @@ func (uuo *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) 
 			Columns: []string{user.ItemsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(useritem.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(inventoryitem.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {
@@ -2173,7 +2173,7 @@ func (uuo *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) 
 			Columns: []string{user.CurrentItemColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(useritem.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(inventoryitem.FieldID, field.TypeInt),
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
@@ -2186,7 +2186,7 @@ func (uuo *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) 
 			Columns: []string{user.CurrentItemColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(useritem.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(inventoryitem.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {

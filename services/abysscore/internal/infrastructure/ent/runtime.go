@@ -5,6 +5,7 @@ package ent
 import (
 	"abysscore/internal/infrastructure/ent/friendrequest"
 	"abysscore/internal/infrastructure/ent/gameitem"
+	"abysscore/internal/infrastructure/ent/inventoryitem"
 	"abysscore/internal/infrastructure/ent/match"
 	"abysscore/internal/infrastructure/ent/matchresult"
 	"abysscore/internal/infrastructure/ent/schema"
@@ -12,7 +13,6 @@ import (
 	"abysscore/internal/infrastructure/ent/statistic"
 	"abysscore/internal/infrastructure/ent/user"
 	"abysscore/internal/infrastructure/ent/userbalance"
-	"abysscore/internal/infrastructure/ent/useritem"
 	"time"
 )
 
@@ -48,6 +48,18 @@ func init() {
 	gameitemDescCreatedAt := gameitemFields[5].Descriptor()
 	// gameitem.DefaultCreatedAt holds the default value on creation for the created_at field.
 	gameitem.DefaultCreatedAt = gameitemDescCreatedAt.Default.(func() time.Time)
+	inventoryitemFields := schema.InventoryItem{}.Fields()
+	_ = inventoryitemFields
+	// inventoryitemDescReceivedFromID is the schema descriptor for received_from_id field.
+	inventoryitemDescReceivedFromID := inventoryitemFields[3].Descriptor()
+	// inventoryitem.DefaultReceivedFromID holds the default value on creation for the received_from_id field.
+	inventoryitem.DefaultReceivedFromID = inventoryitemDescReceivedFromID.Default.(int)
+	// inventoryitem.ReceivedFromIDValidator is a validator for the "received_from_id" field. It is called by the builders before save.
+	inventoryitem.ReceivedFromIDValidator = inventoryitemDescReceivedFromID.Validators[0].(func(int) error)
+	// inventoryitemDescObtainedAt is the schema descriptor for obtained_at field.
+	inventoryitemDescObtainedAt := inventoryitemFields[4].Descriptor()
+	// inventoryitem.DefaultObtainedAt holds the default value on creation for the obtained_at field.
+	inventoryitem.DefaultObtainedAt = inventoryitemDescObtainedAt.Default.(func() time.Time)
 	matchFields := schema.Match{}.Fields()
 	_ = matchFields
 	// matchDescPlayer1PenaltyTime is the schema descriptor for player1_penalty_time field.
@@ -274,16 +286,4 @@ func init() {
 	userbalanceDescCreatedAt := userbalanceFields[4].Descriptor()
 	// userbalance.DefaultCreatedAt holds the default value on creation for the created_at field.
 	userbalance.DefaultCreatedAt = userbalanceDescCreatedAt.Default.(func() time.Time)
-	useritemFields := schema.UserItem{}.Fields()
-	_ = useritemFields
-	// useritemDescReceivedFromID is the schema descriptor for received_from_id field.
-	useritemDescReceivedFromID := useritemFields[3].Descriptor()
-	// useritem.DefaultReceivedFromID holds the default value on creation for the received_from_id field.
-	useritem.DefaultReceivedFromID = useritemDescReceivedFromID.Default.(int)
-	// useritem.ReceivedFromIDValidator is a validator for the "received_from_id" field. It is called by the builders before save.
-	useritem.ReceivedFromIDValidator = useritemDescReceivedFromID.Validators[0].(func(int) error)
-	// useritemDescObtainedAt is the schema descriptor for obtained_at field.
-	useritemDescObtainedAt := useritemFields[4].Descriptor()
-	// useritem.DefaultObtainedAt holds the default value on creation for the obtained_at field.
-	useritem.DefaultObtainedAt = useritemDescObtainedAt.Default.(func() time.Time)
 }

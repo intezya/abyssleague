@@ -4,8 +4,8 @@ package ent
 
 import (
 	"abysscore/internal/infrastructure/ent/gameitem"
+	"abysscore/internal/infrastructure/ent/inventoryitem"
 	"abysscore/internal/infrastructure/ent/predicate"
-	"abysscore/internal/infrastructure/ent/useritem"
 	"context"
 	"database/sql/driver"
 	"fmt"
@@ -20,11 +20,11 @@ import (
 // GameItemQuery is the builder for querying GameItem entities.
 type GameItemQuery struct {
 	config
-	ctx           *QueryContext
-	order         []gameitem.OrderOption
-	inters        []Interceptor
-	predicates    []predicate.GameItem
-	withUserItems *UserItemQuery
+	ctx                *QueryContext
+	order              []gameitem.OrderOption
+	inters             []Interceptor
+	predicates         []predicate.GameItem
+	withInventoryItems *InventoryItemQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -61,9 +61,9 @@ func (giq *GameItemQuery) Order(o ...gameitem.OrderOption) *GameItemQuery {
 	return giq
 }
 
-// QueryUserItems chains the current query on the "user_items" edge.
-func (giq *GameItemQuery) QueryUserItems() *UserItemQuery {
-	query := (&UserItemClient{config: giq.config}).Query()
+// QueryInventoryItems chains the current query on the "inventory_items" edge.
+func (giq *GameItemQuery) QueryInventoryItems() *InventoryItemQuery {
+	query := (&InventoryItemClient{config: giq.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := giq.prepareQuery(ctx); err != nil {
 			return nil, err
@@ -74,8 +74,8 @@ func (giq *GameItemQuery) QueryUserItems() *UserItemQuery {
 		}
 		step := sqlgraph.NewStep(
 			sqlgraph.From(gameitem.Table, gameitem.FieldID, selector),
-			sqlgraph.To(useritem.Table, useritem.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, gameitem.UserItemsTable, gameitem.UserItemsColumn),
+			sqlgraph.To(inventoryitem.Table, inventoryitem.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, gameitem.InventoryItemsTable, gameitem.InventoryItemsColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(giq.driver.Dialect(), step)
 		return fromU, nil
@@ -270,26 +270,26 @@ func (giq *GameItemQuery) Clone() *GameItemQuery {
 		return nil
 	}
 	return &GameItemQuery{
-		config:        giq.config,
-		ctx:           giq.ctx.Clone(),
-		order:         append([]gameitem.OrderOption{}, giq.order...),
-		inters:        append([]Interceptor{}, giq.inters...),
-		predicates:    append([]predicate.GameItem{}, giq.predicates...),
-		withUserItems: giq.withUserItems.Clone(),
+		config:             giq.config,
+		ctx:                giq.ctx.Clone(),
+		order:              append([]gameitem.OrderOption{}, giq.order...),
+		inters:             append([]Interceptor{}, giq.inters...),
+		predicates:         append([]predicate.GameItem{}, giq.predicates...),
+		withInventoryItems: giq.withInventoryItems.Clone(),
 		// clone intermediate query.
 		sql:  giq.sql.Clone(),
 		path: giq.path,
 	}
 }
 
-// WithUserItems tells the query-builder to eager-load the nodes that are connected to
-// the "user_items" edge. The optional arguments are used to configure the query builder of the edge.
-func (giq *GameItemQuery) WithUserItems(opts ...func(*UserItemQuery)) *GameItemQuery {
-	query := (&UserItemClient{config: giq.config}).Query()
+// WithInventoryItems tells the query-builder to eager-load the nodes that are connected to
+// the "inventory_items" edge. The optional arguments are used to configure the query builder of the edge.
+func (giq *GameItemQuery) WithInventoryItems(opts ...func(*InventoryItemQuery)) *GameItemQuery {
+	query := (&InventoryItemClient{config: giq.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
-	giq.withUserItems = query
+	giq.withInventoryItems = query
 	return giq
 }
 
@@ -372,7 +372,7 @@ func (giq *GameItemQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Ga
 		nodes       = []*GameItem{}
 		_spec       = giq.querySpec()
 		loadedTypes = [1]bool{
-			giq.withUserItems != nil,
+			giq.withInventoryItems != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
@@ -393,17 +393,17 @@ func (giq *GameItemQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Ga
 	if len(nodes) == 0 {
 		return nodes, nil
 	}
-	if query := giq.withUserItems; query != nil {
-		if err := giq.loadUserItems(ctx, query, nodes,
-			func(n *GameItem) { n.Edges.UserItems = []*UserItem{} },
-			func(n *GameItem, e *UserItem) { n.Edges.UserItems = append(n.Edges.UserItems, e) }); err != nil {
+	if query := giq.withInventoryItems; query != nil {
+		if err := giq.loadInventoryItems(ctx, query, nodes,
+			func(n *GameItem) { n.Edges.InventoryItems = []*InventoryItem{} },
+			func(n *GameItem, e *InventoryItem) { n.Edges.InventoryItems = append(n.Edges.InventoryItems, e) }); err != nil {
 			return nil, err
 		}
 	}
 	return nodes, nil
 }
 
-func (giq *GameItemQuery) loadUserItems(ctx context.Context, query *UserItemQuery, nodes []*GameItem, init func(*GameItem), assign func(*GameItem, *UserItem)) error {
+func (giq *GameItemQuery) loadInventoryItems(ctx context.Context, query *InventoryItemQuery, nodes []*GameItem, init func(*GameItem), assign func(*GameItem, *InventoryItem)) error {
 	fks := make([]driver.Value, 0, len(nodes))
 	nodeids := make(map[int]*GameItem)
 	for i := range nodes {
@@ -414,10 +414,10 @@ func (giq *GameItemQuery) loadUserItems(ctx context.Context, query *UserItemQuer
 		}
 	}
 	if len(query.ctx.Fields) > 0 {
-		query.ctx.AppendFieldOnce(useritem.FieldItemID)
+		query.ctx.AppendFieldOnce(inventoryitem.FieldItemID)
 	}
-	query.Where(predicate.UserItem(func(s *sql.Selector) {
-		s.Where(sql.InValues(s.C(gameitem.UserItemsColumn), fks...))
+	query.Where(predicate.InventoryItem(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(gameitem.InventoryItemsColumn), fks...))
 	}))
 	neighbors, err := query.All(ctx)
 	if err != nil {

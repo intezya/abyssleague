@@ -12,6 +12,9 @@ type FriendRequest func(*sql.Selector)
 // GameItem is the predicate function for gameitem builders.
 type GameItem func(*sql.Selector)
 
+// InventoryItem is the predicate function for inventoryitem builders.
+type InventoryItem func(*sql.Selector)
+
 // Match is the predicate function for match builders.
 type Match func(*sql.Selector)
 
@@ -26,6 +29,3 @@ type User func(*sql.Selector)
 
 // UserBalance is the predicate function for userbalance builders.
 type UserBalance func(*sql.Selector)
-
-// UserItem is the predicate function for useritem builders.
-type UserItem func(*sql.Selector)

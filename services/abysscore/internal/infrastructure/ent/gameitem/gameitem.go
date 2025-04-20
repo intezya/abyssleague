@@ -24,17 +24,17 @@ const (
 	FieldRarity = "rarity"
 	// FieldCreatedAt holds the string denoting the created_at field in the database.
 	FieldCreatedAt = "created_at"
-	// EdgeUserItems holds the string denoting the user_items edge name in mutations.
-	EdgeUserItems = "user_items"
+	// EdgeInventoryItems holds the string denoting the inventory_items edge name in mutations.
+	EdgeInventoryItems = "inventory_items"
 	// Table holds the table name of the gameitem in the database.
 	Table = "game_items"
-	// UserItemsTable is the table that holds the user_items relation/edge.
-	UserItemsTable = "user_items"
-	// UserItemsInverseTable is the table name for the UserItem entity.
-	// It exists in this package in order to avoid circular dependency with the "useritem" package.
-	UserItemsInverseTable = "user_items"
-	// UserItemsColumn is the table column denoting the user_items relation/edge.
-	UserItemsColumn = "item_id"
+	// InventoryItemsTable is the table that holds the inventory_items relation/edge.
+	InventoryItemsTable = "inventory_items"
+	// InventoryItemsInverseTable is the table name for the InventoryItem entity.
+	// It exists in this package in order to avoid circular dependency with the "inventoryitem" package.
+	InventoryItemsInverseTable = "inventory_items"
+	// InventoryItemsColumn is the table column denoting the inventory_items relation/edge.
+	InventoryItemsColumn = "item_id"
 )
 
 // Columns holds all SQL columns for gameitem fields.
@@ -103,23 +103,23 @@ func ByCreatedAt(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldCreatedAt, opts...).ToFunc()
 }
 
-// ByUserItemsCount orders the results by user_items count.
-func ByUserItemsCount(opts ...sql.OrderTermOption) OrderOption {
+// ByInventoryItemsCount orders the results by inventory_items count.
+func ByInventoryItemsCount(opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborsCount(s, newUserItemsStep(), opts...)
+		sqlgraph.OrderByNeighborsCount(s, newInventoryItemsStep(), opts...)
 	}
 }
 
-// ByUserItems orders the results by user_items terms.
-func ByUserItems(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+// ByInventoryItems orders the results by inventory_items terms.
+func ByInventoryItems(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newUserItemsStep(), append([]sql.OrderTerm{term}, terms...)...)
+		sqlgraph.OrderByNeighborTerms(s, newInventoryItemsStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
-func newUserItemsStep() *sqlgraph.Step {
+func newInventoryItemsStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(UserItemsInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.O2M, false, UserItemsTable, UserItemsColumn),
+		sqlgraph.To(InventoryItemsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, InventoryItemsTable, InventoryItemsColumn),
 	)
 }

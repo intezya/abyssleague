@@ -99,17 +99,17 @@ const (
 	// ReceivedFriendRequestsColumn is the table column denoting the received_friend_requests relation/edge.
 	ReceivedFriendRequestsColumn = "to_user_id"
 	// ItemsTable is the table that holds the items relation/edge.
-	ItemsTable = "user_items"
-	// ItemsInverseTable is the table name for the UserItem entity.
-	// It exists in this package in order to avoid circular dependency with the "useritem" package.
-	ItemsInverseTable = "user_items"
+	ItemsTable = "inventory_items"
+	// ItemsInverseTable is the table name for the InventoryItem entity.
+	// It exists in this package in order to avoid circular dependency with the "inventoryitem" package.
+	ItemsInverseTable = "inventory_items"
 	// ItemsColumn is the table column denoting the items relation/edge.
 	ItemsColumn = "user_id"
 	// CurrentItemTable is the table that holds the current_item relation/edge.
 	CurrentItemTable = "users"
-	// CurrentItemInverseTable is the table name for the UserItem entity.
-	// It exists in this package in order to avoid circular dependency with the "useritem" package.
-	CurrentItemInverseTable = "user_items"
+	// CurrentItemInverseTable is the table name for the InventoryItem entity.
+	// It exists in this package in order to avoid circular dependency with the "inventoryitem" package.
+	CurrentItemInverseTable = "inventory_items"
 	// CurrentItemColumn is the table column denoting the current_item relation/edge.
 	CurrentItemColumn = "current_item_in_profile_id"
 	// CurrentMatchTable is the table that holds the current_match relation/edge.

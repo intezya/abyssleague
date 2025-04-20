@@ -38,7 +38,7 @@ func (r *UserRepository) Create(ctx context.Context, credentials *dto.Credential
 		return nil, r.handleConstraintError(err)
 	}
 
-	return mapper.MapToAuthenticationDataFromEnt(u), nil
+	return mapper.ToAuthenticationDataFromEnt(u), nil
 }
 
 // FindDTOById retrieves basic user data by ID
@@ -52,7 +52,7 @@ func (r *UserRepository) FindDTOById(ctx context.Context, id int) (*dto.UserDTO,
 		return nil, r.handleQueryError(err)
 	}
 
-	return mapper.MapToUserDTOFromEnt(u), nil
+	return mapper.ToUserDTOFromEnt(u), nil
 }
 
 // FindFullDTOById retrieves complete user data with relationships by ID
@@ -72,7 +72,7 @@ func (r *UserRepository) FindFullDTOById(ctx context.Context, id int) (*dto.User
 		return nil, r.handleQueryError(err)
 	}
 
-	return mapper.MapToUserFullDTOFromEnt(u), nil
+	return mapper.ToUserFullDTOFromEnt(u), nil
 }
 
 // FindAuthenticationByLowerUsername retrieves authentication data by lowercase username
@@ -89,7 +89,7 @@ func (r *UserRepository) FindAuthenticationByLowerUsername(ctx context.Context, 
 		return nil, r.handleQueryError(err)
 	}
 
-	return mapper.MapToAuthenticationDataFromEnt(u), nil
+	return mapper.ToAuthenticationDataFromEnt(u), nil
 }
 
 // UpdateHWIDByID updates a user's hardware ID
@@ -136,7 +136,7 @@ func (r *UserRepository) UpdatePasswordByID(ctx context.Context, id int, passwor
 		return nil, r.handleQueryError(err)
 	}
 
-	return mapper.MapToUserFullDTOFromEnt(u), nil
+	return mapper.ToUserFullDTOFromEnt(u), nil
 }
 
 // SetBlockUntilAndLevelAndReasonFromUser updates a user's block status information

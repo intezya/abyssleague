@@ -50,6 +50,46 @@ var (
 		Columns:    GameItemsColumns,
 		PrimaryKey: []*schema.Column{GameItemsColumns[0]},
 	}
+	// InventoryItemsColumns holds the columns for the "inventory_items" table.
+	InventoryItemsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "received_from_id", Type: field.TypeInt, Default: 0},
+		{Name: "obtained_at", Type: field.TypeTime},
+		{Name: "item_id", Type: field.TypeInt},
+		{Name: "user_id", Type: field.TypeInt},
+	}
+	// InventoryItemsTable holds the schema information for the "inventory_items" table.
+	InventoryItemsTable = &schema.Table{
+		Name:       "inventory_items",
+		Columns:    InventoryItemsColumns,
+		PrimaryKey: []*schema.Column{InventoryItemsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "inventory_items_game_items_inventory_items",
+				Columns:    []*schema.Column{InventoryItemsColumns[3]},
+				RefColumns: []*schema.Column{GameItemsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+			{
+				Symbol:     "inventory_items_users_items",
+				Columns:    []*schema.Column{InventoryItemsColumns[4]},
+				RefColumns: []*schema.Column{UsersColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "inventoryitem_item_id",
+				Unique:  true,
+				Columns: []*schema.Column{InventoryItemsColumns[3]},
+			},
+			{
+				Name:    "inventoryitem_user_id",
+				Unique:  true,
+				Columns: []*schema.Column{InventoryItemsColumns[4]},
+			},
+		},
+	}
 	// MatchesColumns holds the columns for the "matches" table.
 	MatchesColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
@@ -183,9 +223,9 @@ var (
 		PrimaryKey: []*schema.Column{UsersColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:     "users_user_items_current_item",
+				Symbol:     "users_inventory_items_current_item",
 				Columns:    []*schema.Column{UsersColumns[20]},
-				RefColumns: []*schema.Column{UserItemsColumns[0]},
+				RefColumns: []*schema.Column{InventoryItemsColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 			{
@@ -225,46 +265,6 @@ var (
 			},
 		},
 	}
-	// UserItemsColumns holds the columns for the "user_items" table.
-	UserItemsColumns = []*schema.Column{
-		{Name: "id", Type: field.TypeInt, Increment: true},
-		{Name: "received_from_id", Type: field.TypeInt, Default: 0},
-		{Name: "obtained_at", Type: field.TypeTime},
-		{Name: "item_id", Type: field.TypeInt},
-		{Name: "user_id", Type: field.TypeInt},
-	}
-	// UserItemsTable holds the schema information for the "user_items" table.
-	UserItemsTable = &schema.Table{
-		Name:       "user_items",
-		Columns:    UserItemsColumns,
-		PrimaryKey: []*schema.Column{UserItemsColumns[0]},
-		ForeignKeys: []*schema.ForeignKey{
-			{
-				Symbol:     "user_items_game_items_user_items",
-				Columns:    []*schema.Column{UserItemsColumns[3]},
-				RefColumns: []*schema.Column{GameItemsColumns[0]},
-				OnDelete:   schema.NoAction,
-			},
-			{
-				Symbol:     "user_items_users_items",
-				Columns:    []*schema.Column{UserItemsColumns[4]},
-				RefColumns: []*schema.Column{UsersColumns[0]},
-				OnDelete:   schema.NoAction,
-			},
-		},
-		Indexes: []*schema.Index{
-			{
-				Name:    "useritem_item_id",
-				Unique:  true,
-				Columns: []*schema.Column{UserItemsColumns[3]},
-			},
-			{
-				Name:    "useritem_user_id",
-				Unique:  true,
-				Columns: []*schema.Column{UserItemsColumns[4]},
-			},
-		},
-	}
 	// UserFriendsColumns holds the columns for the "user_friends" table.
 	UserFriendsColumns = []*schema.Column{
 		{Name: "user_id", Type: field.TypeInt},
@@ -294,12 +294,12 @@ var (
 	Tables = []*schema.Table{
 		FriendRequestsTable,
 		GameItemsTable,
+		InventoryItemsTable,
 		MatchesTable,
 		MatchResultsTable,
 		StatisticsTable,
 		UsersTable,
 		UserBalancesTable,
-		UserItemsTable,
 		UserFriendsTable,
 	}
 )
@@ -307,16 +307,16 @@ var (
 func init() {
 	FriendRequestsTable.ForeignKeys[0].RefTable = UsersTable
 	FriendRequestsTable.ForeignKeys[1].RefTable = UsersTable
+	InventoryItemsTable.ForeignKeys[0].RefTable = GameItemsTable
+	InventoryItemsTable.ForeignKeys[1].RefTable = UsersTable
 	MatchesTable.ForeignKeys[0].RefTable = UsersTable
 	MatchesTable.ForeignKeys[1].RefTable = UsersTable
 	MatchResultsTable.ForeignKeys[0].RefTable = MatchesTable
 	MatchResultsTable.ForeignKeys[1].RefTable = UsersTable
 	StatisticsTable.ForeignKeys[0].RefTable = UsersTable
-	UsersTable.ForeignKeys[0].RefTable = UserItemsTable
+	UsersTable.ForeignKeys[0].RefTable = InventoryItemsTable
 	UsersTable.ForeignKeys[1].RefTable = MatchesTable
 	UserBalancesTable.ForeignKeys[0].RefTable = UsersTable
-	UserItemsTable.ForeignKeys[0].RefTable = GameItemsTable
-	UserItemsTable.ForeignKeys[1].RefTable = UsersTable
 	UserFriendsTable.ForeignKeys[0].RefTable = UsersTable
 	UserFriendsTable.ForeignKeys[1].RefTable = UsersTable
 }

@@ -5,12 +5,12 @@ package ent
 import (
 	"abysscore/internal/infrastructure/ent/friendrequest"
 	"abysscore/internal/infrastructure/ent/gameitem"
+	"abysscore/internal/infrastructure/ent/inventoryitem"
 	"abysscore/internal/infrastructure/ent/match"
 	"abysscore/internal/infrastructure/ent/matchresult"
 	"abysscore/internal/infrastructure/ent/statistic"
 	"abysscore/internal/infrastructure/ent/user"
 	"abysscore/internal/infrastructure/ent/userbalance"
-	"abysscore/internal/infrastructure/ent/useritem"
 	"context"
 	"errors"
 	"fmt"
@@ -82,12 +82,12 @@ func checkColumn(table, column string) error {
 		columnCheck = sql.NewColumnCheck(map[string]func(string) bool{
 			friendrequest.Table: friendrequest.ValidColumn,
 			gameitem.Table:      gameitem.ValidColumn,
+			inventoryitem.Table: inventoryitem.ValidColumn,
 			match.Table:         match.ValidColumn,
 			matchresult.Table:   matchresult.ValidColumn,
 			statistic.Table:     statistic.ValidColumn,
 			user.Table:          user.ValidColumn,
 			userbalance.Table:   userbalance.ValidColumn,
-			useritem.Table:      useritem.ValidColumn,
 		})
 	})
 	return columnCheck(table, column)

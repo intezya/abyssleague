@@ -4,8 +4,8 @@ package ent
 
 import (
 	"abysscore/internal/infrastructure/ent/gameitem"
+	"abysscore/internal/infrastructure/ent/inventoryitem"
 	"abysscore/internal/infrastructure/ent/predicate"
-	"abysscore/internal/infrastructure/ent/useritem"
 	"context"
 	"errors"
 	"fmt"
@@ -98,19 +98,19 @@ func (giu *GameItemUpdate) AddRarity(i int) *GameItemUpdate {
 	return giu
 }
 
-// AddUserItemIDs adds the "user_items" edge to the UserItem entity by IDs.
-func (giu *GameItemUpdate) AddUserItemIDs(ids ...int) *GameItemUpdate {
-	giu.mutation.AddUserItemIDs(ids...)
+// AddInventoryItemIDs adds the "inventory_items" edge to the InventoryItem entity by IDs.
+func (giu *GameItemUpdate) AddInventoryItemIDs(ids ...int) *GameItemUpdate {
+	giu.mutation.AddInventoryItemIDs(ids...)
 	return giu
 }
 
-// AddUserItems adds the "user_items" edges to the UserItem entity.
-func (giu *GameItemUpdate) AddUserItems(u ...*UserItem) *GameItemUpdate {
-	ids := make([]int, len(u))
-	for i := range u {
-		ids[i] = u[i].ID
+// AddInventoryItems adds the "inventory_items" edges to the InventoryItem entity.
+func (giu *GameItemUpdate) AddInventoryItems(i ...*InventoryItem) *GameItemUpdate {
+	ids := make([]int, len(i))
+	for j := range i {
+		ids[j] = i[j].ID
 	}
-	return giu.AddUserItemIDs(ids...)
+	return giu.AddInventoryItemIDs(ids...)
 }
 
 // Mutation returns the GameItemMutation object of the builder.
@@ -118,25 +118,25 @@ func (giu *GameItemUpdate) Mutation() *GameItemMutation {
 	return giu.mutation
 }
 
-// ClearUserItems clears all "user_items" edges to the UserItem entity.
-func (giu *GameItemUpdate) ClearUserItems() *GameItemUpdate {
-	giu.mutation.ClearUserItems()
+// ClearInventoryItems clears all "inventory_items" edges to the InventoryItem entity.
+func (giu *GameItemUpdate) ClearInventoryItems() *GameItemUpdate {
+	giu.mutation.ClearInventoryItems()
 	return giu
 }
 
-// RemoveUserItemIDs removes the "user_items" edge to UserItem entities by IDs.
-func (giu *GameItemUpdate) RemoveUserItemIDs(ids ...int) *GameItemUpdate {
-	giu.mutation.RemoveUserItemIDs(ids...)
+// RemoveInventoryItemIDs removes the "inventory_items" edge to InventoryItem entities by IDs.
+func (giu *GameItemUpdate) RemoveInventoryItemIDs(ids ...int) *GameItemUpdate {
+	giu.mutation.RemoveInventoryItemIDs(ids...)
 	return giu
 }
 
-// RemoveUserItems removes "user_items" edges to UserItem entities.
-func (giu *GameItemUpdate) RemoveUserItems(u ...*UserItem) *GameItemUpdate {
-	ids := make([]int, len(u))
-	for i := range u {
-		ids[i] = u[i].ID
+// RemoveInventoryItems removes "inventory_items" edges to InventoryItem entities.
+func (giu *GameItemUpdate) RemoveInventoryItems(i ...*InventoryItem) *GameItemUpdate {
+	ids := make([]int, len(i))
+	for j := range i {
+		ids[j] = i[j].ID
 	}
-	return giu.RemoveUserItemIDs(ids...)
+	return giu.RemoveInventoryItemIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -221,28 +221,28 @@ func (giu *GameItemUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if value, ok := giu.mutation.AddedRarity(); ok {
 		_spec.AddField(gameitem.FieldRarity, field.TypeInt, value)
 	}
-	if giu.mutation.UserItemsCleared() {
+	if giu.mutation.InventoryItemsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   gameitem.UserItemsTable,
-			Columns: []string{gameitem.UserItemsColumn},
+			Table:   gameitem.InventoryItemsTable,
+			Columns: []string{gameitem.InventoryItemsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(useritem.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(inventoryitem.FieldID, field.TypeInt),
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := giu.mutation.RemovedUserItemsIDs(); len(nodes) > 0 && !giu.mutation.UserItemsCleared() {
+	if nodes := giu.mutation.RemovedInventoryItemsIDs(); len(nodes) > 0 && !giu.mutation.InventoryItemsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   gameitem.UserItemsTable,
-			Columns: []string{gameitem.UserItemsColumn},
+			Table:   gameitem.InventoryItemsTable,
+			Columns: []string{gameitem.InventoryItemsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(useritem.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(inventoryitem.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {
@@ -250,15 +250,15 @@ func (giu *GameItemUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := giu.mutation.UserItemsIDs(); len(nodes) > 0 {
+	if nodes := giu.mutation.InventoryItemsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   gameitem.UserItemsTable,
-			Columns: []string{gameitem.UserItemsColumn},
+			Table:   gameitem.InventoryItemsTable,
+			Columns: []string{gameitem.InventoryItemsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(useritem.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(inventoryitem.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {
@@ -356,19 +356,19 @@ func (giuo *GameItemUpdateOne) AddRarity(i int) *GameItemUpdateOne {
 	return giuo
 }
 
-// AddUserItemIDs adds the "user_items" edge to the UserItem entity by IDs.
-func (giuo *GameItemUpdateOne) AddUserItemIDs(ids ...int) *GameItemUpdateOne {
-	giuo.mutation.AddUserItemIDs(ids...)
+// AddInventoryItemIDs adds the "inventory_items" edge to the InventoryItem entity by IDs.
+func (giuo *GameItemUpdateOne) AddInventoryItemIDs(ids ...int) *GameItemUpdateOne {
+	giuo.mutation.AddInventoryItemIDs(ids...)
 	return giuo
 }
 
-// AddUserItems adds the "user_items" edges to the UserItem entity.
-func (giuo *GameItemUpdateOne) AddUserItems(u ...*UserItem) *GameItemUpdateOne {
-	ids := make([]int, len(u))
-	for i := range u {
-		ids[i] = u[i].ID
+// AddInventoryItems adds the "inventory_items" edges to the InventoryItem entity.
+func (giuo *GameItemUpdateOne) AddInventoryItems(i ...*InventoryItem) *GameItemUpdateOne {
+	ids := make([]int, len(i))
+	for j := range i {
+		ids[j] = i[j].ID
 	}
-	return giuo.AddUserItemIDs(ids...)
+	return giuo.AddInventoryItemIDs(ids...)
 }
 
 // Mutation returns the GameItemMutation object of the builder.
@@ -376,25 +376,25 @@ func (giuo *GameItemUpdateOne) Mutation() *GameItemMutation {
 	return giuo.mutation
 }
 
-// ClearUserItems clears all "user_items" edges to the UserItem entity.
-func (giuo *GameItemUpdateOne) ClearUserItems() *GameItemUpdateOne {
-	giuo.mutation.ClearUserItems()
+// ClearInventoryItems clears all "inventory_items" edges to the InventoryItem entity.
+func (giuo *GameItemUpdateOne) ClearInventoryItems() *GameItemUpdateOne {
+	giuo.mutation.ClearInventoryItems()
 	return giuo
 }
 
-// RemoveUserItemIDs removes the "user_items" edge to UserItem entities by IDs.
-func (giuo *GameItemUpdateOne) RemoveUserItemIDs(ids ...int) *GameItemUpdateOne {
-	giuo.mutation.RemoveUserItemIDs(ids...)
+// RemoveInventoryItemIDs removes the "inventory_items" edge to InventoryItem entities by IDs.
+func (giuo *GameItemUpdateOne) RemoveInventoryItemIDs(ids ...int) *GameItemUpdateOne {
+	giuo.mutation.RemoveInventoryItemIDs(ids...)
 	return giuo
 }
 
-// RemoveUserItems removes "user_items" edges to UserItem entities.
-func (giuo *GameItemUpdateOne) RemoveUserItems(u ...*UserItem) *GameItemUpdateOne {
-	ids := make([]int, len(u))
-	for i := range u {
-		ids[i] = u[i].ID
+// RemoveInventoryItems removes "inventory_items" edges to InventoryItem entities.
+func (giuo *GameItemUpdateOne) RemoveInventoryItems(i ...*InventoryItem) *GameItemUpdateOne {
+	ids := make([]int, len(i))
+	for j := range i {
+		ids[j] = i[j].ID
 	}
-	return giuo.RemoveUserItemIDs(ids...)
+	return giuo.RemoveInventoryItemIDs(ids...)
 }
 
 // Where appends a list predicates to the GameItemUpdate builder.
@@ -509,28 +509,28 @@ func (giuo *GameItemUpdateOne) sqlSave(ctx context.Context) (_node *GameItem, er
 	if value, ok := giuo.mutation.AddedRarity(); ok {
 		_spec.AddField(gameitem.FieldRarity, field.TypeInt, value)
 	}
-	if giuo.mutation.UserItemsCleared() {
+	if giuo.mutation.InventoryItemsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   gameitem.UserItemsTable,
-			Columns: []string{gameitem.UserItemsColumn},
+			Table:   gameitem.InventoryItemsTable,
+			Columns: []string{gameitem.InventoryItemsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(useritem.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(inventoryitem.FieldID, field.TypeInt),
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := giuo.mutation.RemovedUserItemsIDs(); len(nodes) > 0 && !giuo.mutation.UserItemsCleared() {
+	if nodes := giuo.mutation.RemovedInventoryItemsIDs(); len(nodes) > 0 && !giuo.mutation.InventoryItemsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   gameitem.UserItemsTable,
-			Columns: []string{gameitem.UserItemsColumn},
+			Table:   gameitem.InventoryItemsTable,
+			Columns: []string{gameitem.InventoryItemsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(useritem.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(inventoryitem.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {
@@ -538,15 +538,15 @@ func (giuo *GameItemUpdateOne) sqlSave(ctx context.Context) (_node *GameItem, er
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := giuo.mutation.UserItemsIDs(); len(nodes) > 0 {
+	if nodes := giuo.mutation.InventoryItemsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   gameitem.UserItemsTable,
-			Columns: []string{gameitem.UserItemsColumn},
+			Table:   gameitem.InventoryItemsTable,
+			Columns: []string{gameitem.InventoryItemsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(useritem.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(inventoryitem.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {

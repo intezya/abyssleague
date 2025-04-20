@@ -13,12 +13,12 @@ import (
 
 	"abysscore/internal/infrastructure/ent/friendrequest"
 	"abysscore/internal/infrastructure/ent/gameitem"
+	"abysscore/internal/infrastructure/ent/inventoryitem"
 	"abysscore/internal/infrastructure/ent/match"
 	"abysscore/internal/infrastructure/ent/matchresult"
 	"abysscore/internal/infrastructure/ent/statistic"
 	"abysscore/internal/infrastructure/ent/user"
 	"abysscore/internal/infrastructure/ent/userbalance"
-	"abysscore/internal/infrastructure/ent/useritem"
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect"
@@ -35,6 +35,8 @@ type Client struct {
 	FriendRequest *FriendRequestClient
 	// GameItem is the client for interacting with the GameItem builders.
 	GameItem *GameItemClient
+	// InventoryItem is the client for interacting with the InventoryItem builders.
+	InventoryItem *InventoryItemClient
 	// Match is the client for interacting with the Match builders.
 	Match *MatchClient
 	// MatchResult is the client for interacting with the MatchResult builders.
@@ -45,8 +47,6 @@ type Client struct {
 	User *UserClient
 	// UserBalance is the client for interacting with the UserBalance builders.
 	UserBalance *UserBalanceClient
-	// UserItem is the client for interacting with the UserItem builders.
-	UserItem *UserItemClient
 }
 
 // NewClient creates a new client configured with the given options.
@@ -60,12 +60,12 @@ func (c *Client) init() {
 	c.Schema = migrate.NewSchema(c.driver)
 	c.FriendRequest = NewFriendRequestClient(c.config)
 	c.GameItem = NewGameItemClient(c.config)
+	c.InventoryItem = NewInventoryItemClient(c.config)
 	c.Match = NewMatchClient(c.config)
 	c.MatchResult = NewMatchResultClient(c.config)
 	c.Statistic = NewStatisticClient(c.config)
 	c.User = NewUserClient(c.config)
 	c.UserBalance = NewUserBalanceClient(c.config)
-	c.UserItem = NewUserItemClient(c.config)
 }
 
 type (
@@ -160,12 +160,12 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		config:        cfg,
 		FriendRequest: NewFriendRequestClient(cfg),
 		GameItem:      NewGameItemClient(cfg),
+		InventoryItem: NewInventoryItemClient(cfg),
 		Match:         NewMatchClient(cfg),
 		MatchResult:   NewMatchResultClient(cfg),
 		Statistic:     NewStatisticClient(cfg),
 		User:          NewUserClient(cfg),
 		UserBalance:   NewUserBalanceClient(cfg),
-		UserItem:      NewUserItemClient(cfg),
 	}, nil
 }
 
@@ -187,12 +187,12 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		config:        cfg,
 		FriendRequest: NewFriendRequestClient(cfg),
 		GameItem:      NewGameItemClient(cfg),
+		InventoryItem: NewInventoryItemClient(cfg),
 		Match:         NewMatchClient(cfg),
 		MatchResult:   NewMatchResultClient(cfg),
 		Statistic:     NewStatisticClient(cfg),
 		User:          NewUserClient(cfg),
 		UserBalance:   NewUserBalanceClient(cfg),
-		UserItem:      NewUserItemClient(cfg),
 	}, nil
 }
 
@@ -222,8 +222,8 @@ func (c *Client) Close() error {
 // In order to add hooks to a specific client, call: `client.Node.Use(...)`.
 func (c *Client) Use(hooks ...Hook) {
 	for _, n := range []interface{ Use(...Hook) }{
-		c.FriendRequest, c.GameItem, c.Match, c.MatchResult, c.Statistic, c.User,
-		c.UserBalance, c.UserItem,
+		c.FriendRequest, c.GameItem, c.InventoryItem, c.Match, c.MatchResult,
+		c.Statistic, c.User, c.UserBalance,
 	} {
 		n.Use(hooks...)
 	}
@@ -233,8 +233,8 @@ func (c *Client) Use(hooks ...Hook) {
 // In order to add interceptors to a specific client, call: `client.Node.Intercept(...)`.
 func (c *Client) Intercept(interceptors ...Interceptor) {
 	for _, n := range []interface{ Intercept(...Interceptor) }{
-		c.FriendRequest, c.GameItem, c.Match, c.MatchResult, c.Statistic, c.User,
-		c.UserBalance, c.UserItem,
+		c.FriendRequest, c.GameItem, c.InventoryItem, c.Match, c.MatchResult,
+		c.Statistic, c.User, c.UserBalance,
 	} {
 		n.Intercept(interceptors...)
 	}
@@ -247,6 +247,8 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.FriendRequest.mutate(ctx, m)
 	case *GameItemMutation:
 		return c.GameItem.mutate(ctx, m)
+	case *InventoryItemMutation:
+		return c.InventoryItem.mutate(ctx, m)
 	case *MatchMutation:
 		return c.Match.mutate(ctx, m)
 	case *MatchResultMutation:
@@ -257,8 +259,6 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.User.mutate(ctx, m)
 	case *UserBalanceMutation:
 		return c.UserBalance.mutate(ctx, m)
-	case *UserItemMutation:
-		return c.UserItem.mutate(ctx, m)
 	default:
 		return nil, fmt.Errorf("ent: unknown mutation type %T", m)
 	}
@@ -537,15 +537,15 @@ func (c *GameItemClient) GetX(ctx context.Context, id int) *GameItem {
 	return obj
 }
 
-// QueryUserItems queries the user_items edge of a GameItem.
-func (c *GameItemClient) QueryUserItems(gi *GameItem) *UserItemQuery {
-	query := (&UserItemClient{config: c.config}).Query()
+// QueryInventoryItems queries the inventory_items edge of a GameItem.
+func (c *GameItemClient) QueryInventoryItems(gi *GameItem) *InventoryItemQuery {
+	query := (&InventoryItemClient{config: c.config}).Query()
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
 		id := gi.ID
 		step := sqlgraph.NewStep(
 			sqlgraph.From(gameitem.Table, gameitem.FieldID, id),
-			sqlgraph.To(useritem.Table, useritem.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, gameitem.UserItemsTable, gameitem.UserItemsColumn),
+			sqlgraph.To(inventoryitem.Table, inventoryitem.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, gameitem.InventoryItemsTable, gameitem.InventoryItemsColumn),
 		)
 		fromV = sqlgraph.Neighbors(gi.driver.Dialect(), step)
 		return fromV, nil
@@ -575,6 +575,171 @@ func (c *GameItemClient) mutate(ctx context.Context, m *GameItemMutation) (Value
 		return (&GameItemDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
 	default:
 		return nil, fmt.Errorf("ent: unknown GameItem mutation op: %q", m.Op())
+	}
+}
+
+// InventoryItemClient is a client for the InventoryItem schema.
+type InventoryItemClient struct {
+	config
+}
+
+// NewInventoryItemClient returns a client for the InventoryItem from the given config.
+func NewInventoryItemClient(c config) *InventoryItemClient {
+	return &InventoryItemClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `inventoryitem.Hooks(f(g(h())))`.
+func (c *InventoryItemClient) Use(hooks ...Hook) {
+	c.hooks.InventoryItem = append(c.hooks.InventoryItem, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `inventoryitem.Intercept(f(g(h())))`.
+func (c *InventoryItemClient) Intercept(interceptors ...Interceptor) {
+	c.inters.InventoryItem = append(c.inters.InventoryItem, interceptors...)
+}
+
+// Create returns a builder for creating a InventoryItem entity.
+func (c *InventoryItemClient) Create() *InventoryItemCreate {
+	mutation := newInventoryItemMutation(c.config, OpCreate)
+	return &InventoryItemCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of InventoryItem entities.
+func (c *InventoryItemClient) CreateBulk(builders ...*InventoryItemCreate) *InventoryItemCreateBulk {
+	return &InventoryItemCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *InventoryItemClient) MapCreateBulk(slice any, setFunc func(*InventoryItemCreate, int)) *InventoryItemCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &InventoryItemCreateBulk{err: fmt.Errorf("calling to InventoryItemClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*InventoryItemCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &InventoryItemCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for InventoryItem.
+func (c *InventoryItemClient) Update() *InventoryItemUpdate {
+	mutation := newInventoryItemMutation(c.config, OpUpdate)
+	return &InventoryItemUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *InventoryItemClient) UpdateOne(ii *InventoryItem) *InventoryItemUpdateOne {
+	mutation := newInventoryItemMutation(c.config, OpUpdateOne, withInventoryItem(ii))
+	return &InventoryItemUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *InventoryItemClient) UpdateOneID(id int) *InventoryItemUpdateOne {
+	mutation := newInventoryItemMutation(c.config, OpUpdateOne, withInventoryItemID(id))
+	return &InventoryItemUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for InventoryItem.
+func (c *InventoryItemClient) Delete() *InventoryItemDelete {
+	mutation := newInventoryItemMutation(c.config, OpDelete)
+	return &InventoryItemDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *InventoryItemClient) DeleteOne(ii *InventoryItem) *InventoryItemDeleteOne {
+	return c.DeleteOneID(ii.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *InventoryItemClient) DeleteOneID(id int) *InventoryItemDeleteOne {
+	builder := c.Delete().Where(inventoryitem.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &InventoryItemDeleteOne{builder}
+}
+
+// Query returns a query builder for InventoryItem.
+func (c *InventoryItemClient) Query() *InventoryItemQuery {
+	return &InventoryItemQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeInventoryItem},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a InventoryItem entity by its id.
+func (c *InventoryItemClient) Get(ctx context.Context, id int) (*InventoryItem, error) {
+	return c.Query().Where(inventoryitem.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *InventoryItemClient) GetX(ctx context.Context, id int) *InventoryItem {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryUser queries the user edge of a InventoryItem.
+func (c *InventoryItemClient) QueryUser(ii *InventoryItem) *UserQuery {
+	query := (&UserClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := ii.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(inventoryitem.Table, inventoryitem.FieldID, id),
+			sqlgraph.To(user.Table, user.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, inventoryitem.UserTable, inventoryitem.UserColumn),
+		)
+		fromV = sqlgraph.Neighbors(ii.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryItem queries the item edge of a InventoryItem.
+func (c *InventoryItemClient) QueryItem(ii *InventoryItem) *GameItemQuery {
+	query := (&GameItemClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := ii.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(inventoryitem.Table, inventoryitem.FieldID, id),
+			sqlgraph.To(gameitem.Table, gameitem.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, inventoryitem.ItemTable, inventoryitem.ItemColumn),
+		)
+		fromV = sqlgraph.Neighbors(ii.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *InventoryItemClient) Hooks() []Hook {
+	return c.hooks.InventoryItem
+}
+
+// Interceptors returns the client interceptors.
+func (c *InventoryItemClient) Interceptors() []Interceptor {
+	return c.inters.InventoryItem
+}
+
+func (c *InventoryItemClient) mutate(ctx context.Context, m *InventoryItemMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&InventoryItemCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&InventoryItemUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&InventoryItemUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&InventoryItemDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown InventoryItem mutation op: %q", m.Op())
 	}
 }
 
@@ -1246,13 +1411,13 @@ func (c *UserClient) QueryReceivedFriendRequests(u *User) *FriendRequestQuery {
 }
 
 // QueryItems queries the items edge of a User.
-func (c *UserClient) QueryItems(u *User) *UserItemQuery {
-	query := (&UserItemClient{config: c.config}).Query()
+func (c *UserClient) QueryItems(u *User) *InventoryItemQuery {
+	query := (&InventoryItemClient{config: c.config}).Query()
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
 		id := u.ID
 		step := sqlgraph.NewStep(
 			sqlgraph.From(user.Table, user.FieldID, id),
-			sqlgraph.To(useritem.Table, useritem.FieldID),
+			sqlgraph.To(inventoryitem.Table, inventoryitem.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, user.ItemsTable, user.ItemsColumn),
 		)
 		fromV = sqlgraph.Neighbors(u.driver.Dialect(), step)
@@ -1262,13 +1427,13 @@ func (c *UserClient) QueryItems(u *User) *UserItemQuery {
 }
 
 // QueryCurrentItem queries the current_item edge of a User.
-func (c *UserClient) QueryCurrentItem(u *User) *UserItemQuery {
-	query := (&UserItemClient{config: c.config}).Query()
+func (c *UserClient) QueryCurrentItem(u *User) *InventoryItemQuery {
+	query := (&InventoryItemClient{config: c.config}).Query()
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
 		id := u.ID
 		step := sqlgraph.NewStep(
 			sqlgraph.From(user.Table, user.FieldID, id),
-			sqlgraph.To(useritem.Table, useritem.FieldID),
+			sqlgraph.To(inventoryitem.Table, inventoryitem.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, false, user.CurrentItemTable, user.CurrentItemColumn),
 		)
 		fromV = sqlgraph.Neighbors(u.driver.Dialect(), step)
@@ -1483,179 +1648,14 @@ func (c *UserBalanceClient) mutate(ctx context.Context, m *UserBalanceMutation) 
 	}
 }
 
-// UserItemClient is a client for the UserItem schema.
-type UserItemClient struct {
-	config
-}
-
-// NewUserItemClient returns a client for the UserItem from the given config.
-func NewUserItemClient(c config) *UserItemClient {
-	return &UserItemClient{config: c}
-}
-
-// Use adds a list of mutation hooks to the hooks stack.
-// A call to `Use(f, g, h)` equals to `useritem.Hooks(f(g(h())))`.
-func (c *UserItemClient) Use(hooks ...Hook) {
-	c.hooks.UserItem = append(c.hooks.UserItem, hooks...)
-}
-
-// Intercept adds a list of query interceptors to the interceptors stack.
-// A call to `Intercept(f, g, h)` equals to `useritem.Intercept(f(g(h())))`.
-func (c *UserItemClient) Intercept(interceptors ...Interceptor) {
-	c.inters.UserItem = append(c.inters.UserItem, interceptors...)
-}
-
-// Create returns a builder for creating a UserItem entity.
-func (c *UserItemClient) Create() *UserItemCreate {
-	mutation := newUserItemMutation(c.config, OpCreate)
-	return &UserItemCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// CreateBulk returns a builder for creating a bulk of UserItem entities.
-func (c *UserItemClient) CreateBulk(builders ...*UserItemCreate) *UserItemCreateBulk {
-	return &UserItemCreateBulk{config: c.config, builders: builders}
-}
-
-// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
-// a builder and applies setFunc on it.
-func (c *UserItemClient) MapCreateBulk(slice any, setFunc func(*UserItemCreate, int)) *UserItemCreateBulk {
-	rv := reflect.ValueOf(slice)
-	if rv.Kind() != reflect.Slice {
-		return &UserItemCreateBulk{err: fmt.Errorf("calling to UserItemClient.MapCreateBulk with wrong type %T, need slice", slice)}
-	}
-	builders := make([]*UserItemCreate, rv.Len())
-	for i := 0; i < rv.Len(); i++ {
-		builders[i] = c.Create()
-		setFunc(builders[i], i)
-	}
-	return &UserItemCreateBulk{config: c.config, builders: builders}
-}
-
-// Update returns an update builder for UserItem.
-func (c *UserItemClient) Update() *UserItemUpdate {
-	mutation := newUserItemMutation(c.config, OpUpdate)
-	return &UserItemUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// UpdateOne returns an update builder for the given entity.
-func (c *UserItemClient) UpdateOne(ui *UserItem) *UserItemUpdateOne {
-	mutation := newUserItemMutation(c.config, OpUpdateOne, withUserItem(ui))
-	return &UserItemUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// UpdateOneID returns an update builder for the given id.
-func (c *UserItemClient) UpdateOneID(id int) *UserItemUpdateOne {
-	mutation := newUserItemMutation(c.config, OpUpdateOne, withUserItemID(id))
-	return &UserItemUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// Delete returns a delete builder for UserItem.
-func (c *UserItemClient) Delete() *UserItemDelete {
-	mutation := newUserItemMutation(c.config, OpDelete)
-	return &UserItemDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// DeleteOne returns a builder for deleting the given entity.
-func (c *UserItemClient) DeleteOne(ui *UserItem) *UserItemDeleteOne {
-	return c.DeleteOneID(ui.ID)
-}
-
-// DeleteOneID returns a builder for deleting the given entity by its id.
-func (c *UserItemClient) DeleteOneID(id int) *UserItemDeleteOne {
-	builder := c.Delete().Where(useritem.ID(id))
-	builder.mutation.id = &id
-	builder.mutation.op = OpDeleteOne
-	return &UserItemDeleteOne{builder}
-}
-
-// Query returns a query builder for UserItem.
-func (c *UserItemClient) Query() *UserItemQuery {
-	return &UserItemQuery{
-		config: c.config,
-		ctx:    &QueryContext{Type: TypeUserItem},
-		inters: c.Interceptors(),
-	}
-}
-
-// Get returns a UserItem entity by its id.
-func (c *UserItemClient) Get(ctx context.Context, id int) (*UserItem, error) {
-	return c.Query().Where(useritem.ID(id)).Only(ctx)
-}
-
-// GetX is like Get, but panics if an error occurs.
-func (c *UserItemClient) GetX(ctx context.Context, id int) *UserItem {
-	obj, err := c.Get(ctx, id)
-	if err != nil {
-		panic(err)
-	}
-	return obj
-}
-
-// QueryUser queries the user edge of a UserItem.
-func (c *UserItemClient) QueryUser(ui *UserItem) *UserQuery {
-	query := (&UserClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := ui.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(useritem.Table, useritem.FieldID, id),
-			sqlgraph.To(user.Table, user.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, useritem.UserTable, useritem.UserColumn),
-		)
-		fromV = sqlgraph.Neighbors(ui.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryItem queries the item edge of a UserItem.
-func (c *UserItemClient) QueryItem(ui *UserItem) *GameItemQuery {
-	query := (&GameItemClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := ui.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(useritem.Table, useritem.FieldID, id),
-			sqlgraph.To(gameitem.Table, gameitem.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, useritem.ItemTable, useritem.ItemColumn),
-		)
-		fromV = sqlgraph.Neighbors(ui.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// Hooks returns the client hooks.
-func (c *UserItemClient) Hooks() []Hook {
-	return c.hooks.UserItem
-}
-
-// Interceptors returns the client interceptors.
-func (c *UserItemClient) Interceptors() []Interceptor {
-	return c.inters.UserItem
-}
-
-func (c *UserItemClient) mutate(ctx context.Context, m *UserItemMutation) (Value, error) {
-	switch m.Op() {
-	case OpCreate:
-		return (&UserItemCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpUpdate:
-		return (&UserItemUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpUpdateOne:
-		return (&UserItemUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpDelete, OpDeleteOne:
-		return (&UserItemDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
-	default:
-		return nil, fmt.Errorf("ent: unknown UserItem mutation op: %q", m.Op())
-	}
-}
-
 // hooks and interceptors per client, for fast access.
 type (
 	hooks struct {
-		FriendRequest, GameItem, Match, MatchResult, Statistic, User, UserBalance,
-		UserItem []ent.Hook
+		FriendRequest, GameItem, InventoryItem, Match, MatchResult, Statistic, User,
+		UserBalance []ent.Hook
 	}
 	inters struct {
-		FriendRequest, GameItem, Match, MatchResult, Statistic, User, UserBalance,
-		UserItem []ent.Interceptor
+		FriendRequest, GameItem, InventoryItem, Match, MatchResult, Statistic, User,
+		UserBalance []ent.Interceptor
 	}
 )

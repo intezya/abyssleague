@@ -32,6 +32,18 @@ func (f GameItemFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, er
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.GameItemMutation", m)
 }
 
+// The InventoryItemFunc type is an adapter to allow the use of ordinary
+// function as InventoryItem mutator.
+type InventoryItemFunc func(context.Context, *ent.InventoryItemMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f InventoryItemFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.InventoryItemMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.InventoryItemMutation", m)
+}
+
 // The MatchFunc type is an adapter to allow the use of ordinary
 // function as Match mutator.
 type MatchFunc func(context.Context, *ent.MatchMutation) (ent.Value, error)
@@ -90,18 +102,6 @@ func (f UserBalanceFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value,
 		return f(ctx, mv)
 	}
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.UserBalanceMutation", m)
-}
-
-// The UserItemFunc type is an adapter to allow the use of ordinary
-// function as UserItem mutator.
-type UserItemFunc func(context.Context, *ent.UserItemMutation) (ent.Value, error)
-
-// Mutate calls f(ctx, m).
-func (f UserItemFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
-	if mv, ok := m.(*ent.UserItemMutation); ok {
-		return f(ctx, mv)
-	}
-	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.UserItemMutation", m)
 }
 
 // Condition is a hook condition function.

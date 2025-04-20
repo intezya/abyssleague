@@ -73,6 +73,8 @@ github.com/intezya/pkglib/crypto v0.0.0-20250410075734-66680663f021 h1:Ekd5HZJvb
 github.com/intezya/pkglib/crypto v0.0.0-20250410075734-66680663f021/go.mod h1:SlAag+JDycmvrNp0RAWt3Vcchc3vUR0F8KYGjgH3wZc=
 github.com/intezya/pkglib/itertools v0.0.0-20250410075734-66680663f021 h1:Wg9BaWc+WAHYDV4u1WmO8PozoLlHu6i4+ivp84k7I+g=
 github.com/intezya/pkglib/itertools v0.0.0-20250410075734-66680663f021/go.mod h1:q/aABiAnYLrrDaIWbiSURkFivnOa3rvp8LBKOxFl7yY=
+github.com/intezya/pkglib/itertools v0.1.1 h1:4eFXHW84eIphuUb7uU2UtqhUFt6loQsG/bLrYX9z4r4=
+github.com/intezya/pkglib/itertools v0.1.1/go.mod h1:q/aABiAnYLrrDaIWbiSURkFivnOa3rvp8LBKOxFl7yY=
 github.com/intezya/pkglib/logger v0.0.0-20250410075734-66680663f021 h1:WnIcoAokiD1T9mIzt0RiW7FtVIOV0ys5PV7ciV0qgiI=
 github.com/intezya/pkglib/logger v0.0.0-20250410075734-66680663f021/go.mod h1:UYtu1iQz80okQNaoPw+K+zpEx/3w822RcisIVztzBU8=
 github.com/joho/godotenv v1.5.1 h1:7eLL/+HRGLY0ldzfGMeQkb7vMd0as4CfYvUVzLqw0N0=

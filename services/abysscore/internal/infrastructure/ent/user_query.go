@@ -4,12 +4,12 @@ package ent
 
 import (
 	"abysscore/internal/infrastructure/ent/friendrequest"
+	"abysscore/internal/infrastructure/ent/inventoryitem"
 	"abysscore/internal/infrastructure/ent/match"
 	"abysscore/internal/infrastructure/ent/predicate"
 	"abysscore/internal/infrastructure/ent/statistic"
 	"abysscore/internal/infrastructure/ent/user"
 	"abysscore/internal/infrastructure/ent/userbalance"
-	"abysscore/internal/infrastructure/ent/useritem"
 	"context"
 	"database/sql/driver"
 	"fmt"
@@ -32,8 +32,8 @@ type UserQuery struct {
 	withFriends                *UserQuery
 	withSentFriendRequests     *FriendRequestQuery
 	withReceivedFriendRequests *FriendRequestQuery
-	withItems                  *UserItemQuery
-	withCurrentItem            *UserItemQuery
+	withItems                  *InventoryItemQuery
+	withCurrentItem            *InventoryItemQuery
 	withCurrentMatch           *MatchQuery
 	withBalance                *UserBalanceQuery
 	// intermediate query (i.e. traversal path).
@@ -161,8 +161,8 @@ func (uq *UserQuery) QueryReceivedFriendRequests() *FriendRequestQuery {
 }
 
 // QueryItems chains the current query on the "items" edge.
-func (uq *UserQuery) QueryItems() *UserItemQuery {
-	query := (&UserItemClient{config: uq.config}).Query()
+func (uq *UserQuery) QueryItems() *InventoryItemQuery {
+	query := (&InventoryItemClient{config: uq.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := uq.prepareQuery(ctx); err != nil {
 			return nil, err
@@ -173,7 +173,7 @@ func (uq *UserQuery) QueryItems() *UserItemQuery {
 		}
 		step := sqlgraph.NewStep(
 			sqlgraph.From(user.Table, user.FieldID, selector),
-			sqlgraph.To(useritem.Table, useritem.FieldID),
+			sqlgraph.To(inventoryitem.Table, inventoryitem.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, user.ItemsTable, user.ItemsColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(uq.driver.Dialect(), step)
@@ -183,8 +183,8 @@ func (uq *UserQuery) QueryItems() *UserItemQuery {
 }
 
 // QueryCurrentItem chains the current query on the "current_item" edge.
-func (uq *UserQuery) QueryCurrentItem() *UserItemQuery {
-	query := (&UserItemClient{config: uq.config}).Query()
+func (uq *UserQuery) QueryCurrentItem() *InventoryItemQuery {
+	query := (&InventoryItemClient{config: uq.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := uq.prepareQuery(ctx); err != nil {
 			return nil, err
@@ -195,7 +195,7 @@ func (uq *UserQuery) QueryCurrentItem() *UserItemQuery {
 		}
 		step := sqlgraph.NewStep(
 			sqlgraph.From(user.Table, user.FieldID, selector),
-			sqlgraph.To(useritem.Table, useritem.FieldID),
+			sqlgraph.To(inventoryitem.Table, inventoryitem.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, false, user.CurrentItemTable, user.CurrentItemColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(uq.driver.Dialect(), step)
@@ -500,8 +500,8 @@ func (uq *UserQuery) WithReceivedFriendRequests(opts ...func(*FriendRequestQuery
 
 // WithItems tells the query-builder to eager-load the nodes that are connected to
 // the "items" edge. The optional arguments are used to configure the query builder of the edge.
-func (uq *UserQuery) WithItems(opts ...func(*UserItemQuery)) *UserQuery {
-	query := (&UserItemClient{config: uq.config}).Query()
+func (uq *UserQuery) WithItems(opts ...func(*InventoryItemQuery)) *UserQuery {
+	query := (&InventoryItemClient{config: uq.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
@@ -511,8 +511,8 @@ func (uq *UserQuery) WithItems(opts ...func(*UserItemQuery)) *UserQuery {
 
 // WithCurrentItem tells the query-builder to eager-load the nodes that are connected to
 // the "current_item" edge. The optional arguments are used to configure the query builder of the edge.
-func (uq *UserQuery) WithCurrentItem(opts ...func(*UserItemQuery)) *UserQuery {
-	query := (&UserItemClient{config: uq.config}).Query()
+func (uq *UserQuery) WithCurrentItem(opts ...func(*InventoryItemQuery)) *UserQuery {
+	query := (&InventoryItemClient{config: uq.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
@@ -681,14 +681,14 @@ func (uq *UserQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*User, e
 	}
 	if query := uq.withItems; query != nil {
 		if err := uq.loadItems(ctx, query, nodes,
-			func(n *User) { n.Edges.Items = []*UserItem{} },
-			func(n *User, e *UserItem) { n.Edges.Items = append(n.Edges.Items, e) }); err != nil {
+			func(n *User) { n.Edges.Items = []*InventoryItem{} },
+			func(n *User, e *InventoryItem) { n.Edges.Items = append(n.Edges.Items, e) }); err != nil {
 			return nil, err
 		}
 	}
 	if query := uq.withCurrentItem; query != nil {
 		if err := uq.loadCurrentItem(ctx, query, nodes, nil,
-			func(n *User, e *UserItem) { n.Edges.CurrentItem = e }); err != nil {
+			func(n *User, e *InventoryItem) { n.Edges.CurrentItem = e }); err != nil {
 			return nil, err
 		}
 	}
@@ -858,7 +858,7 @@ func (uq *UserQuery) loadReceivedFriendRequests(ctx context.Context, query *Frie
 	}
 	return nil
 }
-func (uq *UserQuery) loadItems(ctx context.Context, query *UserItemQuery, nodes []*User, init func(*User), assign func(*User, *UserItem)) error {
+func (uq *UserQuery) loadItems(ctx context.Context, query *InventoryItemQuery, nodes []*User, init func(*User), assign func(*User, *InventoryItem)) error {
 	fks := make([]driver.Value, 0, len(nodes))
 	nodeids := make(map[int]*User)
 	for i := range nodes {
@@ -869,9 +869,9 @@ func (uq *UserQuery) loadItems(ctx context.Context, query *UserItemQuery, nodes 
 		}
 	}
 	if len(query.ctx.Fields) > 0 {
-		query.ctx.AppendFieldOnce(useritem.FieldUserID)
+		query.ctx.AppendFieldOnce(inventoryitem.FieldUserID)
 	}
-	query.Where(predicate.UserItem(func(s *sql.Selector) {
+	query.Where(predicate.InventoryItem(func(s *sql.Selector) {
 		s.Where(sql.InValues(s.C(user.ItemsColumn), fks...))
 	}))
 	neighbors, err := query.All(ctx)
@@ -888,7 +888,7 @@ func (uq *UserQuery) loadItems(ctx context.Context, query *UserItemQuery, nodes 
 	}
 	return nil
 }
-func (uq *UserQuery) loadCurrentItem(ctx context.Context, query *UserItemQuery, nodes []*User, init func(*User), assign func(*User, *UserItem)) error {
+func (uq *UserQuery) loadCurrentItem(ctx context.Context, query *InventoryItemQuery, nodes []*User, init func(*User), assign func(*User, *InventoryItem)) error {
 	ids := make([]int, 0, len(nodes))
 	nodeids := make(map[int][]*User)
 	for i := range nodes {
@@ -904,7 +904,7 @@ func (uq *UserQuery) loadCurrentItem(ctx context.Context, query *UserItemQuery, 
 	if len(ids) == 0 {
 		return nil
 	}
-	query.Where(useritem.IDIn(ids...))
+	query.Where(inventoryitem.IDIn(ids...))
 	neighbors, err := query.All(ctx)
 	if err != nil {
 		return err

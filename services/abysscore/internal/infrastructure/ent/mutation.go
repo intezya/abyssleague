@@ -5,6 +5,7 @@ package ent
 import (
 	"abysscore/internal/infrastructure/ent/friendrequest"
 	"abysscore/internal/infrastructure/ent/gameitem"
+	"abysscore/internal/infrastructure/ent/inventoryitem"
 	"abysscore/internal/infrastructure/ent/match"
 	"abysscore/internal/infrastructure/ent/matchresult"
 	"abysscore/internal/infrastructure/ent/predicate"
@@ -12,7 +13,6 @@ import (
 	"abysscore/internal/infrastructure/ent/statistic"
 	"abysscore/internal/infrastructure/ent/user"
 	"abysscore/internal/infrastructure/ent/userbalance"
-	"abysscore/internal/infrastructure/ent/useritem"
 	"context"
 	"errors"
 	"fmt"
@@ -34,12 +34,12 @@ const (
 	// Node types.
 	TypeFriendRequest = "FriendRequest"
 	TypeGameItem      = "GameItem"
+	TypeInventoryItem = "InventoryItem"
 	TypeMatch         = "Match"
 	TypeMatchResult   = "MatchResult"
 	TypeStatistic     = "Statistic"
 	TypeUser          = "User"
 	TypeUserBalance   = "UserBalance"
-	TypeUserItem      = "UserItem"
 )
 
 // FriendRequestMutation represents an operation that mutates the FriendRequest nodes in the graph.
@@ -588,23 +588,23 @@ func (m *FriendRequestMutation) ResetEdge(name string) error {
 // GameItemMutation represents an operation that mutates the GameItem nodes in the graph.
 type GameItemMutation struct {
 	config
-	op                Op
-	typ               string
-	id                *int
-	name              *string
-	collection        *string
-	_type             *int
-	add_type          *int
-	rarity            *int
-	addrarity         *int
-	created_at        *time.Time
-	clearedFields     map[string]struct{}
-	user_items        map[int]struct{}
-	removeduser_items map[int]struct{}
-	cleareduser_items bool
-	done              bool
-	oldValue          func(context.Context) (*GameItem, error)
-	predicates        []predicate.GameItem
+	op                     Op
+	typ                    string
+	id                     *int
+	name                   *string
+	collection             *string
+	_type                  *int
+	add_type               *int
+	rarity                 *int
+	addrarity              *int
+	created_at             *time.Time
+	clearedFields          map[string]struct{}
+	inventory_items        map[int]struct{}
+	removedinventory_items map[int]struct{}
+	clearedinventory_items bool
+	done                   bool
+	oldValue               func(context.Context) (*GameItem, error)
+	predicates             []predicate.GameItem
 }
 
 var _ ent.Mutation = (*GameItemMutation)(nil)
@@ -931,58 +931,58 @@ func (m *GameItemMutation) ResetCreatedAt() {
 	m.created_at = nil
 }
 
-// AddUserItemIDs adds the "user_items" edge to the UserItem entity by ids.
-func (m *GameItemMutation) AddUserItemIDs(ids ...int) {
-	if m.user_items == nil {
-		m.user_items = make(map[int]struct{})
+// AddInventoryItemIDs adds the "inventory_items" edge to the InventoryItem entity by ids.
+func (m *GameItemMutation) AddInventoryItemIDs(ids ...int) {
+	if m.inventory_items == nil {
+		m.inventory_items = make(map[int]struct{})
 	}
 	for i := range ids {
-		m.user_items[ids[i]] = struct{}{}
+		m.inventory_items[ids[i]] = struct{}{}
 	}
 }
 
-// ClearUserItems clears the "user_items" edge to the UserItem entity.
-func (m *GameItemMutation) ClearUserItems() {
-	m.cleareduser_items = true
+// ClearInventoryItems clears the "inventory_items" edge to the InventoryItem entity.
+func (m *GameItemMutation) ClearInventoryItems() {
+	m.clearedinventory_items = true
 }
 
-// UserItemsCleared reports if the "user_items" edge to the UserItem entity was cleared.
-func (m *GameItemMutation) UserItemsCleared() bool {
-	return m.cleareduser_items
+// InventoryItemsCleared reports if the "inventory_items" edge to the InventoryItem entity was cleared.
+func (m *GameItemMutation) InventoryItemsCleared() bool {
+	return m.clearedinventory_items
 }
 
-// RemoveUserItemIDs removes the "user_items" edge to the UserItem entity by IDs.
-func (m *GameItemMutation) RemoveUserItemIDs(ids ...int) {
-	if m.removeduser_items == nil {
-		m.removeduser_items = make(map[int]struct{})
+// RemoveInventoryItemIDs removes the "inventory_items" edge to the InventoryItem entity by IDs.
+func (m *GameItemMutation) RemoveInventoryItemIDs(ids ...int) {
+	if m.removedinventory_items == nil {
+		m.removedinventory_items = make(map[int]struct{})
 	}
 	for i := range ids {
-		delete(m.user_items, ids[i])
-		m.removeduser_items[ids[i]] = struct{}{}
+		delete(m.inventory_items, ids[i])
+		m.removedinventory_items[ids[i]] = struct{}{}
 	}
 }
 
-// RemovedUserItems returns the removed IDs of the "user_items" edge to the UserItem entity.
-func (m *GameItemMutation) RemovedUserItemsIDs() (ids []int) {
-	for id := range m.removeduser_items {
+// RemovedInventoryItems returns the removed IDs of the "inventory_items" edge to the InventoryItem entity.
+func (m *GameItemMutation) RemovedInventoryItemsIDs() (ids []int) {
+	for id := range m.removedinventory_items {
 		ids = append(ids, id)
 	}
 	return
 }
 
-// UserItemsIDs returns the "user_items" edge IDs in the mutation.
-func (m *GameItemMutation) UserItemsIDs() (ids []int) {
-	for id := range m.user_items {
+// InventoryItemsIDs returns the "inventory_items" edge IDs in the mutation.
+func (m *GameItemMutation) InventoryItemsIDs() (ids []int) {
+	for id := range m.inventory_items {
 		ids = append(ids, id)
 	}
 	return
 }
 
-// ResetUserItems resets all changes to the "user_items" edge.
-func (m *GameItemMutation) ResetUserItems() {
-	m.user_items = nil
-	m.cleareduser_items = false
-	m.removeduser_items = nil
+// ResetInventoryItems resets all changes to the "inventory_items" edge.
+func (m *GameItemMutation) ResetInventoryItems() {
+	m.inventory_items = nil
+	m.clearedinventory_items = false
+	m.removedinventory_items = nil
 }
 
 // Where appends a list predicates to the GameItemMutation builder.
@@ -1214,8 +1214,8 @@ func (m *GameItemMutation) ResetField(name string) error {
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *GameItemMutation) AddedEdges() []string {
 	edges := make([]string, 0, 1)
-	if m.user_items != nil {
-		edges = append(edges, gameitem.EdgeUserItems)
+	if m.inventory_items != nil {
+		edges = append(edges, gameitem.EdgeInventoryItems)
 	}
 	return edges
 }
@@ -1224,9 +1224,9 @@ func (m *GameItemMutation) AddedEdges() []string {
 // name in this mutation.
 func (m *GameItemMutation) AddedIDs(name string) []ent.Value {
 	switch name {
-	case gameitem.EdgeUserItems:
-		ids := make([]ent.Value, 0, len(m.user_items))
-		for id := range m.user_items {
+	case gameitem.EdgeInventoryItems:
+		ids := make([]ent.Value, 0, len(m.inventory_items))
+		for id := range m.inventory_items {
 			ids = append(ids, id)
 		}
 		return ids
@@ -1237,8 +1237,8 @@ func (m *GameItemMutation) AddedIDs(name string) []ent.Value {
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *GameItemMutation) RemovedEdges() []string {
 	edges := make([]string, 0, 1)
-	if m.removeduser_items != nil {
-		edges = append(edges, gameitem.EdgeUserItems)
+	if m.removedinventory_items != nil {
+		edges = append(edges, gameitem.EdgeInventoryItems)
 	}
 	return edges
 }
@@ -1247,9 +1247,9 @@ func (m *GameItemMutation) RemovedEdges() []string {
 // the given name in this mutation.
 func (m *GameItemMutation) RemovedIDs(name string) []ent.Value {
 	switch name {
-	case gameitem.EdgeUserItems:
-		ids := make([]ent.Value, 0, len(m.removeduser_items))
-		for id := range m.removeduser_items {
+	case gameitem.EdgeInventoryItems:
+		ids := make([]ent.Value, 0, len(m.removedinventory_items))
+		for id := range m.removedinventory_items {
 			ids = append(ids, id)
 		}
 		return ids
@@ -1260,8 +1260,8 @@ func (m *GameItemMutation) RemovedIDs(name string) []ent.Value {
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *GameItemMutation) ClearedEdges() []string {
 	edges := make([]string, 0, 1)
-	if m.cleareduser_items {
-		edges = append(edges, gameitem.EdgeUserItems)
+	if m.clearedinventory_items {
+		edges = append(edges, gameitem.EdgeInventoryItems)
 	}
 	return edges
 }
@@ -1270,8 +1270,8 @@ func (m *GameItemMutation) ClearedEdges() []string {
 // was cleared in this mutation.
 func (m *GameItemMutation) EdgeCleared(name string) bool {
 	switch name {
-	case gameitem.EdgeUserItems:
-		return m.cleareduser_items
+	case gameitem.EdgeInventoryItems:
+		return m.clearedinventory_items
 	}
 	return false
 }
@@ -1288,11 +1288,641 @@ func (m *GameItemMutation) ClearEdge(name string) error {
 // It returns an error if the edge is not defined in the schema.
 func (m *GameItemMutation) ResetEdge(name string) error {
 	switch name {
-	case gameitem.EdgeUserItems:
-		m.ResetUserItems()
+	case gameitem.EdgeInventoryItems:
+		m.ResetInventoryItems()
 		return nil
 	}
 	return fmt.Errorf("unknown GameItem edge %s", name)
+}
+
+// InventoryItemMutation represents an operation that mutates the InventoryItem nodes in the graph.
+type InventoryItemMutation struct {
+	config
+	op                  Op
+	typ                 string
+	id                  *int
+	received_from_id    *int
+	addreceived_from_id *int
+	obtained_at         *time.Time
+	clearedFields       map[string]struct{}
+	user                *int
+	cleareduser         bool
+	item                *int
+	cleareditem         bool
+	done                bool
+	oldValue            func(context.Context) (*InventoryItem, error)
+	predicates          []predicate.InventoryItem
+}
+
+var _ ent.Mutation = (*InventoryItemMutation)(nil)
+
+// inventoryitemOption allows management of the mutation configuration using functional options.
+type inventoryitemOption func(*InventoryItemMutation)
+
+// newInventoryItemMutation creates new mutation for the InventoryItem entity.
+func newInventoryItemMutation(c config, op Op, opts ...inventoryitemOption) *InventoryItemMutation {
+	m := &InventoryItemMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeInventoryItem,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withInventoryItemID sets the ID field of the mutation.
+func withInventoryItemID(id int) inventoryitemOption {
+	return func(m *InventoryItemMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *InventoryItem
+		)
+		m.oldValue = func(ctx context.Context) (*InventoryItem, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().InventoryItem.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withInventoryItem sets the old InventoryItem of the mutation.
+func withInventoryItem(node *InventoryItem) inventoryitemOption {
+	return func(m *InventoryItemMutation) {
+		m.oldValue = func(context.Context) (*InventoryItem, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m InventoryItemMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m InventoryItemMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// SetID sets the value of the id field. Note that this
+// operation is only accepted on creation of InventoryItem entities.
+func (m *InventoryItemMutation) SetID(id int) {
+	m.id = &id
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *InventoryItemMutation) ID() (id int, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *InventoryItemMutation) IDs(ctx context.Context) ([]int, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []int{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().InventoryItem.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetUserID sets the "user_id" field.
+func (m *InventoryItemMutation) SetUserID(i int) {
+	m.user = &i
+}
+
+// UserID returns the value of the "user_id" field in the mutation.
+func (m *InventoryItemMutation) UserID() (r int, exists bool) {
+	v := m.user
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUserID returns the old "user_id" field's value of the InventoryItem entity.
+// If the InventoryItem object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *InventoryItemMutation) OldUserID(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUserID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUserID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUserID: %w", err)
+	}
+	return oldValue.UserID, nil
+}
+
+// ResetUserID resets all changes to the "user_id" field.
+func (m *InventoryItemMutation) ResetUserID() {
+	m.user = nil
+}
+
+// SetItemID sets the "item_id" field.
+func (m *InventoryItemMutation) SetItemID(i int) {
+	m.item = &i
+}
+
+// ItemID returns the value of the "item_id" field in the mutation.
+func (m *InventoryItemMutation) ItemID() (r int, exists bool) {
+	v := m.item
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldItemID returns the old "item_id" field's value of the InventoryItem entity.
+// If the InventoryItem object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *InventoryItemMutation) OldItemID(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldItemID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldItemID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldItemID: %w", err)
+	}
+	return oldValue.ItemID, nil
+}
+
+// ResetItemID resets all changes to the "item_id" field.
+func (m *InventoryItemMutation) ResetItemID() {
+	m.item = nil
+}
+
+// SetReceivedFromID sets the "received_from_id" field.
+func (m *InventoryItemMutation) SetReceivedFromID(i int) {
+	m.received_from_id = &i
+	m.addreceived_from_id = nil
+}
+
+// ReceivedFromID returns the value of the "received_from_id" field in the mutation.
+func (m *InventoryItemMutation) ReceivedFromID() (r int, exists bool) {
+	v := m.received_from_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldReceivedFromID returns the old "received_from_id" field's value of the InventoryItem entity.
+// If the InventoryItem object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *InventoryItemMutation) OldReceivedFromID(ctx context.Context) (v *int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldReceivedFromID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldReceivedFromID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldReceivedFromID: %w", err)
+	}
+	return oldValue.ReceivedFromID, nil
+}
+
+// AddReceivedFromID adds i to the "received_from_id" field.
+func (m *InventoryItemMutation) AddReceivedFromID(i int) {
+	if m.addreceived_from_id != nil {
+		*m.addreceived_from_id += i
+	} else {
+		m.addreceived_from_id = &i
+	}
+}
+
+// AddedReceivedFromID returns the value that was added to the "received_from_id" field in this mutation.
+func (m *InventoryItemMutation) AddedReceivedFromID() (r int, exists bool) {
+	v := m.addreceived_from_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetReceivedFromID resets all changes to the "received_from_id" field.
+func (m *InventoryItemMutation) ResetReceivedFromID() {
+	m.received_from_id = nil
+	m.addreceived_from_id = nil
+}
+
+// SetObtainedAt sets the "obtained_at" field.
+func (m *InventoryItemMutation) SetObtainedAt(t time.Time) {
+	m.obtained_at = &t
+}
+
+// ObtainedAt returns the value of the "obtained_at" field in the mutation.
+func (m *InventoryItemMutation) ObtainedAt() (r time.Time, exists bool) {
+	v := m.obtained_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldObtainedAt returns the old "obtained_at" field's value of the InventoryItem entity.
+// If the InventoryItem object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *InventoryItemMutation) OldObtainedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldObtainedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldObtainedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldObtainedAt: %w", err)
+	}
+	return oldValue.ObtainedAt, nil
+}
+
+// ResetObtainedAt resets all changes to the "obtained_at" field.
+func (m *InventoryItemMutation) ResetObtainedAt() {
+	m.obtained_at = nil
+}
+
+// ClearUser clears the "user" edge to the User entity.
+func (m *InventoryItemMutation) ClearUser() {
+	m.cleareduser = true
+	m.clearedFields[inventoryitem.FieldUserID] = struct{}{}
+}
+
+// UserCleared reports if the "user" edge to the User entity was cleared.
+func (m *InventoryItemMutation) UserCleared() bool {
+	return m.cleareduser
+}
+
+// UserIDs returns the "user" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// UserID instead. It exists only for internal usage by the builders.
+func (m *InventoryItemMutation) UserIDs() (ids []int) {
+	if id := m.user; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetUser resets all changes to the "user" edge.
+func (m *InventoryItemMutation) ResetUser() {
+	m.user = nil
+	m.cleareduser = false
+}
+
+// ClearItem clears the "item" edge to the GameItem entity.
+func (m *InventoryItemMutation) ClearItem() {
+	m.cleareditem = true
+	m.clearedFields[inventoryitem.FieldItemID] = struct{}{}
+}
+
+// ItemCleared reports if the "item" edge to the GameItem entity was cleared.
+func (m *InventoryItemMutation) ItemCleared() bool {
+	return m.cleareditem
+}
+
+// ItemIDs returns the "item" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// ItemID instead. It exists only for internal usage by the builders.
+func (m *InventoryItemMutation) ItemIDs() (ids []int) {
+	if id := m.item; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetItem resets all changes to the "item" edge.
+func (m *InventoryItemMutation) ResetItem() {
+	m.item = nil
+	m.cleareditem = false
+}
+
+// Where appends a list predicates to the InventoryItemMutation builder.
+func (m *InventoryItemMutation) Where(ps ...predicate.InventoryItem) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// WhereP appends storage-level predicates to the InventoryItemMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *InventoryItemMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.InventoryItem, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
+// Op returns the operation name.
+func (m *InventoryItemMutation) Op() Op {
+	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *InventoryItemMutation) SetOp(op Op) {
+	m.op = op
+}
+
+// Type returns the node type of this mutation (InventoryItem).
+func (m *InventoryItemMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *InventoryItemMutation) Fields() []string {
+	fields := make([]string, 0, 4)
+	if m.user != nil {
+		fields = append(fields, inventoryitem.FieldUserID)
+	}
+	if m.item != nil {
+		fields = append(fields, inventoryitem.FieldItemID)
+	}
+	if m.received_from_id != nil {
+		fields = append(fields, inventoryitem.FieldReceivedFromID)
+	}
+	if m.obtained_at != nil {
+		fields = append(fields, inventoryitem.FieldObtainedAt)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *InventoryItemMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case inventoryitem.FieldUserID:
+		return m.UserID()
+	case inventoryitem.FieldItemID:
+		return m.ItemID()
+	case inventoryitem.FieldReceivedFromID:
+		return m.ReceivedFromID()
+	case inventoryitem.FieldObtainedAt:
+		return m.ObtainedAt()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *InventoryItemMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case inventoryitem.FieldUserID:
+		return m.OldUserID(ctx)
+	case inventoryitem.FieldItemID:
+		return m.OldItemID(ctx)
+	case inventoryitem.FieldReceivedFromID:
+		return m.OldReceivedFromID(ctx)
+	case inventoryitem.FieldObtainedAt:
+		return m.OldObtainedAt(ctx)
+	}
+	return nil, fmt.Errorf("unknown InventoryItem field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *InventoryItemMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case inventoryitem.FieldUserID:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUserID(v)
+		return nil
+	case inventoryitem.FieldItemID:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetItemID(v)
+		return nil
+	case inventoryitem.FieldReceivedFromID:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetReceivedFromID(v)
+		return nil
+	case inventoryitem.FieldObtainedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetObtainedAt(v)
+		return nil
+	}
+	return fmt.Errorf("unknown InventoryItem field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *InventoryItemMutation) AddedFields() []string {
+	var fields []string
+	if m.addreceived_from_id != nil {
+		fields = append(fields, inventoryitem.FieldReceivedFromID)
+	}
+	return fields
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *InventoryItemMutation) AddedField(name string) (ent.Value, bool) {
+	switch name {
+	case inventoryitem.FieldReceivedFromID:
+		return m.AddedReceivedFromID()
+	}
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *InventoryItemMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	case inventoryitem.FieldReceivedFromID:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddReceivedFromID(v)
+		return nil
+	}
+	return fmt.Errorf("unknown InventoryItem numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *InventoryItemMutation) ClearedFields() []string {
+	return nil
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *InventoryItemMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *InventoryItemMutation) ClearField(name string) error {
+	return fmt.Errorf("unknown InventoryItem nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *InventoryItemMutation) ResetField(name string) error {
+	switch name {
+	case inventoryitem.FieldUserID:
+		m.ResetUserID()
+		return nil
+	case inventoryitem.FieldItemID:
+		m.ResetItemID()
+		return nil
+	case inventoryitem.FieldReceivedFromID:
+		m.ResetReceivedFromID()
+		return nil
+	case inventoryitem.FieldObtainedAt:
+		m.ResetObtainedAt()
+		return nil
+	}
+	return fmt.Errorf("unknown InventoryItem field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *InventoryItemMutation) AddedEdges() []string {
+	edges := make([]string, 0, 2)
+	if m.user != nil {
+		edges = append(edges, inventoryitem.EdgeUser)
+	}
+	if m.item != nil {
+		edges = append(edges, inventoryitem.EdgeItem)
+	}
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *InventoryItemMutation) AddedIDs(name string) []ent.Value {
+	switch name {
+	case inventoryitem.EdgeUser:
+		if id := m.user; id != nil {
+			return []ent.Value{*id}
+		}
+	case inventoryitem.EdgeItem:
+		if id := m.item; id != nil {
+			return []ent.Value{*id}
+		}
+	}
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *InventoryItemMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 2)
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *InventoryItemMutation) RemovedIDs(name string) []ent.Value {
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *InventoryItemMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 2)
+	if m.cleareduser {
+		edges = append(edges, inventoryitem.EdgeUser)
+	}
+	if m.cleareditem {
+		edges = append(edges, inventoryitem.EdgeItem)
+	}
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *InventoryItemMutation) EdgeCleared(name string) bool {
+	switch name {
+	case inventoryitem.EdgeUser:
+		return m.cleareduser
+	case inventoryitem.EdgeItem:
+		return m.cleareditem
+	}
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *InventoryItemMutation) ClearEdge(name string) error {
+	switch name {
+	case inventoryitem.EdgeUser:
+		m.ClearUser()
+		return nil
+	case inventoryitem.EdgeItem:
+		m.ClearItem()
+		return nil
+	}
+	return fmt.Errorf("unknown InventoryItem unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *InventoryItemMutation) ResetEdge(name string) error {
+	switch name {
+	case inventoryitem.EdgeUser:
+		m.ResetUser()
+		return nil
+	case inventoryitem.EdgeItem:
+		m.ResetItem()
+		return nil
+	}
+	return fmt.Errorf("unknown InventoryItem edge %s", name)
 }
 
 // MatchMutation represents an operation that mutates the Match nodes in the graph.
@@ -6462,7 +7092,7 @@ func (m *UserMutation) ResetReceivedFriendRequests() {
 	m.removedreceived_friend_requests = nil
 }
 
-// AddItemIDs adds the "items" edge to the UserItem entity by ids.
+// AddItemIDs adds the "items" edge to the InventoryItem entity by ids.
 func (m *UserMutation) AddItemIDs(ids ...int) {
 	if m.items == nil {
 		m.items = make(map[int]struct{})
@@ -6472,17 +7102,17 @@ func (m *UserMutation) AddItemIDs(ids ...int) {
 	}
 }
 
-// ClearItems clears the "items" edge to the UserItem entity.
+// ClearItems clears the "items" edge to the InventoryItem entity.
 func (m *UserMutation) ClearItems() {
 	m.cleareditems = true
 }
 
-// ItemsCleared reports if the "items" edge to the UserItem entity was cleared.
+// ItemsCleared reports if the "items" edge to the InventoryItem entity was cleared.
 func (m *UserMutation) ItemsCleared() bool {
 	return m.cleareditems
 }
 
-// RemoveItemIDs removes the "items" edge to the UserItem entity by IDs.
+// RemoveItemIDs removes the "items" edge to the InventoryItem entity by IDs.
 func (m *UserMutation) RemoveItemIDs(ids ...int) {
 	if m.removeditems == nil {
 		m.removeditems = make(map[int]struct{})
@@ -6493,7 +7123,7 @@ func (m *UserMutation) RemoveItemIDs(ids ...int) {
 	}
 }
 
-// RemovedItems returns the removed IDs of the "items" edge to the UserItem entity.
+// RemovedItems returns the removed IDs of the "items" edge to the InventoryItem entity.
 func (m *UserMutation) RemovedItemsIDs() (ids []int) {
 	for id := range m.removeditems {
 		ids = append(ids, id)
@@ -6516,18 +7146,18 @@ func (m *UserMutation) ResetItems() {
 	m.removeditems = nil
 }
 
-// SetCurrentItemID sets the "current_item" edge to the UserItem entity by id.
+// SetCurrentItemID sets the "current_item" edge to the InventoryItem entity by id.
 func (m *UserMutation) SetCurrentItemID(id int) {
 	m.current_item = &id
 }
 
-// ClearCurrentItem clears the "current_item" edge to the UserItem entity.
+// ClearCurrentItem clears the "current_item" edge to the InventoryItem entity.
 func (m *UserMutation) ClearCurrentItem() {
 	m.clearedcurrent_item = true
 	m.clearedFields[user.FieldCurrentItemInProfileID] = struct{}{}
 }
 
-// CurrentItemCleared reports if the "current_item" edge to the UserItem entity was cleared.
+// CurrentItemCleared reports if the "current_item" edge to the InventoryItem entity was cleared.
 func (m *UserMutation) CurrentItemCleared() bool {
 	return m.CurrentItemInProfileIDCleared() || m.clearedcurrent_item
 }
@@ -8025,634 +8655,4 @@ func (m *UserBalanceMutation) ResetEdge(name string) error {
 		return nil
 	}
 	return fmt.Errorf("unknown UserBalance edge %s", name)
-}
-
-// UserItemMutation represents an operation that mutates the UserItem nodes in the graph.
-type UserItemMutation struct {
-	config
-	op                  Op
-	typ                 string
-	id                  *int
-	received_from_id    *int
-	addreceived_from_id *int
-	obtained_at         *time.Time
-	clearedFields       map[string]struct{}
-	user                *int
-	cleareduser         bool
-	item                *int
-	cleareditem         bool
-	done                bool
-	oldValue            func(context.Context) (*UserItem, error)
-	predicates          []predicate.UserItem
-}
-
-var _ ent.Mutation = (*UserItemMutation)(nil)
-
-// useritemOption allows management of the mutation configuration using functional options.
-type useritemOption func(*UserItemMutation)
-
-// newUserItemMutation creates new mutation for the UserItem entity.
-func newUserItemMutation(c config, op Op, opts ...useritemOption) *UserItemMutation {
-	m := &UserItemMutation{
-		config:        c,
-		op:            op,
-		typ:           TypeUserItem,
-		clearedFields: make(map[string]struct{}),
-	}
-	for _, opt := range opts {
-		opt(m)
-	}
-	return m
-}
-
-// withUserItemID sets the ID field of the mutation.
-func withUserItemID(id int) useritemOption {
-	return func(m *UserItemMutation) {
-		var (
-			err   error
-			once  sync.Once
-			value *UserItem
-		)
-		m.oldValue = func(ctx context.Context) (*UserItem, error) {
-			once.Do(func() {
-				if m.done {
-					err = errors.New("querying old values post mutation is not allowed")
-				} else {
-					value, err = m.Client().UserItem.Get(ctx, id)
-				}
-			})
-			return value, err
-		}
-		m.id = &id
-	}
-}
-
-// withUserItem sets the old UserItem of the mutation.
-func withUserItem(node *UserItem) useritemOption {
-	return func(m *UserItemMutation) {
-		m.oldValue = func(context.Context) (*UserItem, error) {
-			return node, nil
-		}
-		m.id = &node.ID
-	}
-}
-
-// Client returns a new `ent.Client` from the mutation. If the mutation was
-// executed in a transaction (ent.Tx), a transactional client is returned.
-func (m UserItemMutation) Client() *Client {
-	client := &Client{config: m.config}
-	client.init()
-	return client
-}
-
-// Tx returns an `ent.Tx` for mutations that were executed in transactions;
-// it returns an error otherwise.
-func (m UserItemMutation) Tx() (*Tx, error) {
-	if _, ok := m.driver.(*txDriver); !ok {
-		return nil, errors.New("ent: mutation is not running in a transaction")
-	}
-	tx := &Tx{config: m.config}
-	tx.init()
-	return tx, nil
-}
-
-// SetID sets the value of the id field. Note that this
-// operation is only accepted on creation of UserItem entities.
-func (m *UserItemMutation) SetID(id int) {
-	m.id = &id
-}
-
-// ID returns the ID value in the mutation. Note that the ID is only available
-// if it was provided to the builder or after it was returned from the database.
-func (m *UserItemMutation) ID() (id int, exists bool) {
-	if m.id == nil {
-		return
-	}
-	return *m.id, true
-}
-
-// IDs queries the database and returns the entity ids that match the mutation's predicate.
-// That means, if the mutation is applied within a transaction with an isolation level such
-// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
-// or updated by the mutation.
-func (m *UserItemMutation) IDs(ctx context.Context) ([]int, error) {
-	switch {
-	case m.op.Is(OpUpdateOne | OpDeleteOne):
-		id, exists := m.ID()
-		if exists {
-			return []int{id}, nil
-		}
-		fallthrough
-	case m.op.Is(OpUpdate | OpDelete):
-		return m.Client().UserItem.Query().Where(m.predicates...).IDs(ctx)
-	default:
-		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
-	}
-}
-
-// SetUserID sets the "user_id" field.
-func (m *UserItemMutation) SetUserID(i int) {
-	m.user = &i
-}
-
-// UserID returns the value of the "user_id" field in the mutation.
-func (m *UserItemMutation) UserID() (r int, exists bool) {
-	v := m.user
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldUserID returns the old "user_id" field's value of the UserItem entity.
-// If the UserItem object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *UserItemMutation) OldUserID(ctx context.Context) (v int, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldUserID is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldUserID requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldUserID: %w", err)
-	}
-	return oldValue.UserID, nil
-}
-
-// ResetUserID resets all changes to the "user_id" field.
-func (m *UserItemMutation) ResetUserID() {
-	m.user = nil
-}
-
-// SetItemID sets the "item_id" field.
-func (m *UserItemMutation) SetItemID(i int) {
-	m.item = &i
-}
-
-// ItemID returns the value of the "item_id" field in the mutation.
-func (m *UserItemMutation) ItemID() (r int, exists bool) {
-	v := m.item
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldItemID returns the old "item_id" field's value of the UserItem entity.
-// If the UserItem object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *UserItemMutation) OldItemID(ctx context.Context) (v int, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldItemID is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldItemID requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldItemID: %w", err)
-	}
-	return oldValue.ItemID, nil
-}
-
-// ResetItemID resets all changes to the "item_id" field.
-func (m *UserItemMutation) ResetItemID() {
-	m.item = nil
-}
-
-// SetReceivedFromID sets the "received_from_id" field.
-func (m *UserItemMutation) SetReceivedFromID(i int) {
-	m.received_from_id = &i
-	m.addreceived_from_id = nil
-}
-
-// ReceivedFromID returns the value of the "received_from_id" field in the mutation.
-func (m *UserItemMutation) ReceivedFromID() (r int, exists bool) {
-	v := m.received_from_id
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldReceivedFromID returns the old "received_from_id" field's value of the UserItem entity.
-// If the UserItem object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *UserItemMutation) OldReceivedFromID(ctx context.Context) (v int, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldReceivedFromID is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldReceivedFromID requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldReceivedFromID: %w", err)
-	}
-	return oldValue.ReceivedFromID, nil
-}
-
-// AddReceivedFromID adds i to the "received_from_id" field.
-func (m *UserItemMutation) AddReceivedFromID(i int) {
-	if m.addreceived_from_id != nil {
-		*m.addreceived_from_id += i
-	} else {
-		m.addreceived_from_id = &i
-	}
-}
-
-// AddedReceivedFromID returns the value that was added to the "received_from_id" field in this mutation.
-func (m *UserItemMutation) AddedReceivedFromID() (r int, exists bool) {
-	v := m.addreceived_from_id
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// ResetReceivedFromID resets all changes to the "received_from_id" field.
-func (m *UserItemMutation) ResetReceivedFromID() {
-	m.received_from_id = nil
-	m.addreceived_from_id = nil
-}
-
-// SetObtainedAt sets the "obtained_at" field.
-func (m *UserItemMutation) SetObtainedAt(t time.Time) {
-	m.obtained_at = &t
-}
-
-// ObtainedAt returns the value of the "obtained_at" field in the mutation.
-func (m *UserItemMutation) ObtainedAt() (r time.Time, exists bool) {
-	v := m.obtained_at
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldObtainedAt returns the old "obtained_at" field's value of the UserItem entity.
-// If the UserItem object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *UserItemMutation) OldObtainedAt(ctx context.Context) (v time.Time, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldObtainedAt is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldObtainedAt requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldObtainedAt: %w", err)
-	}
-	return oldValue.ObtainedAt, nil
-}
-
-// ResetObtainedAt resets all changes to the "obtained_at" field.
-func (m *UserItemMutation) ResetObtainedAt() {
-	m.obtained_at = nil
-}
-
-// ClearUser clears the "user" edge to the User entity.
-func (m *UserItemMutation) ClearUser() {
-	m.cleareduser = true
-	m.clearedFields[useritem.FieldUserID] = struct{}{}
-}
-
-// UserCleared reports if the "user" edge to the User entity was cleared.
-func (m *UserItemMutation) UserCleared() bool {
-	return m.cleareduser
-}
-
-// UserIDs returns the "user" edge IDs in the mutation.
-// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
-// UserID instead. It exists only for internal usage by the builders.
-func (m *UserItemMutation) UserIDs() (ids []int) {
-	if id := m.user; id != nil {
-		ids = append(ids, *id)
-	}
-	return
-}
-
-// ResetUser resets all changes to the "user" edge.
-func (m *UserItemMutation) ResetUser() {
-	m.user = nil
-	m.cleareduser = false
-}
-
-// ClearItem clears the "item" edge to the GameItem entity.
-func (m *UserItemMutation) ClearItem() {
-	m.cleareditem = true
-	m.clearedFields[useritem.FieldItemID] = struct{}{}
-}
-
-// ItemCleared reports if the "item" edge to the GameItem entity was cleared.
-func (m *UserItemMutation) ItemCleared() bool {
-	return m.cleareditem
-}
-
-// ItemIDs returns the "item" edge IDs in the mutation.
-// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
-// ItemID instead. It exists only for internal usage by the builders.
-func (m *UserItemMutation) ItemIDs() (ids []int) {
-	if id := m.item; id != nil {
-		ids = append(ids, *id)
-	}
-	return
-}
-
-// ResetItem resets all changes to the "item" edge.
-func (m *UserItemMutation) ResetItem() {
-	m.item = nil
-	m.cleareditem = false
-}
-
-// Where appends a list predicates to the UserItemMutation builder.
-func (m *UserItemMutation) Where(ps ...predicate.UserItem) {
-	m.predicates = append(m.predicates, ps...)
-}
-
-// WhereP appends storage-level predicates to the UserItemMutation builder. Using this method,
-// users can use type-assertion to append predicates that do not depend on any generated package.
-func (m *UserItemMutation) WhereP(ps ...func(*sql.Selector)) {
-	p := make([]predicate.UserItem, len(ps))
-	for i := range ps {
-		p[i] = ps[i]
-	}
-	m.Where(p...)
-}
-
-// Op returns the operation name.
-func (m *UserItemMutation) Op() Op {
-	return m.op
-}
-
-// SetOp allows setting the mutation operation.
-func (m *UserItemMutation) SetOp(op Op) {
-	m.op = op
-}
-
-// Type returns the node type of this mutation (UserItem).
-func (m *UserItemMutation) Type() string {
-	return m.typ
-}
-
-// Fields returns all fields that were changed during this mutation. Note that in
-// order to get all numeric fields that were incremented/decremented, call
-// AddedFields().
-func (m *UserItemMutation) Fields() []string {
-	fields := make([]string, 0, 4)
-	if m.user != nil {
-		fields = append(fields, useritem.FieldUserID)
-	}
-	if m.item != nil {
-		fields = append(fields, useritem.FieldItemID)
-	}
-	if m.received_from_id != nil {
-		fields = append(fields, useritem.FieldReceivedFromID)
-	}
-	if m.obtained_at != nil {
-		fields = append(fields, useritem.FieldObtainedAt)
-	}
-	return fields
-}
-
-// Field returns the value of a field with the given name. The second boolean
-// return value indicates that this field was not set, or was not defined in the
-// schema.
-func (m *UserItemMutation) Field(name string) (ent.Value, bool) {
-	switch name {
-	case useritem.FieldUserID:
-		return m.UserID()
-	case useritem.FieldItemID:
-		return m.ItemID()
-	case useritem.FieldReceivedFromID:
-		return m.ReceivedFromID()
-	case useritem.FieldObtainedAt:
-		return m.ObtainedAt()
-	}
-	return nil, false
-}
-
-// OldField returns the old value of the field from the database. An error is
-// returned if the mutation operation is not UpdateOne, or the query to the
-// database failed.
-func (m *UserItemMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
-	switch name {
-	case useritem.FieldUserID:
-		return m.OldUserID(ctx)
-	case useritem.FieldItemID:
-		return m.OldItemID(ctx)
-	case useritem.FieldReceivedFromID:
-		return m.OldReceivedFromID(ctx)
-	case useritem.FieldObtainedAt:
-		return m.OldObtainedAt(ctx)
-	}
-	return nil, fmt.Errorf("unknown UserItem field %s", name)
-}
-
-// SetField sets the value of a field with the given name. It returns an error if
-// the field is not defined in the schema, or if the type mismatched the field
-// type.
-func (m *UserItemMutation) SetField(name string, value ent.Value) error {
-	switch name {
-	case useritem.FieldUserID:
-		v, ok := value.(int)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetUserID(v)
-		return nil
-	case useritem.FieldItemID:
-		v, ok := value.(int)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetItemID(v)
-		return nil
-	case useritem.FieldReceivedFromID:
-		v, ok := value.(int)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetReceivedFromID(v)
-		return nil
-	case useritem.FieldObtainedAt:
-		v, ok := value.(time.Time)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetObtainedAt(v)
-		return nil
-	}
-	return fmt.Errorf("unknown UserItem field %s", name)
-}
-
-// AddedFields returns all numeric fields that were incremented/decremented during
-// this mutation.
-func (m *UserItemMutation) AddedFields() []string {
-	var fields []string
-	if m.addreceived_from_id != nil {
-		fields = append(fields, useritem.FieldReceivedFromID)
-	}
-	return fields
-}
-
-// AddedField returns the numeric value that was incremented/decremented on a field
-// with the given name. The second boolean return value indicates that this field
-// was not set, or was not defined in the schema.
-func (m *UserItemMutation) AddedField(name string) (ent.Value, bool) {
-	switch name {
-	case useritem.FieldReceivedFromID:
-		return m.AddedReceivedFromID()
-	}
-	return nil, false
-}
-
-// AddField adds the value to the field with the given name. It returns an error if
-// the field is not defined in the schema, or if the type mismatched the field
-// type.
-func (m *UserItemMutation) AddField(name string, value ent.Value) error {
-	switch name {
-	case useritem.FieldReceivedFromID:
-		v, ok := value.(int)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.AddReceivedFromID(v)
-		return nil
-	}
-	return fmt.Errorf("unknown UserItem numeric field %s", name)
-}
-
-// ClearedFields returns all nullable fields that were cleared during this
-// mutation.
-func (m *UserItemMutation) ClearedFields() []string {
-	return nil
-}
-
-// FieldCleared returns a boolean indicating if a field with the given name was
-// cleared in this mutation.
-func (m *UserItemMutation) FieldCleared(name string) bool {
-	_, ok := m.clearedFields[name]
-	return ok
-}
-
-// ClearField clears the value of the field with the given name. It returns an
-// error if the field is not defined in the schema.
-func (m *UserItemMutation) ClearField(name string) error {
-	return fmt.Errorf("unknown UserItem nullable field %s", name)
-}
-
-// ResetField resets all changes in the mutation for the field with the given name.
-// It returns an error if the field is not defined in the schema.
-func (m *UserItemMutation) ResetField(name string) error {
-	switch name {
-	case useritem.FieldUserID:
-		m.ResetUserID()
-		return nil
-	case useritem.FieldItemID:
-		m.ResetItemID()
-		return nil
-	case useritem.FieldReceivedFromID:
-		m.ResetReceivedFromID()
-		return nil
-	case useritem.FieldObtainedAt:
-		m.ResetObtainedAt()
-		return nil
-	}
-	return fmt.Errorf("unknown UserItem field %s", name)
-}
-
-// AddedEdges returns all edge names that were set/added in this mutation.
-func (m *UserItemMutation) AddedEdges() []string {
-	edges := make([]string, 0, 2)
-	if m.user != nil {
-		edges = append(edges, useritem.EdgeUser)
-	}
-	if m.item != nil {
-		edges = append(edges, useritem.EdgeItem)
-	}
-	return edges
-}
-
-// AddedIDs returns all IDs (to other nodes) that were added for the given edge
-// name in this mutation.
-func (m *UserItemMutation) AddedIDs(name string) []ent.Value {
-	switch name {
-	case useritem.EdgeUser:
-		if id := m.user; id != nil {
-			return []ent.Value{*id}
-		}
-	case useritem.EdgeItem:
-		if id := m.item; id != nil {
-			return []ent.Value{*id}
-		}
-	}
-	return nil
-}
-
-// RemovedEdges returns all edge names that were removed in this mutation.
-func (m *UserItemMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 2)
-	return edges
-}
-
-// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
-// the given name in this mutation.
-func (m *UserItemMutation) RemovedIDs(name string) []ent.Value {
-	return nil
-}
-
-// ClearedEdges returns all edge names that were cleared in this mutation.
-func (m *UserItemMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 2)
-	if m.cleareduser {
-		edges = append(edges, useritem.EdgeUser)
-	}
-	if m.cleareditem {
-		edges = append(edges, useritem.EdgeItem)
-	}
-	return edges
-}
-
-// EdgeCleared returns a boolean which indicates if the edge with the given name
-// was cleared in this mutation.
-func (m *UserItemMutation) EdgeCleared(name string) bool {
-	switch name {
-	case useritem.EdgeUser:
-		return m.cleareduser
-	case useritem.EdgeItem:
-		return m.cleareditem
-	}
-	return false
-}
-
-// ClearEdge clears the value of the edge with the given name. It returns an error
-// if that edge is not defined in the schema.
-func (m *UserItemMutation) ClearEdge(name string) error {
-	switch name {
-	case useritem.EdgeUser:
-		m.ClearUser()
-		return nil
-	case useritem.EdgeItem:
-		m.ClearItem()
-		return nil
-	}
-	return fmt.Errorf("unknown UserItem unique edge %s", name)
-}
-
-// ResetEdge resets all changes to the edge with the given name in this mutation.
-// It returns an error if the edge is not defined in the schema.
-func (m *UserItemMutation) ResetEdge(name string) error {
-	switch name {
-	case useritem.EdgeUser:
-		m.ResetUser()
-		return nil
-	case useritem.EdgeItem:
-		m.ResetItem()
-		return nil
-	}
-	return fmt.Errorf("unknown UserItem edge %s", name)
 }

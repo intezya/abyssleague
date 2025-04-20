@@ -4,12 +4,12 @@ package ent
 
 import (
 	"abysscore/internal/infrastructure/ent/friendrequest"
+	"abysscore/internal/infrastructure/ent/inventoryitem"
 	"abysscore/internal/infrastructure/ent/match"
 	"abysscore/internal/infrastructure/ent/schema/access_level"
 	"abysscore/internal/infrastructure/ent/statistic"
 	"abysscore/internal/infrastructure/ent/user"
 	"abysscore/internal/infrastructure/ent/userbalance"
-	"abysscore/internal/infrastructure/ent/useritem"
 	"context"
 	"errors"
 	"fmt"
@@ -362,28 +362,28 @@ func (uc *UserCreate) AddReceivedFriendRequests(f ...*FriendRequest) *UserCreate
 	return uc.AddReceivedFriendRequestIDs(ids...)
 }
 
-// AddItemIDs adds the "items" edge to the UserItem entity by IDs.
+// AddItemIDs adds the "items" edge to the InventoryItem entity by IDs.
 func (uc *UserCreate) AddItemIDs(ids ...int) *UserCreate {
 	uc.mutation.AddItemIDs(ids...)
 	return uc
 }
 
-// AddItems adds the "items" edges to the UserItem entity.
-func (uc *UserCreate) AddItems(u ...*UserItem) *UserCreate {
-	ids := make([]int, len(u))
-	for i := range u {
-		ids[i] = u[i].ID
+// AddItems adds the "items" edges to the InventoryItem entity.
+func (uc *UserCreate) AddItems(i ...*InventoryItem) *UserCreate {
+	ids := make([]int, len(i))
+	for j := range i {
+		ids[j] = i[j].ID
 	}
 	return uc.AddItemIDs(ids...)
 }
 
-// SetCurrentItemID sets the "current_item" edge to the UserItem entity by ID.
+// SetCurrentItemID sets the "current_item" edge to the InventoryItem entity by ID.
 func (uc *UserCreate) SetCurrentItemID(id int) *UserCreate {
 	uc.mutation.SetCurrentItemID(id)
 	return uc
 }
 
-// SetNillableCurrentItemID sets the "current_item" edge to the UserItem entity by ID if the given value is not nil.
+// SetNillableCurrentItemID sets the "current_item" edge to the InventoryItem entity by ID if the given value is not nil.
 func (uc *UserCreate) SetNillableCurrentItemID(id *int) *UserCreate {
 	if id != nil {
 		uc = uc.SetCurrentItemID(*id)
@@ -391,9 +391,9 @@ func (uc *UserCreate) SetNillableCurrentItemID(id *int) *UserCreate {
 	return uc
 }
 
-// SetCurrentItem sets the "current_item" edge to the UserItem entity.
-func (uc *UserCreate) SetCurrentItem(u *UserItem) *UserCreate {
-	return uc.SetCurrentItemID(u.ID)
+// SetCurrentItem sets the "current_item" edge to the InventoryItem entity.
+func (uc *UserCreate) SetCurrentItem(i *InventoryItem) *UserCreate {
+	return uc.SetCurrentItemID(i.ID)
 }
 
 // SetCurrentMatch sets the "current_match" edge to the Match entity.
@@ -722,7 +722,7 @@ func (uc *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 			Columns: []string{user.ItemsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(useritem.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(inventoryitem.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {
@@ -738,7 +738,7 @@ func (uc *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 			Columns: []string{user.CurrentItemColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(useritem.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(inventoryitem.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {

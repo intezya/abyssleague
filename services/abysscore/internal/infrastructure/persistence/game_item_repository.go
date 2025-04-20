@@ -32,7 +32,7 @@ func (g *GameItemRepository) Create(ctx context.Context, gameItem *dto.GameItemD
 		return nil, repositoryerrors.WrapUnexpectedError(err)
 	}
 
-	return mapper.MapToGameItemDTOFromEnt(result), nil
+	return mapper.ToGameItemDTOFromEnt(result), nil
 }
 
 func (g *GameItemRepository) UpdateByID(ctx context.Context, id int, gameItem *dto.GameItemDTO) error {
@@ -97,9 +97,9 @@ func (g *GameItemRepository) FindAllPaged(
 		return nil, repositoryerrors.WrapUnexpectedError(err)
 	}
 
-	mappedItems := itertools.Map(func(item *ent.GameItem) *dto.GameItemDTO {
-		return mapper.MapToGameItemDTOFromEnt(item)
-	}, items)
+	mappedItems := itertools.Map(items, func(item *ent.GameItem) *dto.GameItemDTO {
+		return mapper.ToGameItemDTOFromEnt(item)
+	})
 
 	return &dto.PaginatedResult[*dto.GameItemDTO]{
 		Data:       mappedItems,
@@ -121,5 +121,5 @@ func (g *GameItemRepository) FindByID(ctx context.Context, id int) (*dto.GameIte
 		return nil, repositoryerrors.WrapUnexpectedError(err)
 	}
 
-	return mapper.MapToGameItemDTOFromEnt(result), nil
+	return mapper.ToGameItemDTOFromEnt(result), nil
 }

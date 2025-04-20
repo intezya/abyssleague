@@ -1425,7 +1425,7 @@ func HasItems() predicate.User {
 }
 
 // HasItemsWith applies the HasEdge predicate on the "items" edge with a given conditions (other predicates).
-func HasItemsWith(preds ...predicate.UserItem) predicate.User {
+func HasItemsWith(preds ...predicate.InventoryItem) predicate.User {
 	return predicate.User(func(s *sql.Selector) {
 		step := newItemsStep()
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
@@ -1448,7 +1448,7 @@ func HasCurrentItem() predicate.User {
 }
 
 // HasCurrentItemWith applies the HasEdge predicate on the "current_item" edge with a given conditions (other predicates).
-func HasCurrentItemWith(preds ...predicate.UserItem) predicate.User {
+func HasCurrentItemWith(preds ...predicate.InventoryItem) predicate.User {
 	return predicate.User(func(s *sql.Selector) {
 		step := newCurrentItemStep()
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {

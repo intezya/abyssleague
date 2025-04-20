@@ -10,7 +10,7 @@ require (
 	github.com/gofiber/fiber/v2 v2.52.6
 	github.com/golang-jwt/jwt/v5 v5.2.2
 	github.com/intezya/pkglib/crypto v0.0.0-20250410075734-66680663f021
-	github.com/intezya/pkglib/itertools v0.0.0-20250410075734-66680663f021
+	github.com/intezya/pkglib/itertools v0.1.1
 	github.com/intezya/pkglib/logger v0.0.0-20250410075734-66680663f021
 	github.com/joho/godotenv v1.5.1
 	github.com/json-iterator/go v1.1.12
