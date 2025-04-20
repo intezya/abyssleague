@@ -6,6 +6,7 @@ import (
 	"abysscore/internal/infrastructure/ent/match"
 	"abysscore/internal/infrastructure/ent/schema/access_level"
 	"abysscore/internal/infrastructure/ent/user"
+	"abysscore/internal/infrastructure/ent/userbalance"
 	"abysscore/internal/infrastructure/ent/useritem"
 	"fmt"
 	"strings"
@@ -52,8 +53,16 @@ type User struct {
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	// SearchBlockedUntil holds the value of the "search_blocked_until" field.
 	SearchBlockedUntil *time.Time `json:"search_blocked_until,omitempty"`
+	// SearchBlockReason holds the value of the "search_block_reason" field.
+	SearchBlockReason *string `json:"search_block_reason,omitempty"`
+	// SearchBlockedLevel holds the value of the "search_blocked_level" field.
+	SearchBlockedLevel int `json:"search_blocked_level,omitempty"`
 	// AccountBlockedUntil holds the value of the "account_blocked_until" field.
 	AccountBlockedUntil *time.Time `json:"account_blocked_until,omitempty"`
+	// AccountBlockReason holds the value of the "account_block_reason" field.
+	AccountBlockReason *string `json:"account_block_reason,omitempty"`
+	// AccountBlockedLevel holds the value of the "account_blocked_level" field.
+	AccountBlockedLevel int `json:"account_blocked_level,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the UserQuery when eager-loading is set.
 	Edges        UserEdges `json:"edges"`
@@ -76,9 +85,11 @@ type UserEdges struct {
 	CurrentItem *UserItem `json:"current_item,omitempty"`
 	// CurrentMatch holds the value of the current_match edge.
 	CurrentMatch *Match `json:"current_match,omitempty"`
+	// Balance holds the value of the balance edge.
+	Balance *UserBalance `json:"balance,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [7]bool
+	loadedTypes [8]bool
 }
 
 // StatisticsOrErr returns the Statistics value or an error if the edge
@@ -148,6 +159,17 @@ func (e UserEdges) CurrentMatchOrErr() (*Match, error) {
 	return nil, &NotLoadedError{edge: "current_match"}
 }
 
+// BalanceOrErr returns the Balance value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e UserEdges) BalanceOrErr() (*UserBalance, error) {
+	if e.Balance != nil {
+		return e.Balance, nil
+	} else if e.loadedTypes[7] {
+		return nil, &NotFoundError{label: userbalance.Label}
+	}
+	return nil, &NotLoadedError{edge: "balance"}
+}
+
 // scanValues returns the types for scanning values from sql.Rows.
 func (*User) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
@@ -157,9 +179,9 @@ func (*User) scanValues(columns []string) ([]any, error) {
 			values[i] = new(access_level.AccessLevel)
 		case user.FieldInvitesEnabled:
 			values[i] = new(sql.NullBool)
-		case user.FieldID, user.FieldCurrentMatchID, user.FieldCurrentItemInProfileID, user.FieldLoginStreak:
+		case user.FieldID, user.FieldCurrentMatchID, user.FieldCurrentItemInProfileID, user.FieldLoginStreak, user.FieldSearchBlockedLevel, user.FieldAccountBlockedLevel:
 			values[i] = new(sql.NullInt64)
-		case user.FieldUsername, user.FieldLowerUsername, user.FieldEmail, user.FieldPassword, user.FieldHardwareID, user.FieldGenshinUID, user.FieldHoyolabLogin, user.FieldAvatarURL:
+		case user.FieldUsername, user.FieldLowerUsername, user.FieldEmail, user.FieldPassword, user.FieldHardwareID, user.FieldGenshinUID, user.FieldHoyolabLogin, user.FieldAvatarURL, user.FieldSearchBlockReason, user.FieldAccountBlockReason:
 			values[i] = new(sql.NullString)
 		case user.FieldLoginAt, user.FieldCreatedAt, user.FieldSearchBlockedUntil, user.FieldAccountBlockedUntil:
 			values[i] = new(sql.NullTime)
@@ -288,12 +310,38 @@ func (u *User) assignValues(columns []string, values []any) error {
 				u.SearchBlockedUntil = new(time.Time)
 				*u.SearchBlockedUntil = value.Time
 			}
+		case user.FieldSearchBlockReason:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field search_block_reason", values[i])
+			} else if value.Valid {
+				u.SearchBlockReason = new(string)
+				*u.SearchBlockReason = value.String
+			}
+		case user.FieldSearchBlockedLevel:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field search_blocked_level", values[i])
+			} else if value.Valid {
+				u.SearchBlockedLevel = int(value.Int64)
+			}
 		case user.FieldAccountBlockedUntil:
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field account_blocked_until", values[i])
 			} else if value.Valid {
 				u.AccountBlockedUntil = new(time.Time)
 				*u.AccountBlockedUntil = value.Time
+			}
+		case user.FieldAccountBlockReason:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field account_block_reason", values[i])
+			} else if value.Valid {
+				u.AccountBlockReason = new(string)
+				*u.AccountBlockReason = value.String
+			}
+		case user.FieldAccountBlockedLevel:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field account_blocked_level", values[i])
+			} else if value.Valid {
+				u.AccountBlockedLevel = int(value.Int64)
 			}
 		default:
 			u.selectValues.Set(columns[i], values[i])
@@ -341,6 +389,11 @@ func (u *User) QueryCurrentItem() *UserItemQuery {
 // QueryCurrentMatch queries the "current_match" edge of the User entity.
 func (u *User) QueryCurrentMatch() *MatchQuery {
 	return NewUserClient(u.config).QueryCurrentMatch(u)
+}
+
+// QueryBalance queries the "balance" edge of the User entity.
+func (u *User) QueryBalance() *UserBalanceQuery {
+	return NewUserClient(u.config).QueryBalance(u)
 }
 
 // Update returns a builder for updating this User.
@@ -426,10 +479,26 @@ func (u *User) String() string {
 		builder.WriteString(v.Format(time.ANSIC))
 	}
 	builder.WriteString(", ")
+	if v := u.SearchBlockReason; v != nil {
+		builder.WriteString("search_block_reason=")
+		builder.WriteString(*v)
+	}
+	builder.WriteString(", ")
+	builder.WriteString("search_blocked_level=")
+	builder.WriteString(fmt.Sprintf("%v", u.SearchBlockedLevel))
+	builder.WriteString(", ")
 	if v := u.AccountBlockedUntil; v != nil {
 		builder.WriteString("account_blocked_until=")
 		builder.WriteString(v.Format(time.ANSIC))
 	}
+	builder.WriteString(", ")
+	if v := u.AccountBlockReason; v != nil {
+		builder.WriteString("account_block_reason=")
+		builder.WriteString(*v)
+	}
+	builder.WriteString(", ")
+	builder.WriteString("account_blocked_level=")
+	builder.WriteString(fmt.Sprintf("%v", u.AccountBlockedLevel))
 	builder.WriteByte(')')
 	return builder.String()
 }

@@ -168,7 +168,11 @@ var (
 		{Name: "login_streak", Type: field.TypeInt, Default: 0},
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "search_blocked_until", Type: field.TypeTime, Nullable: true},
+		{Name: "search_block_reason", Type: field.TypeString, Nullable: true},
+		{Name: "search_blocked_level", Type: field.TypeInt, Default: 0},
 		{Name: "account_blocked_until", Type: field.TypeTime, Nullable: true},
+		{Name: "account_block_reason", Type: field.TypeString, Nullable: true},
+		{Name: "account_blocked_level", Type: field.TypeInt, Default: 0},
 		{Name: "current_item_in_profile_id", Type: field.TypeInt, Nullable: true},
 		{Name: "current_match_id", Type: field.TypeInt, Nullable: true},
 	}
@@ -180,15 +184,44 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "users_user_items_current_item",
-				Columns:    []*schema.Column{UsersColumns[16]},
+				Columns:    []*schema.Column{UsersColumns[20]},
 				RefColumns: []*schema.Column{UserItemsColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 			{
 				Symbol:     "users_matches_current_match",
-				Columns:    []*schema.Column{UsersColumns[17]},
+				Columns:    []*schema.Column{UsersColumns[21]},
 				RefColumns: []*schema.Column{MatchesColumns[0]},
 				OnDelete:   schema.SetNull,
+			},
+		},
+	}
+	// UserBalancesColumns holds the columns for the "user_balances" table.
+	UserBalancesColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "coins", Type: field.TypeFloat64, Default: 0},
+		{Name: "last_updated", Type: field.TypeTime},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "user_id", Type: field.TypeInt, Unique: true},
+	}
+	// UserBalancesTable holds the schema information for the "user_balances" table.
+	UserBalancesTable = &schema.Table{
+		Name:       "user_balances",
+		Columns:    UserBalancesColumns,
+		PrimaryKey: []*schema.Column{UserBalancesColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "user_balances_users_balance",
+				Columns:    []*schema.Column{UserBalancesColumns[4]},
+				RefColumns: []*schema.Column{UsersColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "userbalance_user_id",
+				Unique:  true,
+				Columns: []*schema.Column{UserBalancesColumns[4]},
 			},
 		},
 	}
@@ -265,6 +298,7 @@ var (
 		MatchResultsTable,
 		StatisticsTable,
 		UsersTable,
+		UserBalancesTable,
 		UserItemsTable,
 		UserFriendsTable,
 	}
@@ -280,6 +314,7 @@ func init() {
 	StatisticsTable.ForeignKeys[0].RefTable = UsersTable
 	UsersTable.ForeignKeys[0].RefTable = UserItemsTable
 	UsersTable.ForeignKeys[1].RefTable = MatchesTable
+	UserBalancesTable.ForeignKeys[0].RefTable = UsersTable
 	UserItemsTable.ForeignKeys[0].RefTable = GameItemsTable
 	UserItemsTable.ForeignKeys[1].RefTable = UsersTable
 	UserFriendsTable.ForeignKeys[0].RefTable = UsersTable

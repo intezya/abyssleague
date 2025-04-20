@@ -24,5 +24,8 @@ type Statistic func(*sql.Selector)
 // User is the predicate function for user builders.
 type User func(*sql.Selector)
 
+// UserBalance is the predicate function for userbalance builders.
+type UserBalance func(*sql.Selector)
+
 // UserItem is the predicate function for useritem builders.
 type UserItem func(*sql.Selector)

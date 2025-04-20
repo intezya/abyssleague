@@ -9,6 +9,7 @@ import (
 	"abysscore/internal/infrastructure/ent/schema/access_level"
 	"abysscore/internal/infrastructure/ent/statistic"
 	"abysscore/internal/infrastructure/ent/user"
+	"abysscore/internal/infrastructure/ent/userbalance"
 	"abysscore/internal/infrastructure/ent/useritem"
 	"context"
 	"errors"
@@ -298,6 +299,47 @@ func (uu *UserUpdate) ClearSearchBlockedUntil() *UserUpdate {
 	return uu
 }
 
+// SetSearchBlockReason sets the "search_block_reason" field.
+func (uu *UserUpdate) SetSearchBlockReason(s string) *UserUpdate {
+	uu.mutation.SetSearchBlockReason(s)
+	return uu
+}
+
+// SetNillableSearchBlockReason sets the "search_block_reason" field if the given value is not nil.
+func (uu *UserUpdate) SetNillableSearchBlockReason(s *string) *UserUpdate {
+	if s != nil {
+		uu.SetSearchBlockReason(*s)
+	}
+	return uu
+}
+
+// ClearSearchBlockReason clears the value of the "search_block_reason" field.
+func (uu *UserUpdate) ClearSearchBlockReason() *UserUpdate {
+	uu.mutation.ClearSearchBlockReason()
+	return uu
+}
+
+// SetSearchBlockedLevel sets the "search_blocked_level" field.
+func (uu *UserUpdate) SetSearchBlockedLevel(i int) *UserUpdate {
+	uu.mutation.ResetSearchBlockedLevel()
+	uu.mutation.SetSearchBlockedLevel(i)
+	return uu
+}
+
+// SetNillableSearchBlockedLevel sets the "search_blocked_level" field if the given value is not nil.
+func (uu *UserUpdate) SetNillableSearchBlockedLevel(i *int) *UserUpdate {
+	if i != nil {
+		uu.SetSearchBlockedLevel(*i)
+	}
+	return uu
+}
+
+// AddSearchBlockedLevel adds i to the "search_blocked_level" field.
+func (uu *UserUpdate) AddSearchBlockedLevel(i int) *UserUpdate {
+	uu.mutation.AddSearchBlockedLevel(i)
+	return uu
+}
+
 // SetAccountBlockedUntil sets the "account_blocked_until" field.
 func (uu *UserUpdate) SetAccountBlockedUntil(t time.Time) *UserUpdate {
 	uu.mutation.SetAccountBlockedUntil(t)
@@ -315,6 +357,47 @@ func (uu *UserUpdate) SetNillableAccountBlockedUntil(t *time.Time) *UserUpdate {
 // ClearAccountBlockedUntil clears the value of the "account_blocked_until" field.
 func (uu *UserUpdate) ClearAccountBlockedUntil() *UserUpdate {
 	uu.mutation.ClearAccountBlockedUntil()
+	return uu
+}
+
+// SetAccountBlockReason sets the "account_block_reason" field.
+func (uu *UserUpdate) SetAccountBlockReason(s string) *UserUpdate {
+	uu.mutation.SetAccountBlockReason(s)
+	return uu
+}
+
+// SetNillableAccountBlockReason sets the "account_block_reason" field if the given value is not nil.
+func (uu *UserUpdate) SetNillableAccountBlockReason(s *string) *UserUpdate {
+	if s != nil {
+		uu.SetAccountBlockReason(*s)
+	}
+	return uu
+}
+
+// ClearAccountBlockReason clears the value of the "account_block_reason" field.
+func (uu *UserUpdate) ClearAccountBlockReason() *UserUpdate {
+	uu.mutation.ClearAccountBlockReason()
+	return uu
+}
+
+// SetAccountBlockedLevel sets the "account_blocked_level" field.
+func (uu *UserUpdate) SetAccountBlockedLevel(i int) *UserUpdate {
+	uu.mutation.ResetAccountBlockedLevel()
+	uu.mutation.SetAccountBlockedLevel(i)
+	return uu
+}
+
+// SetNillableAccountBlockedLevel sets the "account_blocked_level" field if the given value is not nil.
+func (uu *UserUpdate) SetNillableAccountBlockedLevel(i *int) *UserUpdate {
+	if i != nil {
+		uu.SetAccountBlockedLevel(*i)
+	}
+	return uu
+}
+
+// AddAccountBlockedLevel adds i to the "account_blocked_level" field.
+func (uu *UserUpdate) AddAccountBlockedLevel(i int) *UserUpdate {
+	uu.mutation.AddAccountBlockedLevel(i)
 	return uu
 }
 
@@ -415,6 +498,25 @@ func (uu *UserUpdate) SetCurrentItem(u *UserItem) *UserUpdate {
 // SetCurrentMatch sets the "current_match" edge to the Match entity.
 func (uu *UserUpdate) SetCurrentMatch(m *Match) *UserUpdate {
 	return uu.SetCurrentMatchID(m.ID)
+}
+
+// SetBalanceID sets the "balance" edge to the UserBalance entity by ID.
+func (uu *UserUpdate) SetBalanceID(id int) *UserUpdate {
+	uu.mutation.SetBalanceID(id)
+	return uu
+}
+
+// SetNillableBalanceID sets the "balance" edge to the UserBalance entity by ID if the given value is not nil.
+func (uu *UserUpdate) SetNillableBalanceID(id *int) *UserUpdate {
+	if id != nil {
+		uu = uu.SetBalanceID(*id)
+	}
+	return uu
+}
+
+// SetBalance sets the "balance" edge to the UserBalance entity.
+func (uu *UserUpdate) SetBalance(u *UserBalance) *UserUpdate {
+	return uu.SetBalanceID(u.ID)
 }
 
 // Mutation returns the UserMutation object of the builder.
@@ -539,6 +641,12 @@ func (uu *UserUpdate) ClearCurrentMatch() *UserUpdate {
 	return uu
 }
 
+// ClearBalance clears the "balance" edge to the UserBalance entity.
+func (uu *UserUpdate) ClearBalance() *UserUpdate {
+	uu.mutation.ClearBalance()
+	return uu
+}
+
 // Save executes the query and returns the number of nodes affected by the update operation.
 func (uu *UserUpdate) Save(ctx context.Context) (int, error) {
 	return withHooks(ctx, uu.sqlSave, uu.mutation, uu.hooks)
@@ -581,6 +689,16 @@ func (uu *UserUpdate) check() error {
 	if v, ok := uu.mutation.Password(); ok {
 		if err := user.PasswordValidator(v); err != nil {
 			return &ValidationError{Name: "password", err: fmt.Errorf(`ent: validator failed for field "User.password": %w`, err)}
+		}
+	}
+	if v, ok := uu.mutation.SearchBlockedLevel(); ok {
+		if err := user.SearchBlockedLevelValidator(v); err != nil {
+			return &ValidationError{Name: "search_blocked_level", err: fmt.Errorf(`ent: validator failed for field "User.search_blocked_level": %w`, err)}
+		}
+	}
+	if v, ok := uu.mutation.AccountBlockedLevel(); ok {
+		if err := user.AccountBlockedLevelValidator(v); err != nil {
+			return &ValidationError{Name: "account_blocked_level", err: fmt.Errorf(`ent: validator failed for field "User.account_blocked_level": %w`, err)}
 		}
 	}
 	return nil
@@ -658,11 +776,35 @@ func (uu *UserUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if uu.mutation.SearchBlockedUntilCleared() {
 		_spec.ClearField(user.FieldSearchBlockedUntil, field.TypeTime)
 	}
+	if value, ok := uu.mutation.SearchBlockReason(); ok {
+		_spec.SetField(user.FieldSearchBlockReason, field.TypeString, value)
+	}
+	if uu.mutation.SearchBlockReasonCleared() {
+		_spec.ClearField(user.FieldSearchBlockReason, field.TypeString)
+	}
+	if value, ok := uu.mutation.SearchBlockedLevel(); ok {
+		_spec.SetField(user.FieldSearchBlockedLevel, field.TypeInt, value)
+	}
+	if value, ok := uu.mutation.AddedSearchBlockedLevel(); ok {
+		_spec.AddField(user.FieldSearchBlockedLevel, field.TypeInt, value)
+	}
 	if value, ok := uu.mutation.AccountBlockedUntil(); ok {
 		_spec.SetField(user.FieldAccountBlockedUntil, field.TypeTime, value)
 	}
 	if uu.mutation.AccountBlockedUntilCleared() {
 		_spec.ClearField(user.FieldAccountBlockedUntil, field.TypeTime)
+	}
+	if value, ok := uu.mutation.AccountBlockReason(); ok {
+		_spec.SetField(user.FieldAccountBlockReason, field.TypeString, value)
+	}
+	if uu.mutation.AccountBlockReasonCleared() {
+		_spec.ClearField(user.FieldAccountBlockReason, field.TypeString)
+	}
+	if value, ok := uu.mutation.AccountBlockedLevel(); ok {
+		_spec.SetField(user.FieldAccountBlockedLevel, field.TypeInt, value)
+	}
+	if value, ok := uu.mutation.AddedAccountBlockedLevel(); ok {
+		_spec.AddField(user.FieldAccountBlockedLevel, field.TypeInt, value)
 	}
 	if uu.mutation.StatisticsCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -940,6 +1082,35 @@ func (uu *UserUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(match.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if uu.mutation.BalanceCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2O,
+			Inverse: false,
+			Table:   user.BalanceTable,
+			Columns: []string{user.BalanceColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(userbalance.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := uu.mutation.BalanceIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2O,
+			Inverse: false,
+			Table:   user.BalanceTable,
+			Columns: []string{user.BalanceColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(userbalance.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {
@@ -1232,6 +1403,47 @@ func (uuo *UserUpdateOne) ClearSearchBlockedUntil() *UserUpdateOne {
 	return uuo
 }
 
+// SetSearchBlockReason sets the "search_block_reason" field.
+func (uuo *UserUpdateOne) SetSearchBlockReason(s string) *UserUpdateOne {
+	uuo.mutation.SetSearchBlockReason(s)
+	return uuo
+}
+
+// SetNillableSearchBlockReason sets the "search_block_reason" field if the given value is not nil.
+func (uuo *UserUpdateOne) SetNillableSearchBlockReason(s *string) *UserUpdateOne {
+	if s != nil {
+		uuo.SetSearchBlockReason(*s)
+	}
+	return uuo
+}
+
+// ClearSearchBlockReason clears the value of the "search_block_reason" field.
+func (uuo *UserUpdateOne) ClearSearchBlockReason() *UserUpdateOne {
+	uuo.mutation.ClearSearchBlockReason()
+	return uuo
+}
+
+// SetSearchBlockedLevel sets the "search_blocked_level" field.
+func (uuo *UserUpdateOne) SetSearchBlockedLevel(i int) *UserUpdateOne {
+	uuo.mutation.ResetSearchBlockedLevel()
+	uuo.mutation.SetSearchBlockedLevel(i)
+	return uuo
+}
+
+// SetNillableSearchBlockedLevel sets the "search_blocked_level" field if the given value is not nil.
+func (uuo *UserUpdateOne) SetNillableSearchBlockedLevel(i *int) *UserUpdateOne {
+	if i != nil {
+		uuo.SetSearchBlockedLevel(*i)
+	}
+	return uuo
+}
+
+// AddSearchBlockedLevel adds i to the "search_blocked_level" field.
+func (uuo *UserUpdateOne) AddSearchBlockedLevel(i int) *UserUpdateOne {
+	uuo.mutation.AddSearchBlockedLevel(i)
+	return uuo
+}
+
 // SetAccountBlockedUntil sets the "account_blocked_until" field.
 func (uuo *UserUpdateOne) SetAccountBlockedUntil(t time.Time) *UserUpdateOne {
 	uuo.mutation.SetAccountBlockedUntil(t)
@@ -1249,6 +1461,47 @@ func (uuo *UserUpdateOne) SetNillableAccountBlockedUntil(t *time.Time) *UserUpda
 // ClearAccountBlockedUntil clears the value of the "account_blocked_until" field.
 func (uuo *UserUpdateOne) ClearAccountBlockedUntil() *UserUpdateOne {
 	uuo.mutation.ClearAccountBlockedUntil()
+	return uuo
+}
+
+// SetAccountBlockReason sets the "account_block_reason" field.
+func (uuo *UserUpdateOne) SetAccountBlockReason(s string) *UserUpdateOne {
+	uuo.mutation.SetAccountBlockReason(s)
+	return uuo
+}
+
+// SetNillableAccountBlockReason sets the "account_block_reason" field if the given value is not nil.
+func (uuo *UserUpdateOne) SetNillableAccountBlockReason(s *string) *UserUpdateOne {
+	if s != nil {
+		uuo.SetAccountBlockReason(*s)
+	}
+	return uuo
+}
+
+// ClearAccountBlockReason clears the value of the "account_block_reason" field.
+func (uuo *UserUpdateOne) ClearAccountBlockReason() *UserUpdateOne {
+	uuo.mutation.ClearAccountBlockReason()
+	return uuo
+}
+
+// SetAccountBlockedLevel sets the "account_blocked_level" field.
+func (uuo *UserUpdateOne) SetAccountBlockedLevel(i int) *UserUpdateOne {
+	uuo.mutation.ResetAccountBlockedLevel()
+	uuo.mutation.SetAccountBlockedLevel(i)
+	return uuo
+}
+
+// SetNillableAccountBlockedLevel sets the "account_blocked_level" field if the given value is not nil.
+func (uuo *UserUpdateOne) SetNillableAccountBlockedLevel(i *int) *UserUpdateOne {
+	if i != nil {
+		uuo.SetAccountBlockedLevel(*i)
+	}
+	return uuo
+}
+
+// AddAccountBlockedLevel adds i to the "account_blocked_level" field.
+func (uuo *UserUpdateOne) AddAccountBlockedLevel(i int) *UserUpdateOne {
+	uuo.mutation.AddAccountBlockedLevel(i)
 	return uuo
 }
 
@@ -1349,6 +1602,25 @@ func (uuo *UserUpdateOne) SetCurrentItem(u *UserItem) *UserUpdateOne {
 // SetCurrentMatch sets the "current_match" edge to the Match entity.
 func (uuo *UserUpdateOne) SetCurrentMatch(m *Match) *UserUpdateOne {
 	return uuo.SetCurrentMatchID(m.ID)
+}
+
+// SetBalanceID sets the "balance" edge to the UserBalance entity by ID.
+func (uuo *UserUpdateOne) SetBalanceID(id int) *UserUpdateOne {
+	uuo.mutation.SetBalanceID(id)
+	return uuo
+}
+
+// SetNillableBalanceID sets the "balance" edge to the UserBalance entity by ID if the given value is not nil.
+func (uuo *UserUpdateOne) SetNillableBalanceID(id *int) *UserUpdateOne {
+	if id != nil {
+		uuo = uuo.SetBalanceID(*id)
+	}
+	return uuo
+}
+
+// SetBalance sets the "balance" edge to the UserBalance entity.
+func (uuo *UserUpdateOne) SetBalance(u *UserBalance) *UserUpdateOne {
+	return uuo.SetBalanceID(u.ID)
 }
 
 // Mutation returns the UserMutation object of the builder.
@@ -1473,6 +1745,12 @@ func (uuo *UserUpdateOne) ClearCurrentMatch() *UserUpdateOne {
 	return uuo
 }
 
+// ClearBalance clears the "balance" edge to the UserBalance entity.
+func (uuo *UserUpdateOne) ClearBalance() *UserUpdateOne {
+	uuo.mutation.ClearBalance()
+	return uuo
+}
+
 // Where appends a list predicates to the UserUpdate builder.
 func (uuo *UserUpdateOne) Where(ps ...predicate.User) *UserUpdateOne {
 	uuo.mutation.Where(ps...)
@@ -1528,6 +1806,16 @@ func (uuo *UserUpdateOne) check() error {
 	if v, ok := uuo.mutation.Password(); ok {
 		if err := user.PasswordValidator(v); err != nil {
 			return &ValidationError{Name: "password", err: fmt.Errorf(`ent: validator failed for field "User.password": %w`, err)}
+		}
+	}
+	if v, ok := uuo.mutation.SearchBlockedLevel(); ok {
+		if err := user.SearchBlockedLevelValidator(v); err != nil {
+			return &ValidationError{Name: "search_blocked_level", err: fmt.Errorf(`ent: validator failed for field "User.search_blocked_level": %w`, err)}
+		}
+	}
+	if v, ok := uuo.mutation.AccountBlockedLevel(); ok {
+		if err := user.AccountBlockedLevelValidator(v); err != nil {
+			return &ValidationError{Name: "account_blocked_level", err: fmt.Errorf(`ent: validator failed for field "User.account_blocked_level": %w`, err)}
 		}
 	}
 	return nil
@@ -1622,11 +1910,35 @@ func (uuo *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) 
 	if uuo.mutation.SearchBlockedUntilCleared() {
 		_spec.ClearField(user.FieldSearchBlockedUntil, field.TypeTime)
 	}
+	if value, ok := uuo.mutation.SearchBlockReason(); ok {
+		_spec.SetField(user.FieldSearchBlockReason, field.TypeString, value)
+	}
+	if uuo.mutation.SearchBlockReasonCleared() {
+		_spec.ClearField(user.FieldSearchBlockReason, field.TypeString)
+	}
+	if value, ok := uuo.mutation.SearchBlockedLevel(); ok {
+		_spec.SetField(user.FieldSearchBlockedLevel, field.TypeInt, value)
+	}
+	if value, ok := uuo.mutation.AddedSearchBlockedLevel(); ok {
+		_spec.AddField(user.FieldSearchBlockedLevel, field.TypeInt, value)
+	}
 	if value, ok := uuo.mutation.AccountBlockedUntil(); ok {
 		_spec.SetField(user.FieldAccountBlockedUntil, field.TypeTime, value)
 	}
 	if uuo.mutation.AccountBlockedUntilCleared() {
 		_spec.ClearField(user.FieldAccountBlockedUntil, field.TypeTime)
+	}
+	if value, ok := uuo.mutation.AccountBlockReason(); ok {
+		_spec.SetField(user.FieldAccountBlockReason, field.TypeString, value)
+	}
+	if uuo.mutation.AccountBlockReasonCleared() {
+		_spec.ClearField(user.FieldAccountBlockReason, field.TypeString)
+	}
+	if value, ok := uuo.mutation.AccountBlockedLevel(); ok {
+		_spec.SetField(user.FieldAccountBlockedLevel, field.TypeInt, value)
+	}
+	if value, ok := uuo.mutation.AddedAccountBlockedLevel(); ok {
+		_spec.AddField(user.FieldAccountBlockedLevel, field.TypeInt, value)
 	}
 	if uuo.mutation.StatisticsCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -1904,6 +2216,35 @@ func (uuo *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) 
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(match.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if uuo.mutation.BalanceCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2O,
+			Inverse: false,
+			Table:   user.BalanceTable,
+			Columns: []string{user.BalanceColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(userbalance.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := uuo.mutation.BalanceIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2O,
+			Inverse: false,
+			Table:   user.BalanceTable,
+			Columns: []string{user.BalanceColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(userbalance.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {

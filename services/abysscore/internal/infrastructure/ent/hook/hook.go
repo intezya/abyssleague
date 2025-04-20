@@ -80,6 +80,18 @@ func (f UserFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error)
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.UserMutation", m)
 }
 
+// The UserBalanceFunc type is an adapter to allow the use of ordinary
+// function as UserBalance mutator.
+type UserBalanceFunc func(context.Context, *ent.UserBalanceMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f UserBalanceFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.UserBalanceMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.UserBalanceMutation", m)
+}
+
 // The UserItemFunc type is an adapter to allow the use of ordinary
 // function as UserItem mutator.
 type UserItemFunc func(context.Context, *ent.UserItemMutation) (ent.Value, error)

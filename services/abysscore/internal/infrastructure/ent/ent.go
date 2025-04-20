@@ -9,6 +9,7 @@ import (
 	"abysscore/internal/infrastructure/ent/matchresult"
 	"abysscore/internal/infrastructure/ent/statistic"
 	"abysscore/internal/infrastructure/ent/user"
+	"abysscore/internal/infrastructure/ent/userbalance"
 	"abysscore/internal/infrastructure/ent/useritem"
 	"context"
 	"errors"
@@ -85,6 +86,7 @@ func checkColumn(table, column string) error {
 			matchresult.Table:   matchresult.ValidColumn,
 			statistic.Table:     statistic.ValidColumn,
 			user.Table:          user.ValidColumn,
+			userbalance.Table:   userbalance.ValidColumn,
 			useritem.Table:      useritem.ValidColumn,
 		})
 	})

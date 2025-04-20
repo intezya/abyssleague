@@ -24,6 +24,8 @@ type Tx struct {
 	Statistic *StatisticClient
 	// User is the client for interacting with the User builders.
 	User *UserClient
+	// UserBalance is the client for interacting with the UserBalance builders.
+	UserBalance *UserBalanceClient
 	// UserItem is the client for interacting with the UserItem builders.
 	UserItem *UserItemClient
 
@@ -163,6 +165,7 @@ func (tx *Tx) init() {
 	tx.MatchResult = NewMatchResultClient(tx.config)
 	tx.Statistic = NewStatisticClient(tx.config)
 	tx.User = NewUserClient(tx.config)
+	tx.UserBalance = NewUserBalanceClient(tx.config)
 	tx.UserItem = NewUserItemClient(tx.config)
 }
 

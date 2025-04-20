@@ -36,8 +36,6 @@ func (User) Fields() []ent.Field {
 		field.Int("current_match_id").Optional().Nillable(),
 		field.Int("current_item_in_profile_id").Optional().Nillable().Unique(),
 
-		// Current badge id
-
 		field.String("avatar_url").Optional().Nillable(),
 
 		field.Bool("invites_enabled").Default(false),
@@ -52,7 +50,12 @@ func (User) Fields() []ent.Field {
 		field.Time("created_at").Default(time.Now).Immutable(),
 
 		field.Time("search_blocked_until").Optional().Nillable(),
+		field.String("search_block_reason").Optional().Nillable(),
+		field.Int("search_blocked_level").Default(0).Min(-1),
+
 		field.Time("account_blocked_until").Optional().Nillable(),
+		field.String("account_block_reason").Optional().Nillable(),
+		field.Int("account_blocked_level").Default(0).Min(-1),
 	}
 }
 
@@ -72,5 +75,8 @@ func (User) Edges() []ent.Edge {
 		edge.To("current_match", Match.Type).
 			Unique().
 			Field("current_match_id"),
+
+		edge.To("balance", UserBalance.Type).
+			Unique(),
 	}
 }

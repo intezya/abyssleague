@@ -47,8 +47,16 @@ const (
 	FieldCreatedAt = "created_at"
 	// FieldSearchBlockedUntil holds the string denoting the search_blocked_until field in the database.
 	FieldSearchBlockedUntil = "search_blocked_until"
+	// FieldSearchBlockReason holds the string denoting the search_block_reason field in the database.
+	FieldSearchBlockReason = "search_block_reason"
+	// FieldSearchBlockedLevel holds the string denoting the search_blocked_level field in the database.
+	FieldSearchBlockedLevel = "search_blocked_level"
 	// FieldAccountBlockedUntil holds the string denoting the account_blocked_until field in the database.
 	FieldAccountBlockedUntil = "account_blocked_until"
+	// FieldAccountBlockReason holds the string denoting the account_block_reason field in the database.
+	FieldAccountBlockReason = "account_block_reason"
+	// FieldAccountBlockedLevel holds the string denoting the account_blocked_level field in the database.
+	FieldAccountBlockedLevel = "account_blocked_level"
 	// EdgeStatistics holds the string denoting the statistics edge name in mutations.
 	EdgeStatistics = "statistics"
 	// EdgeFriends holds the string denoting the friends edge name in mutations.
@@ -63,6 +71,8 @@ const (
 	EdgeCurrentItem = "current_item"
 	// EdgeCurrentMatch holds the string denoting the current_match edge name in mutations.
 	EdgeCurrentMatch = "current_match"
+	// EdgeBalance holds the string denoting the balance edge name in mutations.
+	EdgeBalance = "balance"
 	// Table holds the table name of the user in the database.
 	Table = "users"
 	// StatisticsTable is the table that holds the statistics relation/edge.
@@ -109,6 +119,13 @@ const (
 	CurrentMatchInverseTable = "matches"
 	// CurrentMatchColumn is the table column denoting the current_match relation/edge.
 	CurrentMatchColumn = "current_match_id"
+	// BalanceTable is the table that holds the balance relation/edge.
+	BalanceTable = "user_balances"
+	// BalanceInverseTable is the table name for the UserBalance entity.
+	// It exists in this package in order to avoid circular dependency with the "userbalance" package.
+	BalanceInverseTable = "user_balances"
+	// BalanceColumn is the table column denoting the balance relation/edge.
+	BalanceColumn = "user_id"
 )
 
 // Columns holds all SQL columns for user fields.
@@ -130,7 +147,11 @@ var Columns = []string{
 	FieldLoginStreak,
 	FieldCreatedAt,
 	FieldSearchBlockedUntil,
+	FieldSearchBlockReason,
+	FieldSearchBlockedLevel,
 	FieldAccountBlockedUntil,
+	FieldAccountBlockReason,
+	FieldAccountBlockedLevel,
 }
 
 var (
@@ -166,6 +187,14 @@ var (
 	DefaultLoginStreak int
 	// DefaultCreatedAt holds the default value on creation for the "created_at" field.
 	DefaultCreatedAt func() time.Time
+	// DefaultSearchBlockedLevel holds the default value on creation for the "search_blocked_level" field.
+	DefaultSearchBlockedLevel int
+	// SearchBlockedLevelValidator is a validator for the "search_blocked_level" field. It is called by the builders before save.
+	SearchBlockedLevelValidator func(int) error
+	// DefaultAccountBlockedLevel holds the default value on creation for the "account_blocked_level" field.
+	DefaultAccountBlockedLevel int
+	// AccountBlockedLevelValidator is a validator for the "account_blocked_level" field. It is called by the builders before save.
+	AccountBlockedLevelValidator func(int) error
 )
 
 // OrderOption defines the ordering options for the User queries.
@@ -256,9 +285,29 @@ func BySearchBlockedUntil(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldSearchBlockedUntil, opts...).ToFunc()
 }
 
+// BySearchBlockReason orders the results by the search_block_reason field.
+func BySearchBlockReason(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldSearchBlockReason, opts...).ToFunc()
+}
+
+// BySearchBlockedLevel orders the results by the search_blocked_level field.
+func BySearchBlockedLevel(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldSearchBlockedLevel, opts...).ToFunc()
+}
+
 // ByAccountBlockedUntil orders the results by the account_blocked_until field.
 func ByAccountBlockedUntil(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldAccountBlockedUntil, opts...).ToFunc()
+}
+
+// ByAccountBlockReason orders the results by the account_block_reason field.
+func ByAccountBlockReason(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldAccountBlockReason, opts...).ToFunc()
+}
+
+// ByAccountBlockedLevel orders the results by the account_blocked_level field.
+func ByAccountBlockedLevel(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldAccountBlockedLevel, opts...).ToFunc()
 }
 
 // ByStatisticsCount orders the results by statistics count.
@@ -344,6 +393,13 @@ func ByCurrentMatchField(field string, opts ...sql.OrderTermOption) OrderOption 
 		sqlgraph.OrderByNeighborTerms(s, newCurrentMatchStep(), sql.OrderByField(field, opts...))
 	}
 }
+
+// ByBalanceField orders the results by balance field.
+func ByBalanceField(field string, opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newBalanceStep(), sql.OrderByField(field, opts...))
+	}
+}
 func newStatisticsStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
@@ -391,5 +447,12 @@ func newCurrentMatchStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(CurrentMatchInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.M2O, false, CurrentMatchTable, CurrentMatchColumn),
+	)
+}
+func newBalanceStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(BalanceInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2O, false, BalanceTable, BalanceColumn),
 	)
 }

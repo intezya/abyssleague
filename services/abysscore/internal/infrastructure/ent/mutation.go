@@ -11,6 +11,7 @@ import (
 	"abysscore/internal/infrastructure/ent/schema/access_level"
 	"abysscore/internal/infrastructure/ent/statistic"
 	"abysscore/internal/infrastructure/ent/user"
+	"abysscore/internal/infrastructure/ent/userbalance"
 	"abysscore/internal/infrastructure/ent/useritem"
 	"context"
 	"errors"
@@ -37,6 +38,7 @@ const (
 	TypeMatchResult   = "MatchResult"
 	TypeStatistic     = "Statistic"
 	TypeUser          = "User"
+	TypeUserBalance   = "UserBalance"
 	TypeUserItem      = "UserItem"
 )
 
@@ -5147,7 +5149,13 @@ type UserMutation struct {
 	addlogin_streak                 *int
 	created_at                      *time.Time
 	search_blocked_until            *time.Time
+	search_block_reason             *string
+	search_blocked_level            *int
+	addsearch_blocked_level         *int
 	account_blocked_until           *time.Time
+	account_block_reason            *string
+	account_blocked_level           *int
+	addaccount_blocked_level        *int
 	clearedFields                   map[string]struct{}
 	statistics                      map[int]struct{}
 	removedstatistics               map[int]struct{}
@@ -5168,6 +5176,8 @@ type UserMutation struct {
 	clearedcurrent_item             bool
 	current_match                   *int
 	clearedcurrent_match            bool
+	balance                         *int
+	clearedbalance                  bool
 	done                            bool
 	oldValue                        func(context.Context) (*User, error)
 	predicates                      []predicate.User
@@ -5977,6 +5987,111 @@ func (m *UserMutation) ResetSearchBlockedUntil() {
 	delete(m.clearedFields, user.FieldSearchBlockedUntil)
 }
 
+// SetSearchBlockReason sets the "search_block_reason" field.
+func (m *UserMutation) SetSearchBlockReason(s string) {
+	m.search_block_reason = &s
+}
+
+// SearchBlockReason returns the value of the "search_block_reason" field in the mutation.
+func (m *UserMutation) SearchBlockReason() (r string, exists bool) {
+	v := m.search_block_reason
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldSearchBlockReason returns the old "search_block_reason" field's value of the User entity.
+// If the User object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *UserMutation) OldSearchBlockReason(ctx context.Context) (v *string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldSearchBlockReason is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldSearchBlockReason requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldSearchBlockReason: %w", err)
+	}
+	return oldValue.SearchBlockReason, nil
+}
+
+// ClearSearchBlockReason clears the value of the "search_block_reason" field.
+func (m *UserMutation) ClearSearchBlockReason() {
+	m.search_block_reason = nil
+	m.clearedFields[user.FieldSearchBlockReason] = struct{}{}
+}
+
+// SearchBlockReasonCleared returns if the "search_block_reason" field was cleared in this mutation.
+func (m *UserMutation) SearchBlockReasonCleared() bool {
+	_, ok := m.clearedFields[user.FieldSearchBlockReason]
+	return ok
+}
+
+// ResetSearchBlockReason resets all changes to the "search_block_reason" field.
+func (m *UserMutation) ResetSearchBlockReason() {
+	m.search_block_reason = nil
+	delete(m.clearedFields, user.FieldSearchBlockReason)
+}
+
+// SetSearchBlockedLevel sets the "search_blocked_level" field.
+func (m *UserMutation) SetSearchBlockedLevel(i int) {
+	m.search_blocked_level = &i
+	m.addsearch_blocked_level = nil
+}
+
+// SearchBlockedLevel returns the value of the "search_blocked_level" field in the mutation.
+func (m *UserMutation) SearchBlockedLevel() (r int, exists bool) {
+	v := m.search_blocked_level
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldSearchBlockedLevel returns the old "search_blocked_level" field's value of the User entity.
+// If the User object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *UserMutation) OldSearchBlockedLevel(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldSearchBlockedLevel is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldSearchBlockedLevel requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldSearchBlockedLevel: %w", err)
+	}
+	return oldValue.SearchBlockedLevel, nil
+}
+
+// AddSearchBlockedLevel adds i to the "search_blocked_level" field.
+func (m *UserMutation) AddSearchBlockedLevel(i int) {
+	if m.addsearch_blocked_level != nil {
+		*m.addsearch_blocked_level += i
+	} else {
+		m.addsearch_blocked_level = &i
+	}
+}
+
+// AddedSearchBlockedLevel returns the value that was added to the "search_blocked_level" field in this mutation.
+func (m *UserMutation) AddedSearchBlockedLevel() (r int, exists bool) {
+	v := m.addsearch_blocked_level
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetSearchBlockedLevel resets all changes to the "search_blocked_level" field.
+func (m *UserMutation) ResetSearchBlockedLevel() {
+	m.search_blocked_level = nil
+	m.addsearch_blocked_level = nil
+}
+
 // SetAccountBlockedUntil sets the "account_blocked_until" field.
 func (m *UserMutation) SetAccountBlockedUntil(t time.Time) {
 	m.account_blocked_until = &t
@@ -6024,6 +6139,111 @@ func (m *UserMutation) AccountBlockedUntilCleared() bool {
 func (m *UserMutation) ResetAccountBlockedUntil() {
 	m.account_blocked_until = nil
 	delete(m.clearedFields, user.FieldAccountBlockedUntil)
+}
+
+// SetAccountBlockReason sets the "account_block_reason" field.
+func (m *UserMutation) SetAccountBlockReason(s string) {
+	m.account_block_reason = &s
+}
+
+// AccountBlockReason returns the value of the "account_block_reason" field in the mutation.
+func (m *UserMutation) AccountBlockReason() (r string, exists bool) {
+	v := m.account_block_reason
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldAccountBlockReason returns the old "account_block_reason" field's value of the User entity.
+// If the User object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *UserMutation) OldAccountBlockReason(ctx context.Context) (v *string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldAccountBlockReason is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldAccountBlockReason requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldAccountBlockReason: %w", err)
+	}
+	return oldValue.AccountBlockReason, nil
+}
+
+// ClearAccountBlockReason clears the value of the "account_block_reason" field.
+func (m *UserMutation) ClearAccountBlockReason() {
+	m.account_block_reason = nil
+	m.clearedFields[user.FieldAccountBlockReason] = struct{}{}
+}
+
+// AccountBlockReasonCleared returns if the "account_block_reason" field was cleared in this mutation.
+func (m *UserMutation) AccountBlockReasonCleared() bool {
+	_, ok := m.clearedFields[user.FieldAccountBlockReason]
+	return ok
+}
+
+// ResetAccountBlockReason resets all changes to the "account_block_reason" field.
+func (m *UserMutation) ResetAccountBlockReason() {
+	m.account_block_reason = nil
+	delete(m.clearedFields, user.FieldAccountBlockReason)
+}
+
+// SetAccountBlockedLevel sets the "account_blocked_level" field.
+func (m *UserMutation) SetAccountBlockedLevel(i int) {
+	m.account_blocked_level = &i
+	m.addaccount_blocked_level = nil
+}
+
+// AccountBlockedLevel returns the value of the "account_blocked_level" field in the mutation.
+func (m *UserMutation) AccountBlockedLevel() (r int, exists bool) {
+	v := m.account_blocked_level
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldAccountBlockedLevel returns the old "account_blocked_level" field's value of the User entity.
+// If the User object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *UserMutation) OldAccountBlockedLevel(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldAccountBlockedLevel is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldAccountBlockedLevel requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldAccountBlockedLevel: %w", err)
+	}
+	return oldValue.AccountBlockedLevel, nil
+}
+
+// AddAccountBlockedLevel adds i to the "account_blocked_level" field.
+func (m *UserMutation) AddAccountBlockedLevel(i int) {
+	if m.addaccount_blocked_level != nil {
+		*m.addaccount_blocked_level += i
+	} else {
+		m.addaccount_blocked_level = &i
+	}
+}
+
+// AddedAccountBlockedLevel returns the value that was added to the "account_blocked_level" field in this mutation.
+func (m *UserMutation) AddedAccountBlockedLevel() (r int, exists bool) {
+	v := m.addaccount_blocked_level
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetAccountBlockedLevel resets all changes to the "account_blocked_level" field.
+func (m *UserMutation) ResetAccountBlockedLevel() {
+	m.account_blocked_level = nil
+	m.addaccount_blocked_level = nil
 }
 
 // AddStatisticIDs adds the "statistics" edge to the Statistic entity by ids.
@@ -6363,6 +6583,45 @@ func (m *UserMutation) ResetCurrentMatch() {
 	m.clearedcurrent_match = false
 }
 
+// SetBalanceID sets the "balance" edge to the UserBalance entity by id.
+func (m *UserMutation) SetBalanceID(id int) {
+	m.balance = &id
+}
+
+// ClearBalance clears the "balance" edge to the UserBalance entity.
+func (m *UserMutation) ClearBalance() {
+	m.clearedbalance = true
+}
+
+// BalanceCleared reports if the "balance" edge to the UserBalance entity was cleared.
+func (m *UserMutation) BalanceCleared() bool {
+	return m.clearedbalance
+}
+
+// BalanceID returns the "balance" edge ID in the mutation.
+func (m *UserMutation) BalanceID() (id int, exists bool) {
+	if m.balance != nil {
+		return *m.balance, true
+	}
+	return
+}
+
+// BalanceIDs returns the "balance" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// BalanceID instead. It exists only for internal usage by the builders.
+func (m *UserMutation) BalanceIDs() (ids []int) {
+	if id := m.balance; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetBalance resets all changes to the "balance" edge.
+func (m *UserMutation) ResetBalance() {
+	m.balance = nil
+	m.clearedbalance = false
+}
+
 // Where appends a list predicates to the UserMutation builder.
 func (m *UserMutation) Where(ps ...predicate.User) {
 	m.predicates = append(m.predicates, ps...)
@@ -6397,7 +6656,7 @@ func (m *UserMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *UserMutation) Fields() []string {
-	fields := make([]string, 0, 17)
+	fields := make([]string, 0, 21)
 	if m.username != nil {
 		fields = append(fields, user.FieldUsername)
 	}
@@ -6446,8 +6705,20 @@ func (m *UserMutation) Fields() []string {
 	if m.search_blocked_until != nil {
 		fields = append(fields, user.FieldSearchBlockedUntil)
 	}
+	if m.search_block_reason != nil {
+		fields = append(fields, user.FieldSearchBlockReason)
+	}
+	if m.search_blocked_level != nil {
+		fields = append(fields, user.FieldSearchBlockedLevel)
+	}
 	if m.account_blocked_until != nil {
 		fields = append(fields, user.FieldAccountBlockedUntil)
+	}
+	if m.account_block_reason != nil {
+		fields = append(fields, user.FieldAccountBlockReason)
+	}
+	if m.account_blocked_level != nil {
+		fields = append(fields, user.FieldAccountBlockedLevel)
 	}
 	return fields
 }
@@ -6489,8 +6760,16 @@ func (m *UserMutation) Field(name string) (ent.Value, bool) {
 		return m.CreatedAt()
 	case user.FieldSearchBlockedUntil:
 		return m.SearchBlockedUntil()
+	case user.FieldSearchBlockReason:
+		return m.SearchBlockReason()
+	case user.FieldSearchBlockedLevel:
+		return m.SearchBlockedLevel()
 	case user.FieldAccountBlockedUntil:
 		return m.AccountBlockedUntil()
+	case user.FieldAccountBlockReason:
+		return m.AccountBlockReason()
+	case user.FieldAccountBlockedLevel:
+		return m.AccountBlockedLevel()
 	}
 	return nil, false
 }
@@ -6532,8 +6811,16 @@ func (m *UserMutation) OldField(ctx context.Context, name string) (ent.Value, er
 		return m.OldCreatedAt(ctx)
 	case user.FieldSearchBlockedUntil:
 		return m.OldSearchBlockedUntil(ctx)
+	case user.FieldSearchBlockReason:
+		return m.OldSearchBlockReason(ctx)
+	case user.FieldSearchBlockedLevel:
+		return m.OldSearchBlockedLevel(ctx)
 	case user.FieldAccountBlockedUntil:
 		return m.OldAccountBlockedUntil(ctx)
+	case user.FieldAccountBlockReason:
+		return m.OldAccountBlockReason(ctx)
+	case user.FieldAccountBlockedLevel:
+		return m.OldAccountBlockedLevel(ctx)
 	}
 	return nil, fmt.Errorf("unknown User field %s", name)
 }
@@ -6655,12 +6942,40 @@ func (m *UserMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetSearchBlockedUntil(v)
 		return nil
+	case user.FieldSearchBlockReason:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetSearchBlockReason(v)
+		return nil
+	case user.FieldSearchBlockedLevel:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetSearchBlockedLevel(v)
+		return nil
 	case user.FieldAccountBlockedUntil:
 		v, ok := value.(time.Time)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetAccountBlockedUntil(v)
+		return nil
+	case user.FieldAccountBlockReason:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetAccountBlockReason(v)
+		return nil
+	case user.FieldAccountBlockedLevel:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetAccountBlockedLevel(v)
 		return nil
 	}
 	return fmt.Errorf("unknown User field %s", name)
@@ -6673,6 +6988,12 @@ func (m *UserMutation) AddedFields() []string {
 	if m.addlogin_streak != nil {
 		fields = append(fields, user.FieldLoginStreak)
 	}
+	if m.addsearch_blocked_level != nil {
+		fields = append(fields, user.FieldSearchBlockedLevel)
+	}
+	if m.addaccount_blocked_level != nil {
+		fields = append(fields, user.FieldAccountBlockedLevel)
+	}
 	return fields
 }
 
@@ -6683,6 +7004,10 @@ func (m *UserMutation) AddedField(name string) (ent.Value, bool) {
 	switch name {
 	case user.FieldLoginStreak:
 		return m.AddedLoginStreak()
+	case user.FieldSearchBlockedLevel:
+		return m.AddedSearchBlockedLevel()
+	case user.FieldAccountBlockedLevel:
+		return m.AddedAccountBlockedLevel()
 	}
 	return nil, false
 }
@@ -6698,6 +7023,20 @@ func (m *UserMutation) AddField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.AddLoginStreak(v)
+		return nil
+	case user.FieldSearchBlockedLevel:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddSearchBlockedLevel(v)
+		return nil
+	case user.FieldAccountBlockedLevel:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddAccountBlockedLevel(v)
 		return nil
 	}
 	return fmt.Errorf("unknown User numeric field %s", name)
@@ -6731,8 +7070,14 @@ func (m *UserMutation) ClearedFields() []string {
 	if m.FieldCleared(user.FieldSearchBlockedUntil) {
 		fields = append(fields, user.FieldSearchBlockedUntil)
 	}
+	if m.FieldCleared(user.FieldSearchBlockReason) {
+		fields = append(fields, user.FieldSearchBlockReason)
+	}
 	if m.FieldCleared(user.FieldAccountBlockedUntil) {
 		fields = append(fields, user.FieldAccountBlockedUntil)
+	}
+	if m.FieldCleared(user.FieldAccountBlockReason) {
+		fields = append(fields, user.FieldAccountBlockReason)
 	}
 	return fields
 }
@@ -6772,8 +7117,14 @@ func (m *UserMutation) ClearField(name string) error {
 	case user.FieldSearchBlockedUntil:
 		m.ClearSearchBlockedUntil()
 		return nil
+	case user.FieldSearchBlockReason:
+		m.ClearSearchBlockReason()
+		return nil
 	case user.FieldAccountBlockedUntil:
 		m.ClearAccountBlockedUntil()
+		return nil
+	case user.FieldAccountBlockReason:
+		m.ClearAccountBlockReason()
 		return nil
 	}
 	return fmt.Errorf("unknown User nullable field %s", name)
@@ -6831,8 +7182,20 @@ func (m *UserMutation) ResetField(name string) error {
 	case user.FieldSearchBlockedUntil:
 		m.ResetSearchBlockedUntil()
 		return nil
+	case user.FieldSearchBlockReason:
+		m.ResetSearchBlockReason()
+		return nil
+	case user.FieldSearchBlockedLevel:
+		m.ResetSearchBlockedLevel()
+		return nil
 	case user.FieldAccountBlockedUntil:
 		m.ResetAccountBlockedUntil()
+		return nil
+	case user.FieldAccountBlockReason:
+		m.ResetAccountBlockReason()
+		return nil
+	case user.FieldAccountBlockedLevel:
+		m.ResetAccountBlockedLevel()
 		return nil
 	}
 	return fmt.Errorf("unknown User field %s", name)
@@ -6840,7 +7203,7 @@ func (m *UserMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *UserMutation) AddedEdges() []string {
-	edges := make([]string, 0, 7)
+	edges := make([]string, 0, 8)
 	if m.statistics != nil {
 		edges = append(edges, user.EdgeStatistics)
 	}
@@ -6861,6 +7224,9 @@ func (m *UserMutation) AddedEdges() []string {
 	}
 	if m.current_match != nil {
 		edges = append(edges, user.EdgeCurrentMatch)
+	}
+	if m.balance != nil {
+		edges = append(edges, user.EdgeBalance)
 	}
 	return edges
 }
@@ -6907,13 +7273,17 @@ func (m *UserMutation) AddedIDs(name string) []ent.Value {
 		if id := m.current_match; id != nil {
 			return []ent.Value{*id}
 		}
+	case user.EdgeBalance:
+		if id := m.balance; id != nil {
+			return []ent.Value{*id}
+		}
 	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *UserMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 7)
+	edges := make([]string, 0, 8)
 	if m.removedstatistics != nil {
 		edges = append(edges, user.EdgeStatistics)
 	}
@@ -6972,7 +7342,7 @@ func (m *UserMutation) RemovedIDs(name string) []ent.Value {
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *UserMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 7)
+	edges := make([]string, 0, 8)
 	if m.clearedstatistics {
 		edges = append(edges, user.EdgeStatistics)
 	}
@@ -6993,6 +7363,9 @@ func (m *UserMutation) ClearedEdges() []string {
 	}
 	if m.clearedcurrent_match {
 		edges = append(edges, user.EdgeCurrentMatch)
+	}
+	if m.clearedbalance {
+		edges = append(edges, user.EdgeBalance)
 	}
 	return edges
 }
@@ -7015,6 +7388,8 @@ func (m *UserMutation) EdgeCleared(name string) bool {
 		return m.clearedcurrent_item
 	case user.EdgeCurrentMatch:
 		return m.clearedcurrent_match
+	case user.EdgeBalance:
+		return m.clearedbalance
 	}
 	return false
 }
@@ -7028,6 +7403,9 @@ func (m *UserMutation) ClearEdge(name string) error {
 		return nil
 	case user.EdgeCurrentMatch:
 		m.ClearCurrentMatch()
+		return nil
+	case user.EdgeBalance:
+		m.ClearBalance()
 		return nil
 	}
 	return fmt.Errorf("unknown User unique edge %s", name)
@@ -7058,8 +7436,595 @@ func (m *UserMutation) ResetEdge(name string) error {
 	case user.EdgeCurrentMatch:
 		m.ResetCurrentMatch()
 		return nil
+	case user.EdgeBalance:
+		m.ResetBalance()
+		return nil
 	}
 	return fmt.Errorf("unknown User edge %s", name)
+}
+
+// UserBalanceMutation represents an operation that mutates the UserBalance nodes in the graph.
+type UserBalanceMutation struct {
+	config
+	op            Op
+	typ           string
+	id            *int
+	coins         *float64
+	addcoins      *float64
+	last_updated  *time.Time
+	created_at    *time.Time
+	clearedFields map[string]struct{}
+	user          *int
+	cleareduser   bool
+	done          bool
+	oldValue      func(context.Context) (*UserBalance, error)
+	predicates    []predicate.UserBalance
+}
+
+var _ ent.Mutation = (*UserBalanceMutation)(nil)
+
+// userbalanceOption allows management of the mutation configuration using functional options.
+type userbalanceOption func(*UserBalanceMutation)
+
+// newUserBalanceMutation creates new mutation for the UserBalance entity.
+func newUserBalanceMutation(c config, op Op, opts ...userbalanceOption) *UserBalanceMutation {
+	m := &UserBalanceMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeUserBalance,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withUserBalanceID sets the ID field of the mutation.
+func withUserBalanceID(id int) userbalanceOption {
+	return func(m *UserBalanceMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *UserBalance
+		)
+		m.oldValue = func(ctx context.Context) (*UserBalance, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().UserBalance.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withUserBalance sets the old UserBalance of the mutation.
+func withUserBalance(node *UserBalance) userbalanceOption {
+	return func(m *UserBalanceMutation) {
+		m.oldValue = func(context.Context) (*UserBalance, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m UserBalanceMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m UserBalanceMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// SetID sets the value of the id field. Note that this
+// operation is only accepted on creation of UserBalance entities.
+func (m *UserBalanceMutation) SetID(id int) {
+	m.id = &id
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *UserBalanceMutation) ID() (id int, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *UserBalanceMutation) IDs(ctx context.Context) ([]int, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []int{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().UserBalance.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetUserID sets the "user_id" field.
+func (m *UserBalanceMutation) SetUserID(i int) {
+	m.user = &i
+}
+
+// UserID returns the value of the "user_id" field in the mutation.
+func (m *UserBalanceMutation) UserID() (r int, exists bool) {
+	v := m.user
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUserID returns the old "user_id" field's value of the UserBalance entity.
+// If the UserBalance object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *UserBalanceMutation) OldUserID(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUserID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUserID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUserID: %w", err)
+	}
+	return oldValue.UserID, nil
+}
+
+// ResetUserID resets all changes to the "user_id" field.
+func (m *UserBalanceMutation) ResetUserID() {
+	m.user = nil
+}
+
+// SetCoins sets the "coins" field.
+func (m *UserBalanceMutation) SetCoins(f float64) {
+	m.coins = &f
+	m.addcoins = nil
+}
+
+// Coins returns the value of the "coins" field in the mutation.
+func (m *UserBalanceMutation) Coins() (r float64, exists bool) {
+	v := m.coins
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCoins returns the old "coins" field's value of the UserBalance entity.
+// If the UserBalance object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *UserBalanceMutation) OldCoins(ctx context.Context) (v float64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCoins is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCoins requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCoins: %w", err)
+	}
+	return oldValue.Coins, nil
+}
+
+// AddCoins adds f to the "coins" field.
+func (m *UserBalanceMutation) AddCoins(f float64) {
+	if m.addcoins != nil {
+		*m.addcoins += f
+	} else {
+		m.addcoins = &f
+	}
+}
+
+// AddedCoins returns the value that was added to the "coins" field in this mutation.
+func (m *UserBalanceMutation) AddedCoins() (r float64, exists bool) {
+	v := m.addcoins
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetCoins resets all changes to the "coins" field.
+func (m *UserBalanceMutation) ResetCoins() {
+	m.coins = nil
+	m.addcoins = nil
+}
+
+// SetLastUpdated sets the "last_updated" field.
+func (m *UserBalanceMutation) SetLastUpdated(t time.Time) {
+	m.last_updated = &t
+}
+
+// LastUpdated returns the value of the "last_updated" field in the mutation.
+func (m *UserBalanceMutation) LastUpdated() (r time.Time, exists bool) {
+	v := m.last_updated
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldLastUpdated returns the old "last_updated" field's value of the UserBalance entity.
+// If the UserBalance object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *UserBalanceMutation) OldLastUpdated(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldLastUpdated is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldLastUpdated requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldLastUpdated: %w", err)
+	}
+	return oldValue.LastUpdated, nil
+}
+
+// ResetLastUpdated resets all changes to the "last_updated" field.
+func (m *UserBalanceMutation) ResetLastUpdated() {
+	m.last_updated = nil
+}
+
+// SetCreatedAt sets the "created_at" field.
+func (m *UserBalanceMutation) SetCreatedAt(t time.Time) {
+	m.created_at = &t
+}
+
+// CreatedAt returns the value of the "created_at" field in the mutation.
+func (m *UserBalanceMutation) CreatedAt() (r time.Time, exists bool) {
+	v := m.created_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCreatedAt returns the old "created_at" field's value of the UserBalance entity.
+// If the UserBalance object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *UserBalanceMutation) OldCreatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCreatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCreatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreatedAt: %w", err)
+	}
+	return oldValue.CreatedAt, nil
+}
+
+// ResetCreatedAt resets all changes to the "created_at" field.
+func (m *UserBalanceMutation) ResetCreatedAt() {
+	m.created_at = nil
+}
+
+// ClearUser clears the "user" edge to the User entity.
+func (m *UserBalanceMutation) ClearUser() {
+	m.cleareduser = true
+	m.clearedFields[userbalance.FieldUserID] = struct{}{}
+}
+
+// UserCleared reports if the "user" edge to the User entity was cleared.
+func (m *UserBalanceMutation) UserCleared() bool {
+	return m.cleareduser
+}
+
+// UserIDs returns the "user" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// UserID instead. It exists only for internal usage by the builders.
+func (m *UserBalanceMutation) UserIDs() (ids []int) {
+	if id := m.user; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetUser resets all changes to the "user" edge.
+func (m *UserBalanceMutation) ResetUser() {
+	m.user = nil
+	m.cleareduser = false
+}
+
+// Where appends a list predicates to the UserBalanceMutation builder.
+func (m *UserBalanceMutation) Where(ps ...predicate.UserBalance) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// WhereP appends storage-level predicates to the UserBalanceMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *UserBalanceMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.UserBalance, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
+// Op returns the operation name.
+func (m *UserBalanceMutation) Op() Op {
+	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *UserBalanceMutation) SetOp(op Op) {
+	m.op = op
+}
+
+// Type returns the node type of this mutation (UserBalance).
+func (m *UserBalanceMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *UserBalanceMutation) Fields() []string {
+	fields := make([]string, 0, 4)
+	if m.user != nil {
+		fields = append(fields, userbalance.FieldUserID)
+	}
+	if m.coins != nil {
+		fields = append(fields, userbalance.FieldCoins)
+	}
+	if m.last_updated != nil {
+		fields = append(fields, userbalance.FieldLastUpdated)
+	}
+	if m.created_at != nil {
+		fields = append(fields, userbalance.FieldCreatedAt)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *UserBalanceMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case userbalance.FieldUserID:
+		return m.UserID()
+	case userbalance.FieldCoins:
+		return m.Coins()
+	case userbalance.FieldLastUpdated:
+		return m.LastUpdated()
+	case userbalance.FieldCreatedAt:
+		return m.CreatedAt()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *UserBalanceMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case userbalance.FieldUserID:
+		return m.OldUserID(ctx)
+	case userbalance.FieldCoins:
+		return m.OldCoins(ctx)
+	case userbalance.FieldLastUpdated:
+		return m.OldLastUpdated(ctx)
+	case userbalance.FieldCreatedAt:
+		return m.OldCreatedAt(ctx)
+	}
+	return nil, fmt.Errorf("unknown UserBalance field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *UserBalanceMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case userbalance.FieldUserID:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUserID(v)
+		return nil
+	case userbalance.FieldCoins:
+		v, ok := value.(float64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCoins(v)
+		return nil
+	case userbalance.FieldLastUpdated:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetLastUpdated(v)
+		return nil
+	case userbalance.FieldCreatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreatedAt(v)
+		return nil
+	}
+	return fmt.Errorf("unknown UserBalance field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *UserBalanceMutation) AddedFields() []string {
+	var fields []string
+	if m.addcoins != nil {
+		fields = append(fields, userbalance.FieldCoins)
+	}
+	return fields
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *UserBalanceMutation) AddedField(name string) (ent.Value, bool) {
+	switch name {
+	case userbalance.FieldCoins:
+		return m.AddedCoins()
+	}
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *UserBalanceMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	case userbalance.FieldCoins:
+		v, ok := value.(float64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddCoins(v)
+		return nil
+	}
+	return fmt.Errorf("unknown UserBalance numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *UserBalanceMutation) ClearedFields() []string {
+	return nil
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *UserBalanceMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *UserBalanceMutation) ClearField(name string) error {
+	return fmt.Errorf("unknown UserBalance nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *UserBalanceMutation) ResetField(name string) error {
+	switch name {
+	case userbalance.FieldUserID:
+		m.ResetUserID()
+		return nil
+	case userbalance.FieldCoins:
+		m.ResetCoins()
+		return nil
+	case userbalance.FieldLastUpdated:
+		m.ResetLastUpdated()
+		return nil
+	case userbalance.FieldCreatedAt:
+		m.ResetCreatedAt()
+		return nil
+	}
+	return fmt.Errorf("unknown UserBalance field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *UserBalanceMutation) AddedEdges() []string {
+	edges := make([]string, 0, 1)
+	if m.user != nil {
+		edges = append(edges, userbalance.EdgeUser)
+	}
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *UserBalanceMutation) AddedIDs(name string) []ent.Value {
+	switch name {
+	case userbalance.EdgeUser:
+		if id := m.user; id != nil {
+			return []ent.Value{*id}
+		}
+	}
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *UserBalanceMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 1)
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *UserBalanceMutation) RemovedIDs(name string) []ent.Value {
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *UserBalanceMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 1)
+	if m.cleareduser {
+		edges = append(edges, userbalance.EdgeUser)
+	}
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *UserBalanceMutation) EdgeCleared(name string) bool {
+	switch name {
+	case userbalance.EdgeUser:
+		return m.cleareduser
+	}
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *UserBalanceMutation) ClearEdge(name string) error {
+	switch name {
+	case userbalance.EdgeUser:
+		m.ClearUser()
+		return nil
+	}
+	return fmt.Errorf("unknown UserBalance unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *UserBalanceMutation) ResetEdge(name string) error {
+	switch name {
+	case userbalance.EdgeUser:
+		m.ResetUser()
+		return nil
+	}
+	return fmt.Errorf("unknown UserBalance edge %s", name)
 }
 
 // UserItemMutation represents an operation that mutates the UserItem nodes in the graph.

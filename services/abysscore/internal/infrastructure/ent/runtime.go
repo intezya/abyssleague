@@ -11,6 +11,7 @@ import (
 	"abysscore/internal/infrastructure/ent/schema/access_level"
 	"abysscore/internal/infrastructure/ent/statistic"
 	"abysscore/internal/infrastructure/ent/user"
+	"abysscore/internal/infrastructure/ent/userbalance"
 	"abysscore/internal/infrastructure/ent/useritem"
 	"time"
 )
@@ -245,6 +246,34 @@ func init() {
 	userDescCreatedAt := userFields[15].Descriptor()
 	// user.DefaultCreatedAt holds the default value on creation for the created_at field.
 	user.DefaultCreatedAt = userDescCreatedAt.Default.(func() time.Time)
+	// userDescSearchBlockedLevel is the schema descriptor for search_blocked_level field.
+	userDescSearchBlockedLevel := userFields[18].Descriptor()
+	// user.DefaultSearchBlockedLevel holds the default value on creation for the search_blocked_level field.
+	user.DefaultSearchBlockedLevel = userDescSearchBlockedLevel.Default.(int)
+	// user.SearchBlockedLevelValidator is a validator for the "search_blocked_level" field. It is called by the builders before save.
+	user.SearchBlockedLevelValidator = userDescSearchBlockedLevel.Validators[0].(func(int) error)
+	// userDescAccountBlockedLevel is the schema descriptor for account_blocked_level field.
+	userDescAccountBlockedLevel := userFields[21].Descriptor()
+	// user.DefaultAccountBlockedLevel holds the default value on creation for the account_blocked_level field.
+	user.DefaultAccountBlockedLevel = userDescAccountBlockedLevel.Default.(int)
+	// user.AccountBlockedLevelValidator is a validator for the "account_blocked_level" field. It is called by the builders before save.
+	user.AccountBlockedLevelValidator = userDescAccountBlockedLevel.Validators[0].(func(int) error)
+	userbalanceFields := schema.UserBalance{}.Fields()
+	_ = userbalanceFields
+	// userbalanceDescCoins is the schema descriptor for coins field.
+	userbalanceDescCoins := userbalanceFields[2].Descriptor()
+	// userbalance.DefaultCoins holds the default value on creation for the coins field.
+	userbalance.DefaultCoins = userbalanceDescCoins.Default.(float64)
+	// userbalanceDescLastUpdated is the schema descriptor for last_updated field.
+	userbalanceDescLastUpdated := userbalanceFields[3].Descriptor()
+	// userbalance.DefaultLastUpdated holds the default value on creation for the last_updated field.
+	userbalance.DefaultLastUpdated = userbalanceDescLastUpdated.Default.(func() time.Time)
+	// userbalance.UpdateDefaultLastUpdated holds the default value on update for the last_updated field.
+	userbalance.UpdateDefaultLastUpdated = userbalanceDescLastUpdated.UpdateDefault.(func() time.Time)
+	// userbalanceDescCreatedAt is the schema descriptor for created_at field.
+	userbalanceDescCreatedAt := userbalanceFields[4].Descriptor()
+	// userbalance.DefaultCreatedAt holds the default value on creation for the created_at field.
+	userbalance.DefaultCreatedAt = userbalanceDescCreatedAt.Default.(func() time.Time)
 	useritemFields := schema.UserItem{}.Fields()
 	_ = useritemFields
 	// useritemDescReceivedFromID is the schema descriptor for received_from_id field.

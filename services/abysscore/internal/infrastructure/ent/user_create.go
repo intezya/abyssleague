@@ -8,6 +8,7 @@ import (
 	"abysscore/internal/infrastructure/ent/schema/access_level"
 	"abysscore/internal/infrastructure/ent/statistic"
 	"abysscore/internal/infrastructure/ent/user"
+	"abysscore/internal/infrastructure/ent/userbalance"
 	"abysscore/internal/infrastructure/ent/useritem"
 	"context"
 	"errors"
@@ -225,6 +226,34 @@ func (uc *UserCreate) SetNillableSearchBlockedUntil(t *time.Time) *UserCreate {
 	return uc
 }
 
+// SetSearchBlockReason sets the "search_block_reason" field.
+func (uc *UserCreate) SetSearchBlockReason(s string) *UserCreate {
+	uc.mutation.SetSearchBlockReason(s)
+	return uc
+}
+
+// SetNillableSearchBlockReason sets the "search_block_reason" field if the given value is not nil.
+func (uc *UserCreate) SetNillableSearchBlockReason(s *string) *UserCreate {
+	if s != nil {
+		uc.SetSearchBlockReason(*s)
+	}
+	return uc
+}
+
+// SetSearchBlockedLevel sets the "search_blocked_level" field.
+func (uc *UserCreate) SetSearchBlockedLevel(i int) *UserCreate {
+	uc.mutation.SetSearchBlockedLevel(i)
+	return uc
+}
+
+// SetNillableSearchBlockedLevel sets the "search_blocked_level" field if the given value is not nil.
+func (uc *UserCreate) SetNillableSearchBlockedLevel(i *int) *UserCreate {
+	if i != nil {
+		uc.SetSearchBlockedLevel(*i)
+	}
+	return uc
+}
+
 // SetAccountBlockedUntil sets the "account_blocked_until" field.
 func (uc *UserCreate) SetAccountBlockedUntil(t time.Time) *UserCreate {
 	uc.mutation.SetAccountBlockedUntil(t)
@@ -235,6 +264,34 @@ func (uc *UserCreate) SetAccountBlockedUntil(t time.Time) *UserCreate {
 func (uc *UserCreate) SetNillableAccountBlockedUntil(t *time.Time) *UserCreate {
 	if t != nil {
 		uc.SetAccountBlockedUntil(*t)
+	}
+	return uc
+}
+
+// SetAccountBlockReason sets the "account_block_reason" field.
+func (uc *UserCreate) SetAccountBlockReason(s string) *UserCreate {
+	uc.mutation.SetAccountBlockReason(s)
+	return uc
+}
+
+// SetNillableAccountBlockReason sets the "account_block_reason" field if the given value is not nil.
+func (uc *UserCreate) SetNillableAccountBlockReason(s *string) *UserCreate {
+	if s != nil {
+		uc.SetAccountBlockReason(*s)
+	}
+	return uc
+}
+
+// SetAccountBlockedLevel sets the "account_blocked_level" field.
+func (uc *UserCreate) SetAccountBlockedLevel(i int) *UserCreate {
+	uc.mutation.SetAccountBlockedLevel(i)
+	return uc
+}
+
+// SetNillableAccountBlockedLevel sets the "account_blocked_level" field if the given value is not nil.
+func (uc *UserCreate) SetNillableAccountBlockedLevel(i *int) *UserCreate {
+	if i != nil {
+		uc.SetAccountBlockedLevel(*i)
 	}
 	return uc
 }
@@ -344,6 +401,25 @@ func (uc *UserCreate) SetCurrentMatch(m *Match) *UserCreate {
 	return uc.SetCurrentMatchID(m.ID)
 }
 
+// SetBalanceID sets the "balance" edge to the UserBalance entity by ID.
+func (uc *UserCreate) SetBalanceID(id int) *UserCreate {
+	uc.mutation.SetBalanceID(id)
+	return uc
+}
+
+// SetNillableBalanceID sets the "balance" edge to the UserBalance entity by ID if the given value is not nil.
+func (uc *UserCreate) SetNillableBalanceID(id *int) *UserCreate {
+	if id != nil {
+		uc = uc.SetBalanceID(*id)
+	}
+	return uc
+}
+
+// SetBalance sets the "balance" edge to the UserBalance entity.
+func (uc *UserCreate) SetBalance(u *UserBalance) *UserCreate {
+	return uc.SetBalanceID(u.ID)
+}
+
 // Mutation returns the UserMutation object of the builder.
 func (uc *UserCreate) Mutation() *UserMutation {
 	return uc.mutation
@@ -399,6 +475,14 @@ func (uc *UserCreate) defaults() {
 		v := user.DefaultCreatedAt()
 		uc.mutation.SetCreatedAt(v)
 	}
+	if _, ok := uc.mutation.SearchBlockedLevel(); !ok {
+		v := user.DefaultSearchBlockedLevel
+		uc.mutation.SetSearchBlockedLevel(v)
+	}
+	if _, ok := uc.mutation.AccountBlockedLevel(); !ok {
+		v := user.DefaultAccountBlockedLevel
+		uc.mutation.SetAccountBlockedLevel(v)
+	}
 }
 
 // check runs all checks and user-defined validators on the builder.
@@ -441,6 +525,22 @@ func (uc *UserCreate) check() error {
 	}
 	if _, ok := uc.mutation.CreatedAt(); !ok {
 		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "User.created_at"`)}
+	}
+	if _, ok := uc.mutation.SearchBlockedLevel(); !ok {
+		return &ValidationError{Name: "search_blocked_level", err: errors.New(`ent: missing required field "User.search_blocked_level"`)}
+	}
+	if v, ok := uc.mutation.SearchBlockedLevel(); ok {
+		if err := user.SearchBlockedLevelValidator(v); err != nil {
+			return &ValidationError{Name: "search_blocked_level", err: fmt.Errorf(`ent: validator failed for field "User.search_blocked_level": %w`, err)}
+		}
+	}
+	if _, ok := uc.mutation.AccountBlockedLevel(); !ok {
+		return &ValidationError{Name: "account_blocked_level", err: errors.New(`ent: missing required field "User.account_blocked_level"`)}
+	}
+	if v, ok := uc.mutation.AccountBlockedLevel(); ok {
+		if err := user.AccountBlockedLevelValidator(v); err != nil {
+			return &ValidationError{Name: "account_blocked_level", err: fmt.Errorf(`ent: validator failed for field "User.account_blocked_level": %w`, err)}
+		}
 	}
 	return nil
 }
@@ -530,9 +630,25 @@ func (uc *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 		_spec.SetField(user.FieldSearchBlockedUntil, field.TypeTime, value)
 		_node.SearchBlockedUntil = &value
 	}
+	if value, ok := uc.mutation.SearchBlockReason(); ok {
+		_spec.SetField(user.FieldSearchBlockReason, field.TypeString, value)
+		_node.SearchBlockReason = &value
+	}
+	if value, ok := uc.mutation.SearchBlockedLevel(); ok {
+		_spec.SetField(user.FieldSearchBlockedLevel, field.TypeInt, value)
+		_node.SearchBlockedLevel = value
+	}
 	if value, ok := uc.mutation.AccountBlockedUntil(); ok {
 		_spec.SetField(user.FieldAccountBlockedUntil, field.TypeTime, value)
 		_node.AccountBlockedUntil = &value
+	}
+	if value, ok := uc.mutation.AccountBlockReason(); ok {
+		_spec.SetField(user.FieldAccountBlockReason, field.TypeString, value)
+		_node.AccountBlockReason = &value
+	}
+	if value, ok := uc.mutation.AccountBlockedLevel(); ok {
+		_spec.SetField(user.FieldAccountBlockedLevel, field.TypeInt, value)
+		_node.AccountBlockedLevel = value
 	}
 	if nodes := uc.mutation.StatisticsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
@@ -646,6 +762,22 @@ func (uc *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_node.CurrentMatchID = &nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := uc.mutation.BalanceIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2O,
+			Inverse: false,
+			Table:   user.BalanceTable,
+			Columns: []string{user.BalanceColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(userbalance.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec

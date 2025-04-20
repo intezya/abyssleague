@@ -8,6 +8,7 @@ import (
 	"abysscore/internal/infrastructure/ent/predicate"
 	"abysscore/internal/infrastructure/ent/statistic"
 	"abysscore/internal/infrastructure/ent/user"
+	"abysscore/internal/infrastructure/ent/userbalance"
 	"abysscore/internal/infrastructure/ent/useritem"
 	"context"
 	"database/sql/driver"
@@ -34,6 +35,7 @@ type UserQuery struct {
 	withItems                  *UserItemQuery
 	withCurrentItem            *UserItemQuery
 	withCurrentMatch           *MatchQuery
+	withBalance                *UserBalanceQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -217,6 +219,28 @@ func (uq *UserQuery) QueryCurrentMatch() *MatchQuery {
 			sqlgraph.From(user.Table, user.FieldID, selector),
 			sqlgraph.To(match.Table, match.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, false, user.CurrentMatchTable, user.CurrentMatchColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(uq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryBalance chains the current query on the "balance" edge.
+func (uq *UserQuery) QueryBalance() *UserBalanceQuery {
+	query := (&UserBalanceClient{config: uq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := uq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := uq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(user.Table, user.FieldID, selector),
+			sqlgraph.To(userbalance.Table, userbalance.FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, false, user.BalanceTable, user.BalanceColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(uq.driver.Dialect(), step)
 		return fromU, nil
@@ -423,6 +447,7 @@ func (uq *UserQuery) Clone() *UserQuery {
 		withItems:                  uq.withItems.Clone(),
 		withCurrentItem:            uq.withCurrentItem.Clone(),
 		withCurrentMatch:           uq.withCurrentMatch.Clone(),
+		withBalance:                uq.withBalance.Clone(),
 		// clone intermediate query.
 		sql:  uq.sql.Clone(),
 		path: uq.path,
@@ -506,6 +531,17 @@ func (uq *UserQuery) WithCurrentMatch(opts ...func(*MatchQuery)) *UserQuery {
 	return uq
 }
 
+// WithBalance tells the query-builder to eager-load the nodes that are connected to
+// the "balance" edge. The optional arguments are used to configure the query builder of the edge.
+func (uq *UserQuery) WithBalance(opts ...func(*UserBalanceQuery)) *UserQuery {
+	query := (&UserBalanceClient{config: uq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	uq.withBalance = query
+	return uq
+}
+
 // GroupBy is used to group vertices by one or more fields/columns.
 // It is often used with aggregate functions, like: count, max, mean, min, sum.
 //
@@ -584,7 +620,7 @@ func (uq *UserQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*User, e
 	var (
 		nodes       = []*User{}
 		_spec       = uq.querySpec()
-		loadedTypes = [7]bool{
+		loadedTypes = [8]bool{
 			uq.withStatistics != nil,
 			uq.withFriends != nil,
 			uq.withSentFriendRequests != nil,
@@ -592,6 +628,7 @@ func (uq *UserQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*User, e
 			uq.withItems != nil,
 			uq.withCurrentItem != nil,
 			uq.withCurrentMatch != nil,
+			uq.withBalance != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
@@ -658,6 +695,12 @@ func (uq *UserQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*User, e
 	if query := uq.withCurrentMatch; query != nil {
 		if err := uq.loadCurrentMatch(ctx, query, nodes, nil,
 			func(n *User, e *Match) { n.Edges.CurrentMatch = e }); err != nil {
+			return nil, err
+		}
+	}
+	if query := uq.withBalance; query != nil {
+		if err := uq.loadBalance(ctx, query, nodes, nil,
+			func(n *User, e *UserBalance) { n.Edges.Balance = e }); err != nil {
 			return nil, err
 		}
 	}
@@ -906,6 +949,33 @@ func (uq *UserQuery) loadCurrentMatch(ctx context.Context, query *MatchQuery, no
 		for i := range nodes {
 			assign(nodes[i], n)
 		}
+	}
+	return nil
+}
+func (uq *UserQuery) loadBalance(ctx context.Context, query *UserBalanceQuery, nodes []*User, init func(*User), assign func(*User, *UserBalance)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[int]*User)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+	}
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(userbalance.FieldUserID)
+	}
+	query.Where(predicate.UserBalance(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(user.BalanceColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.UserID
+		node, ok := nodeids[fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "user_id" returned %v for node %v`, fk, n.ID)
+		}
+		assign(node, n)
 	}
 	return nil
 }

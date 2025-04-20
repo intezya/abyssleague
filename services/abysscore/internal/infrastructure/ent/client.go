@@ -17,6 +17,7 @@ import (
 	"abysscore/internal/infrastructure/ent/matchresult"
 	"abysscore/internal/infrastructure/ent/statistic"
 	"abysscore/internal/infrastructure/ent/user"
+	"abysscore/internal/infrastructure/ent/userbalance"
 	"abysscore/internal/infrastructure/ent/useritem"
 
 	"entgo.io/ent"
@@ -42,6 +43,8 @@ type Client struct {
 	Statistic *StatisticClient
 	// User is the client for interacting with the User builders.
 	User *UserClient
+	// UserBalance is the client for interacting with the UserBalance builders.
+	UserBalance *UserBalanceClient
 	// UserItem is the client for interacting with the UserItem builders.
 	UserItem *UserItemClient
 }
@@ -61,6 +64,7 @@ func (c *Client) init() {
 	c.MatchResult = NewMatchResultClient(c.config)
 	c.Statistic = NewStatisticClient(c.config)
 	c.User = NewUserClient(c.config)
+	c.UserBalance = NewUserBalanceClient(c.config)
 	c.UserItem = NewUserItemClient(c.config)
 }
 
@@ -160,6 +164,7 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		MatchResult:   NewMatchResultClient(cfg),
 		Statistic:     NewStatisticClient(cfg),
 		User:          NewUserClient(cfg),
+		UserBalance:   NewUserBalanceClient(cfg),
 		UserItem:      NewUserItemClient(cfg),
 	}, nil
 }
@@ -186,6 +191,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		MatchResult:   NewMatchResultClient(cfg),
 		Statistic:     NewStatisticClient(cfg),
 		User:          NewUserClient(cfg),
+		UserBalance:   NewUserBalanceClient(cfg),
 		UserItem:      NewUserItemClient(cfg),
 	}, nil
 }
@@ -217,7 +223,7 @@ func (c *Client) Close() error {
 func (c *Client) Use(hooks ...Hook) {
 	for _, n := range []interface{ Use(...Hook) }{
 		c.FriendRequest, c.GameItem, c.Match, c.MatchResult, c.Statistic, c.User,
-		c.UserItem,
+		c.UserBalance, c.UserItem,
 	} {
 		n.Use(hooks...)
 	}
@@ -228,7 +234,7 @@ func (c *Client) Use(hooks ...Hook) {
 func (c *Client) Intercept(interceptors ...Interceptor) {
 	for _, n := range []interface{ Intercept(...Interceptor) }{
 		c.FriendRequest, c.GameItem, c.Match, c.MatchResult, c.Statistic, c.User,
-		c.UserItem,
+		c.UserBalance, c.UserItem,
 	} {
 		n.Intercept(interceptors...)
 	}
@@ -249,6 +255,8 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.Statistic.mutate(ctx, m)
 	case *UserMutation:
 		return c.User.mutate(ctx, m)
+	case *UserBalanceMutation:
+		return c.UserBalance.mutate(ctx, m)
 	case *UserItemMutation:
 		return c.UserItem.mutate(ctx, m)
 	default:
@@ -1285,6 +1293,22 @@ func (c *UserClient) QueryCurrentMatch(u *User) *MatchQuery {
 	return query
 }
 
+// QueryBalance queries the balance edge of a User.
+func (c *UserClient) QueryBalance(u *User) *UserBalanceQuery {
+	query := (&UserBalanceClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := u.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(user.Table, user.FieldID, id),
+			sqlgraph.To(userbalance.Table, userbalance.FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, false, user.BalanceTable, user.BalanceColumn),
+		)
+		fromV = sqlgraph.Neighbors(u.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // Hooks returns the client hooks.
 func (c *UserClient) Hooks() []Hook {
 	return c.hooks.User
@@ -1307,6 +1331,155 @@ func (c *UserClient) mutate(ctx context.Context, m *UserMutation) (Value, error)
 		return (&UserDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
 	default:
 		return nil, fmt.Errorf("ent: unknown User mutation op: %q", m.Op())
+	}
+}
+
+// UserBalanceClient is a client for the UserBalance schema.
+type UserBalanceClient struct {
+	config
+}
+
+// NewUserBalanceClient returns a client for the UserBalance from the given config.
+func NewUserBalanceClient(c config) *UserBalanceClient {
+	return &UserBalanceClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `userbalance.Hooks(f(g(h())))`.
+func (c *UserBalanceClient) Use(hooks ...Hook) {
+	c.hooks.UserBalance = append(c.hooks.UserBalance, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `userbalance.Intercept(f(g(h())))`.
+func (c *UserBalanceClient) Intercept(interceptors ...Interceptor) {
+	c.inters.UserBalance = append(c.inters.UserBalance, interceptors...)
+}
+
+// Create returns a builder for creating a UserBalance entity.
+func (c *UserBalanceClient) Create() *UserBalanceCreate {
+	mutation := newUserBalanceMutation(c.config, OpCreate)
+	return &UserBalanceCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of UserBalance entities.
+func (c *UserBalanceClient) CreateBulk(builders ...*UserBalanceCreate) *UserBalanceCreateBulk {
+	return &UserBalanceCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *UserBalanceClient) MapCreateBulk(slice any, setFunc func(*UserBalanceCreate, int)) *UserBalanceCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &UserBalanceCreateBulk{err: fmt.Errorf("calling to UserBalanceClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*UserBalanceCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &UserBalanceCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for UserBalance.
+func (c *UserBalanceClient) Update() *UserBalanceUpdate {
+	mutation := newUserBalanceMutation(c.config, OpUpdate)
+	return &UserBalanceUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *UserBalanceClient) UpdateOne(ub *UserBalance) *UserBalanceUpdateOne {
+	mutation := newUserBalanceMutation(c.config, OpUpdateOne, withUserBalance(ub))
+	return &UserBalanceUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *UserBalanceClient) UpdateOneID(id int) *UserBalanceUpdateOne {
+	mutation := newUserBalanceMutation(c.config, OpUpdateOne, withUserBalanceID(id))
+	return &UserBalanceUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for UserBalance.
+func (c *UserBalanceClient) Delete() *UserBalanceDelete {
+	mutation := newUserBalanceMutation(c.config, OpDelete)
+	return &UserBalanceDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *UserBalanceClient) DeleteOne(ub *UserBalance) *UserBalanceDeleteOne {
+	return c.DeleteOneID(ub.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *UserBalanceClient) DeleteOneID(id int) *UserBalanceDeleteOne {
+	builder := c.Delete().Where(userbalance.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &UserBalanceDeleteOne{builder}
+}
+
+// Query returns a query builder for UserBalance.
+func (c *UserBalanceClient) Query() *UserBalanceQuery {
+	return &UserBalanceQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeUserBalance},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a UserBalance entity by its id.
+func (c *UserBalanceClient) Get(ctx context.Context, id int) (*UserBalance, error) {
+	return c.Query().Where(userbalance.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *UserBalanceClient) GetX(ctx context.Context, id int) *UserBalance {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryUser queries the user edge of a UserBalance.
+func (c *UserBalanceClient) QueryUser(ub *UserBalance) *UserQuery {
+	query := (&UserClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := ub.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(userbalance.Table, userbalance.FieldID, id),
+			sqlgraph.To(user.Table, user.FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, true, userbalance.UserTable, userbalance.UserColumn),
+		)
+		fromV = sqlgraph.Neighbors(ub.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *UserBalanceClient) Hooks() []Hook {
+	return c.hooks.UserBalance
+}
+
+// Interceptors returns the client interceptors.
+func (c *UserBalanceClient) Interceptors() []Interceptor {
+	return c.inters.UserBalance
+}
+
+func (c *UserBalanceClient) mutate(ctx context.Context, m *UserBalanceMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&UserBalanceCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&UserBalanceUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&UserBalanceUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&UserBalanceDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown UserBalance mutation op: %q", m.Op())
 	}
 }
 
@@ -1478,11 +1651,11 @@ func (c *UserItemClient) mutate(ctx context.Context, m *UserItemMutation) (Value
 // hooks and interceptors per client, for fast access.
 type (
 	hooks struct {
-		FriendRequest, GameItem, Match, MatchResult, Statistic, User,
+		FriendRequest, GameItem, Match, MatchResult, Statistic, User, UserBalance,
 		UserItem []ent.Hook
 	}
 	inters struct {
-		FriendRequest, GameItem, Match, MatchResult, Statistic, User,
+		FriendRequest, GameItem, Match, MatchResult, Statistic, User, UserBalance,
 		UserItem []ent.Interceptor
 	}
 )

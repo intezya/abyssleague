@@ -136,9 +136,29 @@ func SearchBlockedUntil(v time.Time) predicate.User {
 	return predicate.User(sql.FieldEQ(FieldSearchBlockedUntil, v))
 }
 
+// SearchBlockReason applies equality check predicate on the "search_block_reason" field. It's identical to SearchBlockReasonEQ.
+func SearchBlockReason(v string) predicate.User {
+	return predicate.User(sql.FieldEQ(FieldSearchBlockReason, v))
+}
+
+// SearchBlockedLevel applies equality check predicate on the "search_blocked_level" field. It's identical to SearchBlockedLevelEQ.
+func SearchBlockedLevel(v int) predicate.User {
+	return predicate.User(sql.FieldEQ(FieldSearchBlockedLevel, v))
+}
+
 // AccountBlockedUntil applies equality check predicate on the "account_blocked_until" field. It's identical to AccountBlockedUntilEQ.
 func AccountBlockedUntil(v time.Time) predicate.User {
 	return predicate.User(sql.FieldEQ(FieldAccountBlockedUntil, v))
+}
+
+// AccountBlockReason applies equality check predicate on the "account_block_reason" field. It's identical to AccountBlockReasonEQ.
+func AccountBlockReason(v string) predicate.User {
+	return predicate.User(sql.FieldEQ(FieldAccountBlockReason, v))
+}
+
+// AccountBlockedLevel applies equality check predicate on the "account_blocked_level" field. It's identical to AccountBlockedLevelEQ.
+func AccountBlockedLevel(v int) predicate.User {
+	return predicate.User(sql.FieldEQ(FieldAccountBlockedLevel, v))
 }
 
 // UsernameEQ applies the EQ predicate on the "username" field.
@@ -1021,6 +1041,121 @@ func SearchBlockedUntilNotNil() predicate.User {
 	return predicate.User(sql.FieldNotNull(FieldSearchBlockedUntil))
 }
 
+// SearchBlockReasonEQ applies the EQ predicate on the "search_block_reason" field.
+func SearchBlockReasonEQ(v string) predicate.User {
+	return predicate.User(sql.FieldEQ(FieldSearchBlockReason, v))
+}
+
+// SearchBlockReasonNEQ applies the NEQ predicate on the "search_block_reason" field.
+func SearchBlockReasonNEQ(v string) predicate.User {
+	return predicate.User(sql.FieldNEQ(FieldSearchBlockReason, v))
+}
+
+// SearchBlockReasonIn applies the In predicate on the "search_block_reason" field.
+func SearchBlockReasonIn(vs ...string) predicate.User {
+	return predicate.User(sql.FieldIn(FieldSearchBlockReason, vs...))
+}
+
+// SearchBlockReasonNotIn applies the NotIn predicate on the "search_block_reason" field.
+func SearchBlockReasonNotIn(vs ...string) predicate.User {
+	return predicate.User(sql.FieldNotIn(FieldSearchBlockReason, vs...))
+}
+
+// SearchBlockReasonGT applies the GT predicate on the "search_block_reason" field.
+func SearchBlockReasonGT(v string) predicate.User {
+	return predicate.User(sql.FieldGT(FieldSearchBlockReason, v))
+}
+
+// SearchBlockReasonGTE applies the GTE predicate on the "search_block_reason" field.
+func SearchBlockReasonGTE(v string) predicate.User {
+	return predicate.User(sql.FieldGTE(FieldSearchBlockReason, v))
+}
+
+// SearchBlockReasonLT applies the LT predicate on the "search_block_reason" field.
+func SearchBlockReasonLT(v string) predicate.User {
+	return predicate.User(sql.FieldLT(FieldSearchBlockReason, v))
+}
+
+// SearchBlockReasonLTE applies the LTE predicate on the "search_block_reason" field.
+func SearchBlockReasonLTE(v string) predicate.User {
+	return predicate.User(sql.FieldLTE(FieldSearchBlockReason, v))
+}
+
+// SearchBlockReasonContains applies the Contains predicate on the "search_block_reason" field.
+func SearchBlockReasonContains(v string) predicate.User {
+	return predicate.User(sql.FieldContains(FieldSearchBlockReason, v))
+}
+
+// SearchBlockReasonHasPrefix applies the HasPrefix predicate on the "search_block_reason" field.
+func SearchBlockReasonHasPrefix(v string) predicate.User {
+	return predicate.User(sql.FieldHasPrefix(FieldSearchBlockReason, v))
+}
+
+// SearchBlockReasonHasSuffix applies the HasSuffix predicate on the "search_block_reason" field.
+func SearchBlockReasonHasSuffix(v string) predicate.User {
+	return predicate.User(sql.FieldHasSuffix(FieldSearchBlockReason, v))
+}
+
+// SearchBlockReasonIsNil applies the IsNil predicate on the "search_block_reason" field.
+func SearchBlockReasonIsNil() predicate.User {
+	return predicate.User(sql.FieldIsNull(FieldSearchBlockReason))
+}
+
+// SearchBlockReasonNotNil applies the NotNil predicate on the "search_block_reason" field.
+func SearchBlockReasonNotNil() predicate.User {
+	return predicate.User(sql.FieldNotNull(FieldSearchBlockReason))
+}
+
+// SearchBlockReasonEqualFold applies the EqualFold predicate on the "search_block_reason" field.
+func SearchBlockReasonEqualFold(v string) predicate.User {
+	return predicate.User(sql.FieldEqualFold(FieldSearchBlockReason, v))
+}
+
+// SearchBlockReasonContainsFold applies the ContainsFold predicate on the "search_block_reason" field.
+func SearchBlockReasonContainsFold(v string) predicate.User {
+	return predicate.User(sql.FieldContainsFold(FieldSearchBlockReason, v))
+}
+
+// SearchBlockedLevelEQ applies the EQ predicate on the "search_blocked_level" field.
+func SearchBlockedLevelEQ(v int) predicate.User {
+	return predicate.User(sql.FieldEQ(FieldSearchBlockedLevel, v))
+}
+
+// SearchBlockedLevelNEQ applies the NEQ predicate on the "search_blocked_level" field.
+func SearchBlockedLevelNEQ(v int) predicate.User {
+	return predicate.User(sql.FieldNEQ(FieldSearchBlockedLevel, v))
+}
+
+// SearchBlockedLevelIn applies the In predicate on the "search_blocked_level" field.
+func SearchBlockedLevelIn(vs ...int) predicate.User {
+	return predicate.User(sql.FieldIn(FieldSearchBlockedLevel, vs...))
+}
+
+// SearchBlockedLevelNotIn applies the NotIn predicate on the "search_blocked_level" field.
+func SearchBlockedLevelNotIn(vs ...int) predicate.User {
+	return predicate.User(sql.FieldNotIn(FieldSearchBlockedLevel, vs...))
+}
+
+// SearchBlockedLevelGT applies the GT predicate on the "search_blocked_level" field.
+func SearchBlockedLevelGT(v int) predicate.User {
+	return predicate.User(sql.FieldGT(FieldSearchBlockedLevel, v))
+}
+
+// SearchBlockedLevelGTE applies the GTE predicate on the "search_blocked_level" field.
+func SearchBlockedLevelGTE(v int) predicate.User {
+	return predicate.User(sql.FieldGTE(FieldSearchBlockedLevel, v))
+}
+
+// SearchBlockedLevelLT applies the LT predicate on the "search_blocked_level" field.
+func SearchBlockedLevelLT(v int) predicate.User {
+	return predicate.User(sql.FieldLT(FieldSearchBlockedLevel, v))
+}
+
+// SearchBlockedLevelLTE applies the LTE predicate on the "search_blocked_level" field.
+func SearchBlockedLevelLTE(v int) predicate.User {
+	return predicate.User(sql.FieldLTE(FieldSearchBlockedLevel, v))
+}
+
 // AccountBlockedUntilEQ applies the EQ predicate on the "account_blocked_until" field.
 func AccountBlockedUntilEQ(v time.Time) predicate.User {
 	return predicate.User(sql.FieldEQ(FieldAccountBlockedUntil, v))
@@ -1069,6 +1204,121 @@ func AccountBlockedUntilIsNil() predicate.User {
 // AccountBlockedUntilNotNil applies the NotNil predicate on the "account_blocked_until" field.
 func AccountBlockedUntilNotNil() predicate.User {
 	return predicate.User(sql.FieldNotNull(FieldAccountBlockedUntil))
+}
+
+// AccountBlockReasonEQ applies the EQ predicate on the "account_block_reason" field.
+func AccountBlockReasonEQ(v string) predicate.User {
+	return predicate.User(sql.FieldEQ(FieldAccountBlockReason, v))
+}
+
+// AccountBlockReasonNEQ applies the NEQ predicate on the "account_block_reason" field.
+func AccountBlockReasonNEQ(v string) predicate.User {
+	return predicate.User(sql.FieldNEQ(FieldAccountBlockReason, v))
+}
+
+// AccountBlockReasonIn applies the In predicate on the "account_block_reason" field.
+func AccountBlockReasonIn(vs ...string) predicate.User {
+	return predicate.User(sql.FieldIn(FieldAccountBlockReason, vs...))
+}
+
+// AccountBlockReasonNotIn applies the NotIn predicate on the "account_block_reason" field.
+func AccountBlockReasonNotIn(vs ...string) predicate.User {
+	return predicate.User(sql.FieldNotIn(FieldAccountBlockReason, vs...))
+}
+
+// AccountBlockReasonGT applies the GT predicate on the "account_block_reason" field.
+func AccountBlockReasonGT(v string) predicate.User {
+	return predicate.User(sql.FieldGT(FieldAccountBlockReason, v))
+}
+
+// AccountBlockReasonGTE applies the GTE predicate on the "account_block_reason" field.
+func AccountBlockReasonGTE(v string) predicate.User {
+	return predicate.User(sql.FieldGTE(FieldAccountBlockReason, v))
+}
+
+// AccountBlockReasonLT applies the LT predicate on the "account_block_reason" field.
+func AccountBlockReasonLT(v string) predicate.User {
+	return predicate.User(sql.FieldLT(FieldAccountBlockReason, v))
+}
+
+// AccountBlockReasonLTE applies the LTE predicate on the "account_block_reason" field.
+func AccountBlockReasonLTE(v string) predicate.User {
+	return predicate.User(sql.FieldLTE(FieldAccountBlockReason, v))
+}
+
+// AccountBlockReasonContains applies the Contains predicate on the "account_block_reason" field.
+func AccountBlockReasonContains(v string) predicate.User {
+	return predicate.User(sql.FieldContains(FieldAccountBlockReason, v))
+}
+
+// AccountBlockReasonHasPrefix applies the HasPrefix predicate on the "account_block_reason" field.
+func AccountBlockReasonHasPrefix(v string) predicate.User {
+	return predicate.User(sql.FieldHasPrefix(FieldAccountBlockReason, v))
+}
+
+// AccountBlockReasonHasSuffix applies the HasSuffix predicate on the "account_block_reason" field.
+func AccountBlockReasonHasSuffix(v string) predicate.User {
+	return predicate.User(sql.FieldHasSuffix(FieldAccountBlockReason, v))
+}
+
+// AccountBlockReasonIsNil applies the IsNil predicate on the "account_block_reason" field.
+func AccountBlockReasonIsNil() predicate.User {
+	return predicate.User(sql.FieldIsNull(FieldAccountBlockReason))
+}
+
+// AccountBlockReasonNotNil applies the NotNil predicate on the "account_block_reason" field.
+func AccountBlockReasonNotNil() predicate.User {
+	return predicate.User(sql.FieldNotNull(FieldAccountBlockReason))
+}
+
+// AccountBlockReasonEqualFold applies the EqualFold predicate on the "account_block_reason" field.
+func AccountBlockReasonEqualFold(v string) predicate.User {
+	return predicate.User(sql.FieldEqualFold(FieldAccountBlockReason, v))
+}
+
+// AccountBlockReasonContainsFold applies the ContainsFold predicate on the "account_block_reason" field.
+func AccountBlockReasonContainsFold(v string) predicate.User {
+	return predicate.User(sql.FieldContainsFold(FieldAccountBlockReason, v))
+}
+
+// AccountBlockedLevelEQ applies the EQ predicate on the "account_blocked_level" field.
+func AccountBlockedLevelEQ(v int) predicate.User {
+	return predicate.User(sql.FieldEQ(FieldAccountBlockedLevel, v))
+}
+
+// AccountBlockedLevelNEQ applies the NEQ predicate on the "account_blocked_level" field.
+func AccountBlockedLevelNEQ(v int) predicate.User {
+	return predicate.User(sql.FieldNEQ(FieldAccountBlockedLevel, v))
+}
+
+// AccountBlockedLevelIn applies the In predicate on the "account_blocked_level" field.
+func AccountBlockedLevelIn(vs ...int) predicate.User {
+	return predicate.User(sql.FieldIn(FieldAccountBlockedLevel, vs...))
+}
+
+// AccountBlockedLevelNotIn applies the NotIn predicate on the "account_blocked_level" field.
+func AccountBlockedLevelNotIn(vs ...int) predicate.User {
+	return predicate.User(sql.FieldNotIn(FieldAccountBlockedLevel, vs...))
+}
+
+// AccountBlockedLevelGT applies the GT predicate on the "account_blocked_level" field.
+func AccountBlockedLevelGT(v int) predicate.User {
+	return predicate.User(sql.FieldGT(FieldAccountBlockedLevel, v))
+}
+
+// AccountBlockedLevelGTE applies the GTE predicate on the "account_blocked_level" field.
+func AccountBlockedLevelGTE(v int) predicate.User {
+	return predicate.User(sql.FieldGTE(FieldAccountBlockedLevel, v))
+}
+
+// AccountBlockedLevelLT applies the LT predicate on the "account_blocked_level" field.
+func AccountBlockedLevelLT(v int) predicate.User {
+	return predicate.User(sql.FieldLT(FieldAccountBlockedLevel, v))
+}
+
+// AccountBlockedLevelLTE applies the LTE predicate on the "account_blocked_level" field.
+func AccountBlockedLevelLTE(v int) predicate.User {
+	return predicate.User(sql.FieldLTE(FieldAccountBlockedLevel, v))
 }
 
 // HasStatistics applies the HasEdge predicate on the "statistics" edge.
@@ -1224,6 +1474,29 @@ func HasCurrentMatch() predicate.User {
 func HasCurrentMatchWith(preds ...predicate.Match) predicate.User {
 	return predicate.User(func(s *sql.Selector) {
 		step := newCurrentMatchStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasBalance applies the HasEdge predicate on the "balance" edge.
+func HasBalance() predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, false, BalanceTable, BalanceColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasBalanceWith applies the HasEdge predicate on the "balance" edge with a given conditions (other predicates).
+func HasBalanceWith(preds ...predicate.UserBalance) predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		step := newBalanceStep()
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)
