@@ -42,159 +42,92 @@ func NewAuthenticationService(
 // Register creates a new user account
 func (a *AuthenticationService) Register(
 	ctx context.Context,
-	credentials *entity.CredentialsDTO,
-) (
-	*domainservice.AuthenticationResult,
-	error,
-) {
-	// Encode sensitive data
-	encodedPassword := tracer.TraceValue(
-		ctx, "credentialsHelper.EncodePassword", func(ctx context.Context) string {
-			return a.credentialsHelper.EncodePassword(credentials.Password)
-		},
-	)
-
-	encodedHwid := tracer.TraceValue(
-		ctx, "credentialsHelper.EncodeHardwareID", func(ctx context.Context) string {
-			return a.credentialsHelper.EncodeHardwareID(credentials.Hwid)
-		},
-	)
-
-	credentials.Password = encodedPassword
-	credentials.Hwid = encodedHwid
+	credentials *dto.CredentialsDTO,
+) (*domainservice.AuthenticationResult, error) {
+	if err := a.prepareCredentials(ctx, credentials); err != nil {
+		return nil, err
+	}
 
 	user, err := tracer.TraceFnWithResult(
 		ctx, "userRepository.Create", func(ctx context.Context) (*entity.AuthenticationData, error) {
 			return a.userRepository.Create(ctx, credentials)
 		},
 	)
-
 	if err != nil {
 		return nil, err // Username or hardware ID conflict
 	}
 
-	token := a.generateToken(ctx, user.TokenData())
-	online := a.getOnlineCount(ctx)
-
-	return domainservice.NewAuthenticationResult(token, nil, online), nil
+	return a.createAuthResult(ctx, user.TokenData(), nil)
 }
 
 // Authenticate validates user credentials and returns authentication result
-func (a *AuthenticationService) Authenticate(ctx context.Context, credentials *entity.CredentialsDTO) (
+func (a *AuthenticationService) Authenticate(ctx context.Context, credentials *dto.CredentialsDTO) (
 	*domainservice.AuthenticationResult,
 	error,
 ) {
-	lowerUsername := strings.ToLower(credentials.Username)
-
-	authentication, err := tracer.TraceFnWithResult(
-		ctx,
-		"userRepository.FindAuthenticationByLowerUsername",
-		func(ctx context.Context) (*entity.AuthenticationData, error) {
-			return a.userRepository.FindAuthenticationByLowerUsername(ctx, lowerUsername)
-		},
-	)
-
+	authentication, err := a.findAuthByUsername(ctx, credentials.Username)
 	if err != nil {
 		return nil, err // User not found
 	}
 
-	// Verify password
-	passwordOk := tracer.TraceValue(
-		ctx, "authentication.ComparePassword", func(ctx context.Context) bool {
-			return a.comparePasswords(authentication, credentials.Password)
-		},
-	)
-
-	if !passwordOk {
+	if !a.verifyPassword(ctx, authentication, credentials.Password) {
 		return nil, applicationerror.ErrWrongPassword
 	}
 
-	// Verify HWID
-	hwidOk, needsUpdate := tracer.TraceValueValue(
-		ctx, "authentication.CompareHWID", func(ctx context.Context) (bool, bool) {
-			return authentication.CompareHWID(credentials.Hwid, a.credentialsHelper.VerifyHardwareID)
-		},
-	)
-
-	if !hwidOk {
-		return nil, applicationerror.ErrUserWrongHwid
+	if err := a.verifyAndUpdateHWID(ctx, authentication, credentials.Hwid); err != nil {
+		return nil, err
 	}
 
-	// Check if account is locked
 	if authentication.IsAccountLocked() {
-		return nil, applicationerror.ErrAccountIsLocked(authentication.BlockReason)
+		return nil, applicationerror.ErrAccountIsLocked(authentication.BlockReason())
 	}
 
-	// Update HWID if needed
-	if needsUpdate {
-		if err := a.updateHwid(ctx, authentication, credentials.Hwid); err != nil {
-			return nil, err
-		}
-	}
-
-	// Get full user data
 	user, err := tracer.TraceFnWithResult(
 		ctx, "userRepository.FindFullDTOById", func(ctx context.Context) (*dto.UserFullDTO, error) {
 			return a.userRepository.FindFullDTOById(ctx, authentication.UserID())
 		},
 	)
-
 	if err != nil {
 		logger.Log.Warnw("Failed to retrieve full user data", "error", err, "userID", authentication.UserID())
 		return nil, err
 	}
 
-	token := a.generateToken(ctx, authentication.TokenData())
+	// Async login processing (statistics, bonuses, etc)
+	go a.processPostLoginTasks(ctx, user.UserDTO)
 
-	// Handle login streak and other post-login processing in background
-	go a.processLoginStreakAndRewards(ctx, user.UserDTO)
-
-	online := a.getOnlineCount(ctx)
-
-	return domainservice.NewAuthenticationResult(token, user, online), nil
+	return a.createAuthResult(ctx, authentication.TokenData(), user)
 }
 
 // ValidateToken validates the authentication token and returns user data
 func (a *AuthenticationService) ValidateToken(ctx context.Context, token string) (*dto.UserDTO, error) {
-	data, err := tracer.TraceFnWithResult(
+	// Валидация токена
+	tokenData, err := tracer.TraceFnWithResult(
 		ctx, "tokenHelper.ValidateToken", func(ctx context.Context) (*entity.TokenData, error) {
 			return a.tokenHelper.ValidateToken(token)
 		},
 	)
-
 	if err != nil {
 		return nil, err
 	}
 
-	logger.Log.Debugw("authentication data received from token", "data", data)
+	logger.Log.Debugw("authentication data received from token", "data", tokenData)
 
-	lowerUsername := strings.ToLower(data.Username)
-
-	authentication, err := tracer.TraceFnWithResult(
-		ctx,
-		"userRepository.FindAuthenticationByLowerUsername",
-		func(ctx context.Context) (*entity.AuthenticationData, error) {
-			return a.userRepository.FindAuthenticationByLowerUsername(ctx, lowerUsername)
-		},
-	)
-
+	authentication, err := a.findAuthByUsername(ctx, tokenData.Username)
 	if err != nil {
-		return nil, err // User from token not found
+		return nil, err
 	}
 
-	// Verify HWID in token
 	hwidOk, needsUpdate := tracer.TraceValueValue(
 		ctx, "authentication.CompareHWID", func(ctx context.Context) (bool, bool) {
-			return authentication.CompareHWID(data.Hwid, a.credentialsHelper.VerifyHardwareID)
+			return authentication.CompareHWID(tokenData.Hwid, a.credentialsHelper.VerifyHardwareID)
 		},
 	)
-
 	if !hwidOk || needsUpdate {
 		return nil, applicationerror.ErrTokenHwidIsInvalid
 	}
 
 	if authentication.IsAccountLocked() {
-		return nil, applicationerror.ErrAccountIsLocked(authentication.BlockReason)
+		return nil, applicationerror.ErrAccountIsLocked(authentication.BlockReason())
 	}
 
 	user, err := tracer.TraceFnWithResult(
@@ -202,7 +135,6 @@ func (a *AuthenticationService) ValidateToken(ctx context.Context, token string)
 			return a.userRepository.FindDTOById(ctx, authentication.UserID())
 		},
 	)
-
 	if err != nil {
 		logger.Log.Warnw(
 			"Failed to retrieve user data during token validation",
@@ -218,78 +150,126 @@ func (a *AuthenticationService) ValidateToken(ctx context.Context, token string)
 // ChangePassword updates user password
 func (a *AuthenticationService) ChangePassword(
 	ctx context.Context,
-	credentials *entity.ChangePasswordDTO,
+	credentials *dto.ChangePasswordDTO,
 ) (*domainservice.AuthenticationResult, error) {
-	lowerUsername := strings.ToLower(credentials.Username)
-
-	authentication, err := tracer.TraceFnWithResult(
-		ctx,
-		"userRepository.FindAuthenticationByLowerUsername",
-		func(ctx context.Context) (*entity.AuthenticationData, error) {
-			return a.userRepository.FindAuthenticationByLowerUsername(ctx, lowerUsername)
-		},
-	)
-
+	authentication, err := a.findAuthByUsername(ctx, credentials.Username)
 	if err != nil {
 		return nil, err // User not found
 	}
 
-	// Verify current password
-	passwordOk := tracer.TraceValue(
-		ctx, "authentication.ComparePassword", func(ctx context.Context) bool {
-			return a.comparePasswords(authentication, credentials.OldPassword)
-		},
-	)
-
-	if !passwordOk {
+	if !a.verifyPassword(ctx, authentication, credentials.OldPassword) {
 		return nil, applicationerror.ErrWrongPassword
 	}
 
-	// Encode new password
-	encodedPassword := tracer.TraceValue(
-		ctx, "credentialsHelper.EncodePassword", func(ctx context.Context) string {
-			return a.credentialsHelper.EncodePassword(credentials.NewPassword)
-		},
-	)
+	encodedPassword := a.encodePassword(ctx, credentials.NewPassword)
 
-	// Update password in database
 	user, err := tracer.TraceFnWithResult(
-		ctx,
-		"userRepository.UpdatePasswordByID",
-		func(ctx context.Context) (*dto.UserFullDTO, error) {
+		ctx, "userRepository.UpdatePasswordByID", func(ctx context.Context) (*dto.UserFullDTO, error) {
 			return a.userRepository.UpdatePasswordByID(ctx, authentication.UserID(), encodedPassword)
 		},
 	)
-
 	if err != nil {
 		return nil, err
 	}
 
-	token := a.generateToken(ctx, authentication.TokenData())
-	online := a.getOnlineCount(ctx)
-
-	return domainservice.NewAuthenticationResult(token, user, online), nil
+	return a.createAuthResult(ctx, authentication.TokenData(), user)
 }
 
-// Helper methods
+/*
+	Helper methods
+*/
 
-// updateHwid updates the hardware ID for a user
-func (a *AuthenticationService) updateHwid(ctx context.Context, auth *entity.AuthenticationData, rawHwid string) error {
-	newHwid := tracer.TraceValue(
-		ctx, "credentialsHelper.EncodeHardwareID", func(ctx context.Context) string {
-			return a.credentialsHelper.EncodeHardwareID(rawHwid)
+// prepareCredentials encodes password and HWID
+func (a *AuthenticationService) prepareCredentials(ctx context.Context, credentials *dto.CredentialsDTO) error {
+	credentials.Password = a.encodePassword(ctx, credentials.Password)
+	credentials.Hwid = a.encodeHWID(ctx, credentials.Hwid)
+	return nil
+}
+
+// findAuthByUsername finds authentication data by username
+func (a *AuthenticationService) findAuthByUsername(ctx context.Context, username string) (*entity.AuthenticationData, error) {
+	lowerUsername := strings.ToLower(username)
+	return tracer.TraceFnWithResult(
+		ctx, "userRepository.FindAuthenticationByLowerUsername",
+		func(ctx context.Context) (*entity.AuthenticationData, error) {
+			return a.userRepository.FindAuthenticationByLowerUsername(ctx, lowerUsername)
+		},
+	)
+}
+
+// verifyPassword checks if the provided password matches the stored one
+func (a *AuthenticationService) verifyPassword(ctx context.Context, auth *entity.AuthenticationData, password string) bool {
+	return tracer.TraceValue(
+		ctx, "authentication.ComparePassword", func(ctx context.Context) bool {
+			return auth.ComparePassword(password, a.credentialsHelper.VerifyPassword)
+		},
+	)
+}
+
+// verifyAndUpdateHWID validates HWID and updates it if necessary
+func (a *AuthenticationService) verifyAndUpdateHWID(ctx context.Context, auth *entity.AuthenticationData, hwid string) error {
+	// Проверка HWID
+	hwidOk, needsUpdate := tracer.TraceValueValue(
+		ctx, "authentication.CompareHWID", func(ctx context.Context) (bool, bool) {
+			return auth.CompareHWID(hwid, a.credentialsHelper.VerifyHardwareID)
 		},
 	)
 
+	if !hwidOk {
+		return applicationerror.ErrUserWrongHwid
+	}
+
+	// Обновление HWID если необходимо
+	if needsUpdate {
+		if err := a.updateHwid(ctx, auth, hwid); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+// updateHwid updates the hardware ID for a user
+func (a *AuthenticationService) updateHwid(ctx context.Context, auth *entity.AuthenticationData, rawHwid string) error {
+	newHwid := a.encodeHWID(ctx, rawHwid)
 	auth.SetHWID(newHwid)
 
-	err := tracer.TraceValue(
+	return tracer.TraceValue(
 		ctx, "userRepository.UpdateHWIDByID", func(ctx context.Context) error {
 			return a.userRepository.UpdateHWIDByID(ctx, auth.UserID(), newHwid)
 		},
 	)
+}
 
-	return err // Return hwid conflict if any
+// encodePassword encodes a raw password
+func (a *AuthenticationService) encodePassword(ctx context.Context, rawPassword string) string {
+	return tracer.TraceValue(
+		ctx, "credentialsHelper.EncodePassword", func(ctx context.Context) string {
+			return a.credentialsHelper.EncodePassword(rawPassword)
+		},
+	)
+}
+
+// encodeHWID encodes a raw hardware ID
+func (a *AuthenticationService) encodeHWID(ctx context.Context, rawHwid string) string {
+	return tracer.TraceValue(
+		ctx, "credentialsHelper.EncodeHardwareID", func(ctx context.Context) string {
+			return a.credentialsHelper.EncodeHardwareID(rawHwid)
+		},
+	)
+}
+
+// createAuthResult creates authentication result with token and online count
+func (a *AuthenticationService) createAuthResult(ctx context.Context, tokenData *entity.TokenData, user *dto.UserFullDTO) (*domainservice.AuthenticationResult, error) {
+	token := a.generateToken(ctx, tokenData)
+	online := a.getOnlineCount(ctx)
+	return domainservice.NewAuthenticationResult(token, user, online), nil
+}
+
+// processPostLoginTasks handles all post-login actions
+func (a *AuthenticationService) processPostLoginTasks(ctx context.Context, user *dto.UserDTO) {
+	a.processLoginStreakAndRewards(ctx, user)
+	a.processBanDecrementAfterLogin(ctx, user)
 }
 
 // processLoginStreakAndRewards handles post-login processing like login streaks and rewards
@@ -299,7 +279,6 @@ func (a *AuthenticationService) processLoginStreakAndRewards(ctx context.Context
 		return
 	}
 
-	// Update login streak and login time
 	user.LoginStreak++
 	user.LoginAt = time.Now()
 
@@ -317,8 +296,9 @@ func (a *AuthenticationService) processLoginStreakAndRewards(ctx context.Context
 	}
 }
 
+// processBanDecrementAfterLogin decrements ban levels if needed
 func (a *AuthenticationService) processBanDecrementAfterLogin(ctx context.Context, user *dto.UserDTO) {
-	if user.AccountBlockedUntil.Add(userentity.AccountBlockDecrementTime).Before(time.Now()) {
+	if user.AccountBlockedUntil != nil && user.AccountBlockedUntil.Add(userentity.AccountBlockDecrementTime).Before(time.Now()) {
 		if user.AccountBlockedLevel > 0 {
 			user.AccountBlockedLevel--
 		}
@@ -326,7 +306,7 @@ func (a *AuthenticationService) processBanDecrementAfterLogin(ctx context.Contex
 		user.AccountBlockReason = nil
 	}
 
-	if user.SearchBlockedUntil.Add(userentity.SearchBlockDecrementTime).Before(time.Now()) {
+	if user.SearchBlockedUntil != nil && user.SearchBlockedUntil.Add(userentity.SearchBlockDecrementTime).Before(time.Now()) {
 		if user.SearchBlockedLevel > 0 {
 			user.SearchBlockedLevel--
 		}
@@ -341,11 +321,6 @@ func (a *AuthenticationService) processBanDecrementAfterLogin(ctx context.Contex
 	if err != nil {
 		logger.Log.Errorw("Failed to update block until, level, user", "error", err, "userID", user.ID)
 	}
-}
-
-// comparePasswords verifies the password
-func (a *AuthenticationService) comparePasswords(authentication *entity.AuthenticationData, raw string) bool {
-	return authentication.ComparePassword(raw, a.credentialsHelper.VerifyPassword)
 }
 
 // generateToken creates an authentication token

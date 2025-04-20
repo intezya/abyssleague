@@ -1,6 +1,7 @@
 package persistence
 
 import (
+	"abysscore/internal/adapters/mapper"
 	repositoryerrors "abysscore/internal/common/errors/repository"
 	"abysscore/internal/domain/dto"
 	"abysscore/internal/domain/entity/gameitementity"
@@ -31,7 +32,7 @@ func (g *GameItemRepository) Create(ctx context.Context, gameItem *dto.GameItemD
 		return nil, repositoryerrors.WrapUnexpectedError(err)
 	}
 
-	return dto.MapToGameItemDTOFromEnt(result), nil
+	return mapper.MapToGameItemDTOFromEnt(result), nil
 }
 
 func (g *GameItemRepository) UpdateByID(ctx context.Context, id int, gameItem *dto.GameItemDTO) error {
@@ -97,7 +98,7 @@ func (g *GameItemRepository) FindAllPaged(
 	}
 
 	mappedItems := itertools.Map(func(item *ent.GameItem) *dto.GameItemDTO {
-		return dto.MapToGameItemDTOFromEnt(item)
+		return mapper.MapToGameItemDTOFromEnt(item)
 	}, items)
 
 	return &dto.PaginatedResult[*dto.GameItemDTO]{
@@ -120,5 +121,5 @@ func (g *GameItemRepository) FindByID(ctx context.Context, id int) (*dto.GameIte
 		return nil, repositoryerrors.WrapUnexpectedError(err)
 	}
 
-	return dto.MapToGameItemDTOFromEnt(result), nil
+	return mapper.MapToGameItemDTOFromEnt(result), nil
 }

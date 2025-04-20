@@ -4,31 +4,16 @@ import (
 	"time"
 )
 
-type comparator func(raw, hash string) bool
+type passwordComparator func(raw, hash string) bool
 
-type CredentialsDTO struct {
-	Username string
-	Password string
-	Hwid     string
-}
-
-func NewCredentialsDTO(username string, password string, hwid string) *CredentialsDTO {
-	return &CredentialsDTO{Username: username, Password: password, Hwid: hwid}
-}
-
+// AuthenticationData represents user authentication state
 type AuthenticationData struct {
 	id           int
 	username     string
 	password     string
 	hwid         *string
 	blockedUntil *time.Time
-	BlockReason  *string
-}
-
-type TokenData struct {
-	ID       int    `json:"id"`
-	Username string `json:"username"`
-	Hwid     string `json:"hwid"`
+	blockReason  *string
 }
 
 func NewAuthenticationData(
@@ -45,21 +30,15 @@ func NewAuthenticationData(
 		password:     password,
 		hwid:         hwid,
 		blockedUntil: blockedUntil,
-		BlockReason:  blockReason,
+		blockReason:  blockReason,
 	}
 }
 
-func (a *AuthenticationData) ComparePassword(
-	password string,
-	comparator comparator,
-) bool {
+func (a *AuthenticationData) ComparePassword(password string, comparator passwordComparator) bool {
 	return comparator(password, a.password)
 }
 
-func (a *AuthenticationData) CompareHWID(
-	hwid string,
-	comparator comparator,
-) (ok bool, needsUpdate bool) {
+func (a *AuthenticationData) CompareHWID(hwid string, comparator passwordComparator) (ok bool, needsUpdate bool) {
 	if a.hwid == nil {
 		return true, true
 	}
@@ -72,7 +51,7 @@ func (a *AuthenticationData) IsAccountLocked() bool {
 }
 
 func (a *AuthenticationData) TokenData() *TokenData {
-	hwid := ""
+	var hwid string
 
 	if a.hwid != nil {
 		hwid = *a.hwid
@@ -93,8 +72,6 @@ func (a *AuthenticationData) UserID() int {
 	return a.id
 }
 
-type ChangePasswordDTO struct {
-	Username    string
-	OldPassword string
-	NewPassword string
+func (a *AuthenticationData) BlockReason() *string {
+	return a.blockReason
 }

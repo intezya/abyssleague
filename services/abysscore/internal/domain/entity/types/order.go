@@ -4,5 +4,5 @@ type OrderType string
 
 const (
 	OrderAsc  OrderType = "asc"
-	OrderDesc           = "desc"
+	OrderDesc OrderType = "desc"
 )

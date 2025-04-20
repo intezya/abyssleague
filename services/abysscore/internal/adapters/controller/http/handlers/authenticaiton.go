@@ -2,16 +2,15 @@ package handlers
 
 import (
 	"abysscore/internal/adapters/controller/http/dto/request"
-	"abysscore/internal/adapters/controller/http/dto/response"
-	"abysscore/internal/common/errors/base"
 	domainservice "abysscore/internal/domain/service"
 	"abysscore/internal/infrastructure/metrics/tracer"
-	"abysscore/internal/pkg/validator"
 	"context"
 	"github.com/gofiber/fiber/v2"
 )
 
 type AuthenticationHandler struct {
+	BaseHandler
+
 	authenticationService domainservice.AuthenticationService
 }
 
@@ -26,74 +25,58 @@ func NewAuthenticationHandler(
 // Register handles user registration
 func (a *AuthenticationHandler) Register(c *fiber.Ctx) error {
 	ctx := c.UserContext()
-
 	r := &request.AuthenticationRequest{}
 
-	err := tracer.TraceFn(ctx, "validator.ValidateJSON", func(ctx context.Context) error {
-		return validator.ValidateJSON(r, c)
-	})
-	if err != nil {
-		return base.ParseErrorOrInternalResponse(err, c)
+	if err := a.validateRequest(r, c); err != nil {
+		return err
 	}
 
-	var result *domainservice.AuthenticationResult
-
-	result, err = tracer.TraceFnWithResult(ctx, "authenticationService.Register", func(ctx context.Context) (*domainservice.AuthenticationResult, error) {
+	result, err := tracer.TraceFnWithResult(ctx, "authService.Register", func(ctx context.Context) (*domainservice.AuthenticationResult, error) {
 		return a.authenticationService.Register(ctx, r.ToCredentialsDTO())
 	})
 
 	if err != nil {
-		return base.ParseErrorOrInternalResponse(err, c)
+		return a.handleError(err, c)
 	}
 
-	return response.Success(result, c)
+	return a.sendSuccess(result, c)
 }
 
 // Login handles user authentication
 func (a *AuthenticationHandler) Login(c *fiber.Ctx) error {
 	ctx := c.UserContext()
-
 	r := &request.AuthenticationRequest{}
 
-	err := tracer.TraceFn(ctx, "validator.ValidateJSON", func(ctx context.Context) error {
-		return validator.ValidateJSON(r, c)
-	})
-	if err != nil {
-		return base.ParseErrorOrInternalResponse(err, c)
+	if err := a.validateRequest(r, c); err != nil {
+		return err
 	}
 
-	var result *domainservice.AuthenticationResult
-
-	result, err = tracer.TraceFnWithResult(ctx, "authenticationService.Authenticate", func(ctx context.Context) (*domainservice.AuthenticationResult, error) {
+	result, err := tracer.TraceFnWithResult(ctx, "authService.Authenticate", func(ctx context.Context) (*domainservice.AuthenticationResult, error) {
 		return a.authenticationService.Authenticate(ctx, r.ToCredentialsDTO())
 	})
+
 	if err != nil {
-		return base.ParseErrorOrInternalResponse(err, c)
+		return a.handleError(err, c)
 	}
 
-	return response.Success(result, c)
+	return a.sendSuccess(result, c)
 }
 
 func (a *AuthenticationHandler) ChangePassword(c *fiber.Ctx) error {
 	ctx := c.UserContext()
-
 	r := &request.PasswordChangeRequest{}
 
-	err := tracer.TraceFn(ctx, "validator.ValidateJSON", func(ctx context.Context) error {
-		return validator.ValidateJSON(r, c)
-	})
-	if err != nil {
-		return base.ParseErrorOrInternalResponse(err, c)
+	if err := a.validateRequest(r, c); err != nil {
+		return err
 	}
 
-	var result *domainservice.AuthenticationResult
-
-	result, err = tracer.TraceFnWithResult(ctx, "authenticationService.ChangePassword", func(ctx context.Context) (*domainservice.AuthenticationResult, error) {
+	result, err := tracer.TraceFnWithResult(ctx, "authService.ChangePassword", func(ctx context.Context) (*domainservice.AuthenticationResult, error) {
 		return a.authenticationService.ChangePassword(ctx, r.ToDTO())
 	})
+
 	if err != nil {
-		return base.ParseErrorOrInternalResponse(err, c)
+		return a.handleError(err, c)
 	}
 
-	return response.Success(result, c)
+	return a.sendSuccess(result, c)
 }

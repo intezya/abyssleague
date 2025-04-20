@@ -9,11 +9,11 @@ import (
 type OrderBy string
 
 const (
-	OrderByCreatedAt  = "created_at"
-	OrderByName       = "name"
-	OrderByCollection = "collection"
-	OrderByType       = "type"
-	OrderByRarity     = "rarity"
+	OrderByCreatedAt  OrderBy = "created_at"
+	OrderByName       OrderBy = "name"
+	OrderByCollection OrderBy = "collection"
+	OrderByType       OrderBy = "type"
+	OrderByRarity     OrderBy = "rarity"
 )
 
 func (o OrderBy) ToOrderOption(orderType types.OrderType) gameitem.OrderOption {
@@ -30,6 +30,8 @@ func (o OrderBy) ToOrderOption(orderType types.OrderType) gameitem.OrderOption {
 		field = gameitem.FieldType
 	case OrderByRarity:
 		field = gameitem.FieldRarity
+	default:
+		field = gameitem.FieldCreatedAt
 	}
 
 	if orderType == types.OrderAsc {

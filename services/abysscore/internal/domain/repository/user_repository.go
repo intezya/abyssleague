@@ -8,7 +8,7 @@ import (
 )
 
 type UserRepository interface {
-	Create(ctx context.Context, credentials *entity.CredentialsDTO) (*entity.AuthenticationData, error)
+	Create(ctx context.Context, credentials *dto.CredentialsDTO) (*entity.AuthenticationData, error)
 
 	FindDTOById(ctx context.Context, id int) (*dto.UserDTO, error)
 	FindFullDTOById(ctx context.Context, id int) (*dto.UserFullDTO, error)

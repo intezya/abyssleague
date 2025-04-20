@@ -1,10 +1,7 @@
 package dto
 
 import (
-	"abysscore/internal/domain/entity"
-	"abysscore/internal/infrastructure/ent"
 	"abysscore/internal/infrastructure/ent/schema/access_level"
-	"github.com/intezya/pkglib/itertools"
 	"time"
 )
 
@@ -24,13 +21,13 @@ type UserDTO struct {
 	LoginStreak            int                      `json:"login_streak"`
 	CreatedAt              time.Time                `json:"created_at"`
 
-	SearchBlockedUntil *time.Time `json:"search_blocked_until"`
-	SearchBlockReason  *string    `json:"search_block_reason"`
-	SearchBlockedLevel int        `json:"search_blocked_level"`
+	SearchBlockedUntil *time.Time `json:"-"`
+	SearchBlockReason  *string    `json:"-"`
+	SearchBlockedLevel int        `json:"-"`
 
-	AccountBlockedUntil *time.Time `json:"account_blocked_until"`
-	AccountBlockReason  *string    `json:"account_block_reason"`
-	AccountBlockedLevel int        `json:"account_blocked_level"`
+	AccountBlockedUntil *time.Time `json:"-"`
+	AccountBlockReason  *string    `json:"-"`
+	AccountBlockedLevel int        `json:"-"`
 }
 
 type UserFullDTO struct {
@@ -43,64 +40,4 @@ type UserFullDTO struct {
 	Items       []*UserItemDTO `json:"items"`
 	CurrentItem *UserItemDTO   `json:"current_item"`
 	//CurrentMatch *Match      `json:"current_match"`
-}
-
-func MapToUserDTOFromEnt(u *ent.User) *UserDTO {
-	return &UserDTO{
-		ID:                     u.ID,
-		Username:               u.Username,
-		LowerUsername:          u.LowerUsername,
-		Email:                  u.Email,
-		AccessLevel:            u.AccessLevel,
-		GenshinUID:             u.GenshinUID,
-		HoyolabLogin:           u.HoyolabLogin,
-		CurrentMatchID:         u.CurrentMatchID,
-		CurrentItemInProfileID: u.CurrentItemInProfileID,
-		AvatarURL:              u.AvatarURL,
-		InvitesEnabled:         u.InvitesEnabled,
-		LoginAt:                u.LoginAt,
-		LoginStreak:            u.LoginStreak,
-		CreatedAt:              u.CreatedAt,
-		SearchBlockedUntil:     u.SearchBlockedUntil,
-		SearchBlockReason:      u.SearchBlockReason,
-		SearchBlockedLevel:     u.SearchBlockedLevel,
-		AccountBlockedUntil:    u.AccountBlockedUntil,
-		AccountBlockReason:     u.AccountBlockReason,
-		AccountBlockedLevel:    u.AccountBlockedLevel,
-	}
-}
-
-func MapToAuthenticationDataFromEnt(u *ent.User) *entity.AuthenticationData {
-	return entity.NewAuthenticationData(
-		u.ID,
-		u.Username,
-		u.Password,
-		u.HardwareID,
-		u.AccountBlockedUntil,
-		u.AccountBlockReason,
-	)
-}
-
-func MapToUserFullDTOFromEnt(u *ent.User) *UserFullDTO {
-	mappedFriends := itertools.Map(
-		func(v *ent.User) *UserDTO {
-			return MapToUserDTOFromEnt(u)
-		},
-		u.Edges.Friends,
-	)
-
-	mappedItems := itertools.Map(
-		func(v *ent.UserItem) *UserItemDTO {
-			return MapToUserItemDTOFromEnt(v)
-		},
-		u.Edges.Items,
-	)
-
-	return &UserFullDTO{
-		UserDTO: MapToUserDTOFromEnt(u),
-		// Edges
-		Friends:     mappedFriends,
-		Items:       mappedItems,
-		CurrentItem: MapToUserItemDTOFromEnt(u.Edges.CurrentItem),
-	}
 }

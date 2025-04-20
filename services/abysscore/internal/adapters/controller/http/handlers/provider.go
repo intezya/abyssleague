@@ -5,7 +5,7 @@ import (
 )
 
 type DependencyProvider struct {
-	dependencyProvider *applicationservice.DependencyProvider
+	appProvider *applicationservice.DependencyProvider
 
 	AuthenticationHandler *AuthenticationHandler
 	GameItemHandler       *GameItemHandler
@@ -15,7 +15,7 @@ func NewDependencyProvider(
 	dependencyProvider *applicationservice.DependencyProvider,
 ) *DependencyProvider {
 	return &DependencyProvider{
-		dependencyProvider: dependencyProvider,
+		appProvider: dependencyProvider,
 
 		AuthenticationHandler: NewAuthenticationHandler(dependencyProvider.AuthenticationService),
 		GameItemHandler:       NewGameItemHandler(dependencyProvider.GameItemService),

@@ -1,7 +1,6 @@
 package dto
 
 import (
-	"abysscore/internal/infrastructure/ent"
 	"time"
 )
 
@@ -14,19 +13,4 @@ type UserItemDTO struct {
 
 	// Edges
 	Item *GameItemDTO `json:"item"`
-}
-
-func MapToUserItemDTOFromEnt(u *ent.UserItem) *UserItemDTO {
-	if u == nil {
-		return nil
-	}
-
-	return &UserItemDTO{
-		ID:             u.ID,
-		UserID:         u.UserID,
-		ItemID:         u.ItemID,
-		ReceivedFromID: u.ReceivedFromID,
-		ObtainedAt:     u.ObtainedAt,
-		Item:           MapToGameItemDTOFromEnt(u.Edges.Item),
-	}
 }

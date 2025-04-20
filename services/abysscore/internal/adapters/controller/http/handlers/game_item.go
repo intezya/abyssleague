@@ -4,16 +4,16 @@ import (
 	"abysscore/internal/adapters/controller/http/dto/request"
 	"abysscore/internal/adapters/controller/http/dto/response"
 	adaptererror "abysscore/internal/common/errors/adapter"
-	"abysscore/internal/common/errors/base"
 	"abysscore/internal/domain/entity/gameitementity"
 	domainservice "abysscore/internal/domain/service"
 	"abysscore/internal/pkg/queryparser"
-	"abysscore/internal/pkg/validator"
 	"github.com/gofiber/fiber/v2"
 )
 
 // GameItemHandler handles HTTP requests for game items
 type GameItemHandler struct {
+	BaseHandler
+
 	gameItemService domainservice.GameItemService
 
 	paginationQueryFactory func(c *fiber.Ctx) (*request.PaginationQuery[gameitementity.OrderBy], error)
@@ -33,106 +33,119 @@ func NewGameItemHandler(gameItemService domainservice.GameItemService) *GameItem
 	}
 }
 
+// getPaginationQuery gets pagination query parameters from the request
+func (g *GameItemHandler) getPaginationQuery(c *fiber.Ctx) (*request.PaginationQuery[gameitementity.OrderBy], error) {
+	paginationQuery, err := request.NewPaginationQuery[gameitementity.OrderBy](c, queryparser.ParseGameEntityOrderBy)
+
+	if err != nil {
+		return nil, adaptererror.BadRequestFunc(err)
+	}
+
+	return paginationQuery, nil
+}
+
 // Create handles creating a new game item
 func (g *GameItemHandler) Create(c *fiber.Ctx) error {
 	ctx := c.UserContext()
 
-	user, err := extractUserFromContext(ctx)
+	user, err := g.extractUser(ctx)
 	if err != nil {
-		return base.ParseErrorOrInternalResponse(err, c)
+		return g.handleError(err, c)
 	}
 
-	var r request.CreateUpdateGameItem
-	if err := validator.ValidateJSON(&r, c); err != nil {
-		return base.ParseErrorOrInternalResponse(err, c)
+	r := &request.CreateUpdateGameItem{}
+	if err := g.validateRequest(r, c); err != nil {
+		return err
 	}
 
-	result, err := g.gameItemService.Create(ctx, &r, user)
+	result, err := g.gameItemService.Create(ctx, r, user)
 	if err != nil {
-		return base.ParseErrorOrInternalResponse(err, c)
+		return g.handleError(err, c)
 	}
 
-	return response.Success(result, c)
+	return g.sendSuccess(result, c)
 }
 
 // FindByID handles retrieving a game item by ID
 func (g *GameItemHandler) FindByID(c *fiber.Ctx) error {
 	ctx := c.UserContext()
 
-	id, err := extractIntParamOrErr("id", c)
+	id, err := g.extractIntParam("id", c)
 	if err != nil {
-		return base.ParseErrorOrInternalResponse(err, c)
+		return g.handleError(err, c)
 	}
 
 	result, err := g.gameItemService.FindByID(ctx, id)
 	if err != nil {
-		return base.ParseErrorOrInternalResponse(err, c)
+		return g.handleError(err, c)
 	}
 
-	return response.Success(result, c)
+	return g.sendSuccess(result, c)
 }
 
 // FindAllPaged handles retrieving a paginated list of game items
 func (g *GameItemHandler) FindAllPaged(c *fiber.Ctx) error {
 	ctx := c.UserContext()
 
-	paginationQuery, err := g.paginationQueryFactory(c)
+	paginationQuery, err := g.getPaginationQuery(c)
 	if err != nil {
-		return base.ParseErrorOrInternalResponse(adaptererror.BadRequestFunc(err), c)
+		return g.handleError(err, c)
 	}
 
 	result, err := g.gameItemService.FindAllPaged(ctx, paginationQuery)
 	if err != nil {
-		return base.ParseErrorOrInternalResponse(err, c)
+		return g.handleError(err, c)
 	}
 
+	// SuccessPagination cannot be moved to BaseHandler because the struct methods do not support a generic type
 	return response.SuccessPagination(result, c)
 }
 
 // Update handles updating an existing game item
 func (g *GameItemHandler) Update(c *fiber.Ctx) error {
 	ctx := c.UserContext()
-	user, err := extractUserFromContext(ctx)
+
+	user, err := g.extractUser(ctx)
 	if err != nil {
-		return base.ParseErrorOrInternalResponse(err, c)
+		return g.handleError(err, c)
 	}
 
-	itemID, err := extractIntParamOrErr("id", c)
+	itemID, err := g.extractIntParam("id", c)
 	if err != nil {
-		return base.ParseErrorOrInternalResponse(err, c)
+		return g.handleError(err, c)
 	}
 
-	var r request.CreateUpdateGameItem
-	if err := validator.ValidateJSON(&r, c); err != nil {
-		return base.ParseErrorOrInternalResponse(err, c)
+	r := &request.CreateUpdateGameItem{}
+	if err := g.validateRequest(r, c); err != nil {
+		return err
 	}
 
-	err = g.gameItemService.Update(ctx, itemID, &r, user)
+	err = g.gameItemService.Update(ctx, itemID, r, user)
 	if err != nil {
-		return base.ParseErrorOrInternalResponse(err, c)
+		return g.handleError(err, c)
 	}
 
-	return response.NoContent(c)
+	return g.sendNoContent(c)
 }
 
 // Delete handles deleting a game item
 func (g *GameItemHandler) Delete(c *fiber.Ctx) error {
 	ctx := c.UserContext()
 
-	user, err := extractUserFromContext(ctx)
+	user, err := g.extractUser(ctx)
 	if err != nil {
-		return base.ParseErrorOrInternalResponse(err, c)
+		return g.handleError(err, c)
 	}
 
-	itemID, err := extractIntParamOrErr("id", c)
+	itemID, err := g.extractIntParam("id", c)
 	if err != nil {
-		return base.ParseErrorOrInternalResponse(err, c)
+		return g.handleError(err, c)
 	}
 
 	err = g.gameItemService.Delete(ctx, itemID, user)
 	if err != nil {
-		return base.ParseErrorOrInternalResponse(err, c)
+		return g.handleError(err, c)
 	}
 
-	return response.NoContent(c)
+	return g.sendNoContent(c)
 }

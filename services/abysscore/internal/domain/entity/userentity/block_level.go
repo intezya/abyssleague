@@ -2,7 +2,10 @@ package userentity
 
 import "time"
 
+// SearchBlockLevel represents search functionality restriction level
 type SearchBlockLevel int
+
+// AccountBlockLevel represents account-wide restriction level
 type AccountBlockLevel int
 
 const (
