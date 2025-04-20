@@ -1,10 +1,7 @@
 package base
 
 import (
-	"errors"
 	"github.com/gofiber/fiber/v2"
-	"github.com/intezya/pkglib/logger"
-	"net/http"
 )
 
 type Error struct {
@@ -59,24 +56,4 @@ func (e *Error) ToErrorResponse(c *fiber.Ctx) error {
 		Code:    e.StatusCode(),
 		Path:    c.Path(),
 	})
-}
-
-func ParseErrorOrInternalResponse(err error, c *fiber.Ctx) error {
-	var custom *Error
-	if !errors.As(err, &custom) {
-		logger.Log.Warnw(
-			"returned error not recognized",
-			"err", err,
-			"err_message", err.Error(),
-			"path", c.Path(),
-		)
-
-		return c.Status(fiber.StatusInternalServerError).JSON(&ErrorResponse{
-			Message: err.Error(),
-			Detail:  "error not recognized",
-			Code:    http.StatusInternalServerError,
-			Path:    c.Path(),
-		})
-	}
-	return custom.ToErrorResponse(c)
 }

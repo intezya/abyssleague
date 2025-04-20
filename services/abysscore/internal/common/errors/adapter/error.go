@@ -12,6 +12,11 @@ var (
 	BadRequestFunc      = func(wrapped error) *base.Error {
 		return base.NewError(errors.New("bad request"), wrapped, 400)
 	}
+
+	UnprocessableEntity = func(wrapped error) *base.Error {
+		return base.NewError(errors.New("unprocessable entity"), nil, 422)
+	}
+
 	Unauthorized = func(wrapped error) *base.Error {
 		return base.NewError(errors.New("unauthorized"), wrapped, 401)
 	}
