@@ -17,6 +17,7 @@ const (
 	Admin
 	CreateItem
 	GiveItem
+	RevokeItem
 	UpdateItem
 	ResetHwid
 	AddAdmin

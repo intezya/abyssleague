@@ -14,6 +14,7 @@ type DependencyProvider struct {
 
 	AuthenticationService domainservice.AuthenticationService
 	GameItemService       domainservice.GameItemService
+	InventoryItemService  domainservice.InventoryItemService
 }
 
 func NewDependencyProvider(
@@ -34,7 +35,7 @@ func NewDependencyProvider(
 			passwordHelper,
 			tokenHelper,
 		),
-
-		GameItemService: NewGameItemService(repositoryDependencyProvider.GameItemRepository),
+		GameItemService:      NewGameItemService(repositoryDependencyProvider.GameItemRepository),
+		InventoryItemService: NewInventoryItemService(repositoryDependencyProvider.InventoryItemRepository),
 	}
 }

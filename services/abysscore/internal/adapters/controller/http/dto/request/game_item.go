@@ -12,7 +12,7 @@ type CreateUpdateGameItem struct {
 	Rarity     int    `json:"rarity" validate:"required"`
 }
 
-func (c *CreateUpdateGameItem) ToDTO() *dto.GameItemDTO {
+func (c *CreateUpdateGameItem) ToDTO() *dto.GameItemDTO { // TODO: repository should accept CreateUpdateGameItemDTO from domain
 	return &dto.GameItemDTO{
 		ID:         0, // blank
 		Name:       c.Name,

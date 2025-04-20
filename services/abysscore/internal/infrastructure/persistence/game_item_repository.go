@@ -58,7 +58,7 @@ func (g *GameItemRepository) DeleteByID(ctx context.Context, id int) error {
 
 	if err != nil {
 		if ent.IsNotFound(err) {
-			return repositoryerrors.WrapErrGameItemNotFound(err)
+			return repositoryerrors.WrapGameItemNotFound(err)
 		}
 		return repositoryerrors.WrapUnexpectedError(err)
 	}
@@ -116,7 +116,7 @@ func (g *GameItemRepository) FindByID(ctx context.Context, id int) (*dto.GameIte
 
 	if err != nil {
 		if ent.IsNotFound(err) {
-			return nil, repositoryerrors.WrapErrGameItemNotFound(err)
+			return nil, repositoryerrors.WrapGameItemNotFound(err)
 		}
 		return nil, repositoryerrors.WrapUnexpectedError(err)
 	}

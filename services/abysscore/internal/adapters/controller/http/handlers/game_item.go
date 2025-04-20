@@ -51,7 +51,7 @@ func (g *GameItemHandler) getPaginationQuery(c *fiber.Ctx) (*request.PaginationQ
 func (g *GameItemHandler) Create(c *fiber.Ctx) error {
 	ctx := c.UserContext()
 
-	user, err := g.extractUser(ctx)
+	admin, err := g.extractUser(ctx)
 	if err != nil {
 		return g.handleError(err, c)
 	}
@@ -62,7 +62,7 @@ func (g *GameItemHandler) Create(c *fiber.Ctx) error {
 	}
 
 	result, err := tracer.TraceFnWithResult(ctx, "gameItemService.Create", func(ctx context.Context) (*dto.GameItemDTO, error) {
-		return g.gameItemService.Create(ctx, r, user)
+		return g.gameItemService.Create(ctx, r, admin)
 	})
 	if err != nil {
 		return g.handleError(err, c)
@@ -114,7 +114,7 @@ func (g *GameItemHandler) FindAllPaged(c *fiber.Ctx) error {
 func (g *GameItemHandler) Update(c *fiber.Ctx) error {
 	ctx := c.UserContext()
 
-	user, err := g.extractUser(ctx)
+	admin, err := g.extractUser(ctx)
 	if err != nil {
 		return g.handleError(err, c)
 	}
@@ -130,7 +130,7 @@ func (g *GameItemHandler) Update(c *fiber.Ctx) error {
 	}
 
 	err = tracer.TraceFn(ctx, "gameItemService.Update", func(ctx context.Context) error {
-		return g.gameItemService.Update(ctx, itemID, r, user)
+		return g.gameItemService.Update(ctx, itemID, r, admin)
 	})
 	if err != nil {
 		return g.handleError(err, c)
@@ -143,7 +143,7 @@ func (g *GameItemHandler) Update(c *fiber.Ctx) error {
 func (g *GameItemHandler) Delete(c *fiber.Ctx) error {
 	ctx := c.UserContext()
 
-	user, err := g.extractUser(ctx)
+	admin, err := g.extractUser(ctx)
 	if err != nil {
 		return g.handleError(err, c)
 	}
@@ -154,7 +154,7 @@ func (g *GameItemHandler) Delete(c *fiber.Ctx) error {
 	}
 
 	err = tracer.TraceFn(ctx, "gameItemService.Delete", func(ctx context.Context) error {
-		return g.gameItemService.Delete(ctx, itemID, user)
+		return g.gameItemService.Delete(ctx, itemID, admin)
 	})
 	if err != nil {
 		return g.handleError(err, c)

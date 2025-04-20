@@ -6,13 +6,13 @@ import (
 )
 
 var (
-	WrapErrUserNotFound = func(err error) *base.Error {
+	WrapUserNotFound = func(err error) *base.Error {
 		return base.NewError(errors.New("user not found"), err, 404)
 	}
-	WrapErrUserHwidConflict = func(err error) *base.Error {
+	WrapUserHwidConflict = func(err error) *base.Error {
 		return base.NewError(errors.New("user hwid conflict"), err, 409)
 	}
-	WrapErrUserAlreadyExists = func(err error) *base.Error {
+	WrapUserAlreadyExists = func(err error) *base.Error {
 		return base.NewError(errors.New("user already exists"), err, 409)
 	}
 
@@ -20,7 +20,10 @@ var (
 		return base.NewError(errors.New("unexpected error"), err, 502)
 	}
 
-	WrapErrGameItemNotFound = func(err error) *base.Error {
+	WrapGameItemNotFound = func(err error) *base.Error {
 		return base.NewError(errors.New("game item not found"), err, 404)
+	}
+	WrapItemNotFoundInInventory = func(wrapped error) error {
+		return base.NewError(errors.New("item not found in inventory"), nil, 404)
 	}
 )

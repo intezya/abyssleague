@@ -101,7 +101,7 @@ func (r *UserRepository) UpdateHWIDByID(ctx context.Context, id int, hwid string
 
 	if err != nil {
 		if ent.IsConstraintError(err) && strings.Contains(err.Error(), "hwid") {
-			return repositoryerrors.WrapErrUserHwidConflict(err)
+			return repositoryerrors.WrapUserHwidConflict(err)
 		}
 		return r.handleUpdateError(err)
 	}
@@ -163,7 +163,7 @@ func (r *UserRepository) handleQueryError(err error) error {
 	}
 
 	if ent.IsNotFound(err) {
-		return repositoryerrors.WrapErrUserNotFound(err)
+		return repositoryerrors.WrapUserNotFound(err)
 	}
 
 	return repositoryerrors.WrapUnexpectedError(err)
@@ -190,9 +190,9 @@ func (r *UserRepository) handleConstraintError(err error) error {
 
 	switch {
 	case strings.Contains(err.Error(), "username"):
-		return repositoryerrors.WrapErrUserAlreadyExists(err)
+		return repositoryerrors.WrapUserAlreadyExists(err)
 	case strings.Contains(err.Error(), "hardware_id"):
-		return repositoryerrors.WrapErrUserHwidConflict(err)
+		return repositoryerrors.WrapUserHwidConflict(err)
 	default:
 		return repositoryerrors.WrapUnexpectedError(err)
 	}

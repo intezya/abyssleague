@@ -15,16 +15,17 @@ func _() {
 	_ = x[Admin-4]
 	_ = x[CreateItem-5]
 	_ = x[GiveItem-6]
-	_ = x[UpdateItem-7]
-	_ = x[ResetHwid-8]
-	_ = x[AddAdmin-9]
-	_ = x[DeleteItem-10]
-	_ = x[Dev-11]
+	_ = x[RevokeItem-7]
+	_ = x[UpdateItem-8]
+	_ = x[ResetHwid-9]
+	_ = x[AddAdmin-10]
+	_ = x[DeleteItem-11]
+	_ = x[Dev-12]
 }
 
-const _AccessLevel_name = "UserViewAllUsersViewInventoryViewMatchesAdminCreateItemGiveItemUpdateItemResetHwidAddAdminDeleteItemDev"
+const _AccessLevel_name = "UserViewAllUsersViewInventoryViewMatchesAdminCreateItemGiveItemRevokeItemUpdateItemResetHwidAddAdminDeleteItemDev"
 
-var _AccessLevel_index = [...]uint8{0, 4, 16, 29, 40, 45, 55, 63, 73, 82, 90, 100, 103}
+var _AccessLevel_index = [...]uint8{0, 4, 16, 29, 40, 45, 55, 63, 73, 83, 92, 100, 110, 113}
 
 func (i AccessLevel) String() string {
 	if i < 0 || i >= AccessLevel(len(_AccessLevel_index)-1) {

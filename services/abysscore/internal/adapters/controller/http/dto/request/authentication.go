@@ -1,7 +1,7 @@
 package request
 
 import (
-	"abysscore/internal/domain/entity"
+	"abysscore/internal/domain/dto"
 )
 
 type AuthenticationRequest struct {
@@ -10,8 +10,8 @@ type AuthenticationRequest struct {
 	Hwid     string `json:"hwid" validate:"required"`
 }
 
-func (a *AuthenticationRequest) ToCredentialsDTO() *entity.CredentialsDTO {
-	return entity.NewCredentialsDTO(a.Username, a.Password, a.Hwid)
+func (a *AuthenticationRequest) ToCredentialsDTO() *dto.CredentialsDTO {
+	return dto.NewCredentialsDTO(a.Username, a.Password, a.Hwid)
 }
 
 type PasswordChangeRequest struct {
@@ -20,8 +20,8 @@ type PasswordChangeRequest struct {
 	NewPassword string `json:"new_password" validate:"required"`
 }
 
-func (a *PasswordChangeRequest) ToDTO() *entity.ChangePasswordDTO {
-	return &entity.ChangePasswordDTO{
+func (a *PasswordChangeRequest) ToDTO() *dto.ChangePasswordDTO {
+	return &dto.ChangePasswordDTO{
 		Username:    a.Username,
 		OldPassword: a.OldPassword,
 		NewPassword: a.NewPassword,

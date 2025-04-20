@@ -20,19 +20,6 @@ type InventoryItemDTO struct {
 	CreatedAt  time.Time `json:"-"`
 }
 
-type GrantInventoryItemDTO struct {
-	UserID int `json:"user_id"`
-	ItemID int `json:"item_id"`
-}
-
-func (g *GrantInventoryItemDTO) ToCreateDTO(performerID int) *CreateInventoryItemDTO {
-	return &CreateInventoryItemDTO{
-		UserID:         g.UserID,
-		ItemID:         g.ItemID,
-		ReceivedFromID: performerID,
-	}
-}
-
 type CreateInventoryItemDTO struct {
 	UserID         int
 	ItemID         int

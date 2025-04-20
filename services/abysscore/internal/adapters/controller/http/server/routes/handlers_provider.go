@@ -49,8 +49,9 @@ func NewDependencyProvider(
 func (dp *DependencyProvider) setupRouteGroups(handlers *handlers.DependencyProvider) {
 	authGroup := GetAuthGroup(handlers, dp)
 	gameItemGroup := GetGameItemGroup(handlers, dp)
+	inventoryItemGroup := GetInventoryItemGroup(handlers, dp)
 
-	dp.routeGroups = []*RouteGroup{authGroup, gameItemGroup}
+	dp.routeGroups = []*RouteGroup{authGroup, gameItemGroup, inventoryItemGroup}
 }
 
 // WithoutAuthenticationRequirement disables authentication for a route

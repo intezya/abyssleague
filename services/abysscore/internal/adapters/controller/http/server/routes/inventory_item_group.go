@@ -1,0 +1,47 @@
+package routes
+
+import (
+	"abysscore/internal/adapters/controller/http/handlers"
+	"abysscore/internal/infrastructure/ent/schema/access_level"
+	"path"
+)
+
+func GetInventoryItemGroup(handlers *handlers.DependencyProvider, provider *DependencyProvider) *RouteGroup {
+	inventoryItemGroup := NewRouteGroup(path.Join(provider.apiPrefix, "user"))
+
+	inventoryItemGroup.Add(
+		"/:user_id/inventory", NewRoute(
+			handlers.InventoryItemHandler.GrantInventoryItemToUser,
+			MethodPost,
+			WithAccessLevel(access_level.GiveItem),
+		),
+	)
+
+	inventoryItemGroup.Add(
+		"/inventory",
+		NewRoute(
+			handlers.InventoryItemHandler.GetAllByAuthorization,
+			MethodGet,
+		),
+	)
+
+	inventoryItemGroup.Add(
+		"/:user_id/inventory",
+		NewRoute(
+			handlers.InventoryItemHandler.GetAllByUserID,
+			MethodGet,
+			WithAccessLevel(access_level.ViewInventory),
+		),
+	)
+
+	inventoryItemGroup.Add(
+		"/:user_id/inventory/:item_id",
+		NewRoute(
+			handlers.InventoryItemHandler.RevokeByAdmin,
+			MethodDelete,
+			WithAccessLevel(access_level.RevokeItem),
+		),
+	)
+
+	return inventoryItemGroup
+}

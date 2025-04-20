@@ -9,6 +9,7 @@ type DependencyProvider struct {
 
 	AuthenticationHandler *AuthenticationHandler
 	GameItemHandler       *GameItemHandler
+	InventoryItemHandler  *InventoryItemHandler
 }
 
 func NewDependencyProvider(
@@ -19,5 +20,6 @@ func NewDependencyProvider(
 
 		AuthenticationHandler: NewAuthenticationHandler(dependencyProvider.AuthenticationService),
 		GameItemHandler:       NewGameItemHandler(dependencyProvider.GameItemService),
+		InventoryItemHandler:  NewInventoryItemHandler(dependencyProvider.InventoryItemService),
 	}
 }

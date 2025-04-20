@@ -17,10 +17,10 @@ func NewAuthenticationResult(token string, user *dto.UserFullDTO, onlineCount in
 }
 
 type AuthenticationService interface {
-	Register(ctx context.Context, credentials *entity.CredentialsDTO) (*AuthenticationResult, error)
-	Authenticate(ctx context.Context, credentials *entity.CredentialsDTO) (*AuthenticationResult, error)
+	Register(ctx context.Context, credentials *dto.CredentialsDTO) (*AuthenticationResult, error)
+	Authenticate(ctx context.Context, credentials *dto.CredentialsDTO) (*AuthenticationResult, error)
 	ValidateToken(ctx context.Context, token string) (*dto.UserDTO, error)
-	ChangePassword(ctx context.Context, credentials *entity.ChangePasswordDTO) (*AuthenticationResult, error)
+	ChangePassword(ctx context.Context, credentials *dto.ChangePasswordDTO) (*AuthenticationResult, error)
 }
 
 type TokenHelper interface {

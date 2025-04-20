@@ -18,4 +18,5 @@ var (
 
 		return base.NewError(errors.New("account locked"), errors.New(r), 403)
 	}
+	ErrItemNotFoundInInventory = base.NewError(errors.New("item not found in inventory"), nil, 404)
 )
