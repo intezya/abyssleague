@@ -117,7 +117,7 @@ func (a *AuthenticationService) ValidateToken(ctx context.Context, token string)
 		return nil, err
 	}
 
-	hwidOk, needsUpdate := tracer.TraceValueValue(
+	hwidOk, needsUpdate := tracer.Trace2(
 		ctx, "authentication.CompareHWID", func(ctx context.Context) (bool, bool) {
 			return authentication.CompareHWID(tokenData.Hwid, a.credentialsHelper.VerifyHardwareID)
 		},
@@ -199,7 +199,7 @@ func (a *AuthenticationService) findAuthByUsername(ctx context.Context, username
 
 // verifyPassword checks if the provided password matches the stored one
 func (a *AuthenticationService) verifyPassword(ctx context.Context, auth *entity.AuthenticationData, password string) bool {
-	return tracer.TraceValue(
+	return tracer.Trace1(
 		ctx, "authentication.ComparePassword", func(ctx context.Context) bool {
 			return auth.ComparePassword(password, a.credentialsHelper.VerifyPassword)
 		},
@@ -209,7 +209,7 @@ func (a *AuthenticationService) verifyPassword(ctx context.Context, auth *entity
 // verifyAndUpdateHWID validates HWID and updates it if necessary
 func (a *AuthenticationService) verifyAndUpdateHWID(ctx context.Context, auth *entity.AuthenticationData, hwid string) error {
 	// Проверка HWID
-	hwidOk, needsUpdate := tracer.TraceValueValue(
+	hwidOk, needsUpdate := tracer.Trace2(
 		ctx, "authentication.CompareHWID", func(ctx context.Context) (bool, bool) {
 			return auth.CompareHWID(hwid, a.credentialsHelper.VerifyHardwareID)
 		},
@@ -234,7 +234,7 @@ func (a *AuthenticationService) updateHwid(ctx context.Context, auth *entity.Aut
 	newHwid := a.encodeHWID(ctx, rawHwid)
 	auth.SetHWID(newHwid)
 
-	return tracer.TraceValue(
+	return tracer.Trace1(
 		ctx, "userRepository.UpdateHWIDByID", func(ctx context.Context) error {
 			return a.userRepository.UpdateHWIDByID(ctx, auth.UserID(), newHwid)
 		},
@@ -243,7 +243,7 @@ func (a *AuthenticationService) updateHwid(ctx context.Context, auth *entity.Aut
 
 // encodePassword encodes a raw password
 func (a *AuthenticationService) encodePassword(ctx context.Context, rawPassword string) string {
-	return tracer.TraceValue(
+	return tracer.Trace1(
 		ctx, "credentialsHelper.EncodePassword", func(ctx context.Context) string {
 			return a.credentialsHelper.EncodePassword(rawPassword)
 		},
@@ -252,7 +252,7 @@ func (a *AuthenticationService) encodePassword(ctx context.Context, rawPassword 
 
 // encodeHWID encodes a raw hardware ID
 func (a *AuthenticationService) encodeHWID(ctx context.Context, rawHwid string) string {
-	return tracer.TraceValue(
+	return tracer.Trace1(
 		ctx, "credentialsHelper.EncodeHardwareID", func(ctx context.Context) string {
 			return a.credentialsHelper.EncodeHardwareID(rawHwid)
 		},
@@ -285,7 +285,7 @@ func (a *AuthenticationService) processLoginStreakAndRewards(ctx context.Context
 	// TODO: Implement logic to handle search block level decrement
 	// TODO: Implement logic to add bonuses for user based on login streak
 
-	err := tracer.TraceValue(
+	err := tracer.Trace1(
 		ctx, "userRepository.UpdateLoginStreakLoginAtByID", func(ctx context.Context) error {
 			return a.userRepository.UpdateLoginStreakLoginAtByID(ctx, user.ID, user.LoginStreak, user.LoginAt)
 		},
@@ -325,7 +325,7 @@ func (a *AuthenticationService) processBanDecrementAfterLogin(ctx context.Contex
 
 // generateToken creates an authentication token
 func (a *AuthenticationService) generateToken(ctx context.Context, tokenData *entity.TokenData) string {
-	return tracer.TraceValue(
+	return tracer.Trace1(
 		ctx, "tokenHelper.TokenGenerator", func(ctx context.Context) string {
 			return a.tokenHelper.TokenGenerator(tokenData)
 		},
@@ -334,7 +334,7 @@ func (a *AuthenticationService) generateToken(ctx context.Context, tokenData *en
 
 // getOnlineCount retrieves the number of online users
 func (a *AuthenticationService) getOnlineCount(ctx context.Context) int {
-	return tracer.TraceValue(
+	return tracer.Trace1(
 		ctx, "mainWebsocketService.GetOnlineSoft", func(ctx context.Context) int {
 			res := a.mainWebsocketService.GetOnlineSoft(ctx)
 			return int(res.Online)

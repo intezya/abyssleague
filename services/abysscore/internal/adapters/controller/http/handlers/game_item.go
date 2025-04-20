@@ -4,9 +4,12 @@ import (
 	"abysscore/internal/adapters/controller/http/dto/request"
 	"abysscore/internal/adapters/controller/http/dto/response"
 	adaptererror "abysscore/internal/common/errors/adapter"
+	"abysscore/internal/domain/dto"
 	"abysscore/internal/domain/entity/gameitementity"
 	domainservice "abysscore/internal/domain/service"
+	"abysscore/internal/infrastructure/metrics/tracer"
 	"abysscore/internal/pkg/queryparser"
+	"context"
 	"github.com/gofiber/fiber/v2"
 )
 
@@ -58,7 +61,9 @@ func (g *GameItemHandler) Create(c *fiber.Ctx) error {
 		return err
 	}
 
-	result, err := g.gameItemService.Create(ctx, r, user)
+	result, err := tracer.TraceFnWithResult(ctx, "gameItemService.Create", func(ctx context.Context) (*dto.GameItemDTO, error) {
+		return g.gameItemService.Create(ctx, r, user)
+	})
 	if err != nil {
 		return g.handleError(err, c)
 	}
@@ -75,7 +80,9 @@ func (g *GameItemHandler) FindByID(c *fiber.Ctx) error {
 		return g.handleError(err, c)
 	}
 
-	result, err := g.gameItemService.FindByID(ctx, id)
+	result, err := tracer.TraceFnWithResult(ctx, "gameItemService.FindByID", func(ctx context.Context) (*dto.GameItemDTO, error) {
+		return g.gameItemService.FindByID(ctx, id)
+	})
 	if err != nil {
 		return g.handleError(err, c)
 	}
@@ -92,7 +99,9 @@ func (g *GameItemHandler) FindAllPaged(c *fiber.Ctx) error {
 		return g.handleError(err, c)
 	}
 
-	result, err := g.gameItemService.FindAllPaged(ctx, paginationQuery)
+	result, err := tracer.TraceFnWithResult(ctx, "gameItemService.FindAllPaged", func(ctx context.Context) (*dto.PaginatedResult[*dto.GameItemDTO], error) {
+		return g.gameItemService.FindAllPaged(ctx, paginationQuery)
+	})
 	if err != nil {
 		return g.handleError(err, c)
 	}
@@ -120,7 +129,9 @@ func (g *GameItemHandler) Update(c *fiber.Ctx) error {
 		return err
 	}
 
-	err = g.gameItemService.Update(ctx, itemID, r, user)
+	err = tracer.TraceFn(ctx, "gameItemService.Update", func(ctx context.Context) error {
+		return g.gameItemService.Update(ctx, itemID, r, user)
+	})
 	if err != nil {
 		return g.handleError(err, c)
 	}
@@ -142,7 +153,9 @@ func (g *GameItemHandler) Delete(c *fiber.Ctx) error {
 		return g.handleError(err, c)
 	}
 
-	err = g.gameItemService.Delete(ctx, itemID, user)
+	err = tracer.TraceFn(ctx, "gameItemService.Delete", func(ctx context.Context) error {
+		return g.gameItemService.Delete(ctx, itemID, user)
+	})
 	if err != nil {
 		return g.handleError(err, c)
 	}

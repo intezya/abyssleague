@@ -57,8 +57,8 @@ func AddAttribute(ctx context.Context, key string, value interface{}) {
 	}
 }
 
-// TraceVoid runs a function within a span, ignoring errors.
-func TraceVoid(ctx context.Context, spanName string, fn func(context.Context)) {
+// Trace0 runs a function within a span, ignoring errors.
+func Trace0(ctx context.Context, spanName string, fn func(context.Context)) {
 	tracer := otel.Tracer("application")
 	ctx, span := tracer.Start(ctx, spanName)
 	defer span.End()
@@ -66,8 +66,8 @@ func TraceVoid(ctx context.Context, spanName string, fn func(context.Context)) {
 	fn(ctx)
 }
 
-// TraceValue runs a function within a span and returns a value, ignoring errors.
-func TraceValue[T any](ctx context.Context, spanName string, fn func(context.Context) T) T {
+// Trace1 runs a function within a span and returns a result, ignoring errors.
+func Trace1[T any](ctx context.Context, spanName string, fn func(context.Context) T) T {
 	tracer := otel.Tracer("application")
 	ctx, span := tracer.Start(ctx, spanName)
 	defer span.End()
@@ -75,7 +75,8 @@ func TraceValue[T any](ctx context.Context, spanName string, fn func(context.Con
 	return fn(ctx)
 }
 
-func TraceValueValue[T any, G any](ctx context.Context, spanName string, fn func(context.Context) (T, G)) (T, G) {
+// Trace2 runs a function within a span and returns a result, ignoring errors.
+func Trace2[R1, R2 any](ctx context.Context, spanName string, fn func(context.Context) (R1, R2)) (R1, R2) {
 	tracer := otel.Tracer("application")
 	ctx, span := tracer.Start(ctx, spanName)
 	defer span.End()
