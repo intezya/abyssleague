@@ -16,5 +16,7 @@ type UserRepository interface {
 
 	UpdateHWIDByID(ctx context.Context, id int, hwid string) error
 	UpdatePasswordByID(ctx context.Context, id int, password string) (*dto.UserFullDTO, error)
-	SetLoginStreakLoginAtByID(ctx context.Context, id int, loginStreak int, loginAt time.Time) error
+	UpdateLoginStreakLoginAtByID(ctx context.Context, id int, loginStreak int, loginAt time.Time) error
+
+	SetBlockUntilAndLevelAndReasonFromUser(ctx context.Context, user *dto.UserDTO) error
 }

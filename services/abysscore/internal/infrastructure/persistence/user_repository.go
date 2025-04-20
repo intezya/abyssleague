@@ -121,7 +121,7 @@ func (r *UserRepository) UpdateHWIDByID(ctx context.Context, id int, hwid string
 	return nil
 }
 
-func (r *UserRepository) SetLoginStreakLoginAtByID(
+func (r *UserRepository) UpdateLoginStreakLoginAtByID(
 	ctx context.Context,
 	id int,
 	loginStreak int,
@@ -150,4 +150,22 @@ func (r *UserRepository) UpdatePasswordByID(ctx context.Context, id int, passwor
 	}
 
 	return dto.MapToUserFullDTOFromEnt(u), nil
+}
+
+func (r *UserRepository) SetBlockUntilAndLevelAndReasonFromUser(ctx context.Context, user *dto.UserDTO) error {
+	_, err := r.client.User.
+		UpdateOneID(user.ID).
+		SetNillableAccountBlockedUntil(user.AccountBlockedUntil).
+		SetAccountBlockedLevel(user.AccountBlockedLevel).
+		SetNillableAccountBlockReason(user.AccountBlockReason).
+		SetNillableSearchBlockedUntil(user.SearchBlockedUntil).
+		SetSearchBlockedLevel(user.SearchBlockedLevel).
+		SetNillableSearchBlockReason(user.SearchBlockReason).
+		Save(ctx)
+
+	if err != nil {
+		return repositoryerrors.WrapUnexpectedError(err)
+	}
+
+	return nil
 }

@@ -1,5 +1,9 @@
 package entity
 
+import (
+	"time"
+)
+
 type comparator func(raw, hash string) bool
 
 type CredentialsDTO struct {
@@ -13,10 +17,12 @@ func NewCredentialsDTO(username string, password string, hwid string) *Credentia
 }
 
 type AuthenticationData struct {
-	id       int
-	username string
-	password string
-	hwid     *string
+	id           int
+	username     string
+	password     string
+	hwid         *string
+	blockedUntil *time.Time
+	BlockReason  *string
 }
 
 type TokenData struct {
@@ -25,8 +31,22 @@ type TokenData struct {
 	Hwid     string `json:"hwid"`
 }
 
-func NewAuthenticationData(id int, username string, password string, hwid *string) *AuthenticationData {
-	return &AuthenticationData{id: id, username: username, password: password, hwid: hwid}
+func NewAuthenticationData(
+	id int,
+	username string,
+	password string,
+	hwid *string,
+	blockedUntil *time.Time,
+	blockReason *string,
+) *AuthenticationData {
+	return &AuthenticationData{
+		id:           id,
+		username:     username,
+		password:     password,
+		hwid:         hwid,
+		blockedUntil: blockedUntil,
+		BlockReason:  blockReason,
+	}
 }
 
 func (a *AuthenticationData) ComparePassword(
@@ -45,6 +65,10 @@ func (a *AuthenticationData) CompareHWID(
 	}
 
 	return comparator(hwid, *a.hwid), false
+}
+
+func (a *AuthenticationData) IsAccountLocked() bool {
+	return a.blockedUntil != nil && a.blockedUntil.After(time.Now())
 }
 
 func (a *AuthenticationData) TokenData() *TokenData {

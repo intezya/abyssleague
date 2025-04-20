@@ -9,5 +9,13 @@ var (
 	ErrWrongPassword      = base.NewError(errors.New("wrong password"), nil, 401)
 	ErrUserWrongHwid      = base.NewError(errors.New("wrong hwid"), nil, 401)
 	ErrTokenHwidIsInvalid = base.NewError(errors.New("wrong hwid"), nil, 401)
-	ErrAccountIsLocked    = base.NewError(errors.New("account locked"), nil, 403)
+	ErrAccountIsLocked    = func(reason *string) error {
+		var r string
+
+		if reason != nil {
+			r = *reason
+		}
+
+		return base.NewError(errors.New("account locked"), errors.New(r), 403)
+	}
 )

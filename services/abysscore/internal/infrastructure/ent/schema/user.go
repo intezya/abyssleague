@@ -51,11 +51,11 @@ func (User) Fields() []ent.Field {
 
 		field.Time("search_blocked_until").Optional().Nillable(),
 		field.String("search_block_reason").Optional().Nillable(),
-		field.Int("search_blocked_level").Default(0).Min(-1),
+		field.Int("search_blocked_level").Default(0).Positive(),
 
 		field.Time("account_blocked_until").Optional().Nillable(),
 		field.String("account_block_reason").Optional().Nillable(),
-		field.Int("account_blocked_level").Default(0).Min(-1),
+		field.Int("account_blocked_level").Default(0).Positive(),
 	}
 }
 

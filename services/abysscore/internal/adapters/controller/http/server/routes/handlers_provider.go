@@ -9,9 +9,9 @@ import (
 )
 
 type DependencyProvider struct {
-	config                *config.Config
-	redisClient           *rediswrapper.ClientWrapper
-	authenticationService domainservice.AuthenticationService
+	Config                *config.Config
+	RedisClient           *rediswrapper.ClientWrapper
+	AuthenticationService domainservice.AuthenticationService
 	apiPrefix             string
 
 	// Routes map is replaced with RouteGroups
@@ -29,9 +29,9 @@ func NewDependencyProvider(
 ) *DependencyProvider {
 	apiPrefix := "/api"
 	dp := &DependencyProvider{
-		config:                config,
-		redisClient:           redisClient,
-		authenticationService: authenticationService,
+		Config:                config,
+		RedisClient:           redisClient,
+		AuthenticationService: authenticationService,
 		apiPrefix:             apiPrefix,
 		Routes:                make(map[string]*Route),
 	}

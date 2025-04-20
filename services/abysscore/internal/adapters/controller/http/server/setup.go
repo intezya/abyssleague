@@ -66,12 +66,12 @@ func createMiddlewareLinker(dependencies *routes.DependencyProvider, config *con
 	loggingMiddleware := middleware.NewLoggingMiddleware(config)
 	recoverMiddleware := middleware.NewRecoverMiddleware(config.FiberRequestIDConfig)
 	rateLimitMiddleware := middleware.NewRateLimitMiddleware(
-		dependencies.redisClient,
+		dependencies.RedisClient,
 		config,
 	)
 	authenticationMiddleware := middleware.NewAuthenticationMiddleware(
-		dependencies.authenticationService,
-		dependencies.redisClient,
+		dependencies.AuthenticationService,
+		dependencies.RedisClient,
 	)
 
 	return routes.NewMiddlewareLinker(
@@ -83,7 +83,7 @@ func createMiddlewareLinker(dependencies *routes.DependencyProvider, config *con
 }
 
 func Setup(dependencies *routes.DependencyProvider) *fiber.App {
-	config := dependencies.config
+	config := dependencies.Config
 
 	// Set up metrics server on separate port
 	setupMetricsServer(config.MetricsPort)

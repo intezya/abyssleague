@@ -23,8 +23,14 @@ type UserDTO struct {
 	LoginAt                time.Time                `json:"-"`
 	LoginStreak            int                      `json:"login_streak"`
 	CreatedAt              time.Time                `json:"created_at"`
-	SearchBlockedUntil     *time.Time               `json:"-"`
-	AccountBlockedUntil    *time.Time               `json:"-"`
+
+	SearchBlockedUntil *time.Time `json:"search_blocked_until"`
+	SearchBlockReason  *string    `json:"search_block_reason"`
+	SearchBlockedLevel int        `json:"search_blocked_level"`
+
+	AccountBlockedUntil *time.Time `json:"account_blocked_until"`
+	AccountBlockReason  *string    `json:"account_block_reason"`
+	AccountBlockedLevel int        `json:"account_blocked_level"`
 }
 
 type UserFullDTO struct {
@@ -56,12 +62,23 @@ func MapToUserDTOFromEnt(u *ent.User) *UserDTO {
 		LoginStreak:            u.LoginStreak,
 		CreatedAt:              u.CreatedAt,
 		SearchBlockedUntil:     u.SearchBlockedUntil,
+		SearchBlockReason:      u.SearchBlockReason,
+		SearchBlockedLevel:     u.SearchBlockedLevel,
 		AccountBlockedUntil:    u.AccountBlockedUntil,
+		AccountBlockReason:     u.AccountBlockReason,
+		AccountBlockedLevel:    u.AccountBlockedLevel,
 	}
 }
 
 func MapToAuthenticationDataFromEnt(u *ent.User) *entity.AuthenticationData {
-	return entity.NewAuthenticationData(u.ID, u.Username, u.Password, u.HardwareID)
+	return entity.NewAuthenticationData(
+		u.ID,
+		u.Username,
+		u.Password,
+		u.HardwareID,
+		u.AccountBlockedUntil,
+		u.AccountBlockReason,
+	)
 }
 
 func MapToUserFullDTOFromEnt(u *ent.User) *UserFullDTO {

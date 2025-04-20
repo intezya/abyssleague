@@ -1,5 +1,7 @@
 package userentity
 
+import "time"
+
 type SearchBlockLevel int
 type AccountBlockLevel int
 
@@ -11,7 +13,8 @@ const (
 	SearchBlockLevelBan12h
 	SearchBlockLevelBan24h
 	SearchBlockLevelBan72h
-	SearchBlockLevelBanInf = -1
+
+	SearchBlockDecrementTime = time.Hour * 24 * 3 // 3 days
 )
 
 const (
@@ -19,5 +22,6 @@ const (
 	AccountBlockLevelBan6h
 	AccountBlockLevelBan24h
 	AccountBlockLevelBan72h
-	AccountBlockLevelBanInf = -1
+
+	AccountBlockDecrementTime = time.Hour * 24 * 3 // 3 days
 )

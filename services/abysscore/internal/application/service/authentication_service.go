@@ -4,6 +4,7 @@ import (
 	applicationerror "abysscore/internal/common/errors/application"
 	"abysscore/internal/domain/dto"
 	"abysscore/internal/domain/entity"
+	"abysscore/internal/domain/entity/userentity"
 	drivenports "abysscore/internal/domain/ports/driven"
 	repositoryports "abysscore/internal/domain/repository"
 	domainservice "abysscore/internal/domain/service"
@@ -119,6 +120,11 @@ func (a *AuthenticationService) Authenticate(ctx context.Context, credentials *e
 		return nil, applicationerror.ErrUserWrongHwid
 	}
 
+	// Check if account is locked
+	if authentication.IsAccountLocked() {
+		return nil, applicationerror.ErrAccountIsLocked(authentication.BlockReason)
+	}
+
 	// Update HWID if needed
 	if needsUpdate {
 		if err := a.updateHwid(ctx, authentication, credentials.Hwid); err != nil {
@@ -136,11 +142,6 @@ func (a *AuthenticationService) Authenticate(ctx context.Context, credentials *e
 	if err != nil {
 		logger.Log.Warnw("Failed to retrieve full user data", "error", err, "userID", authentication.UserID())
 		return nil, err
-	}
-
-	// Check if account is locked
-	if a.isAccountLocked(user.UserDTO) {
-		return nil, applicationerror.ErrAccountIsLocked
 	}
 
 	token := a.generateToken(ctx, authentication.TokenData())
@@ -192,6 +193,10 @@ func (a *AuthenticationService) ValidateToken(ctx context.Context, token string)
 		return nil, applicationerror.ErrTokenHwidIsInvalid
 	}
 
+	if authentication.IsAccountLocked() {
+		return nil, applicationerror.ErrAccountIsLocked(authentication.BlockReason)
+	}
+
 	user, err := tracer.TraceFnWithResult(
 		ctx, "userRepository.FindDTOById", func(ctx context.Context) (*dto.UserDTO, error) {
 			return a.userRepository.FindDTOById(ctx, authentication.UserID())
@@ -205,10 +210,6 @@ func (a *AuthenticationService) ValidateToken(ctx context.Context, token string)
 			"userID", authentication.UserID(),
 		)
 		return nil, err
-	}
-
-	if a.isAccountLocked(user) {
-		return nil, applicationerror.ErrAccountIsLocked
 	}
 
 	return user, nil
@@ -306,8 +307,8 @@ func (a *AuthenticationService) processLoginStreakAndRewards(ctx context.Context
 	// TODO: Implement logic to add bonuses for user based on login streak
 
 	err := tracer.TraceValue(
-		ctx, "userRepository.SetLoginStreakLoginAtByID", func(ctx context.Context) error {
-			return a.userRepository.SetLoginStreakLoginAtByID(ctx, user.ID, user.LoginStreak, user.LoginAt)
+		ctx, "userRepository.UpdateLoginStreakLoginAtByID", func(ctx context.Context) error {
+			return a.userRepository.UpdateLoginStreakLoginAtByID(ctx, user.ID, user.LoginStreak, user.LoginAt)
 		},
 	)
 
@@ -316,14 +317,35 @@ func (a *AuthenticationService) processLoginStreakAndRewards(ctx context.Context
 	}
 }
 
+func (a *AuthenticationService) processBanDecrementAfterLogin(ctx context.Context, user *dto.UserDTO) {
+	if user.AccountBlockedUntil.Add(userentity.AccountBlockDecrementTime).Before(time.Now()) {
+		if user.AccountBlockedLevel > 0 {
+			user.AccountBlockedLevel--
+		}
+		user.AccountBlockedUntil = nil
+		user.AccountBlockReason = nil
+	}
+
+	if user.SearchBlockedUntil.Add(userentity.SearchBlockDecrementTime).Before(time.Now()) {
+		if user.SearchBlockedLevel > 0 {
+			user.SearchBlockedLevel--
+		}
+		user.SearchBlockedUntil = nil
+		user.SearchBlockReason = nil
+	}
+
+	err := tracer.TraceFn(ctx, "userRepository.SetBlockUntilAndLevelAndReasonFromUser", func(ctx context.Context) error {
+		return a.userRepository.SetBlockUntilAndLevelAndReasonFromUser(ctx, user)
+	})
+
+	if err != nil {
+		logger.Log.Errorw("Failed to update block until, level, user", "error", err, "userID", user.ID)
+	}
+}
+
 // comparePasswords verifies the password
 func (a *AuthenticationService) comparePasswords(authentication *entity.AuthenticationData, raw string) bool {
 	return authentication.ComparePassword(raw, a.credentialsHelper.VerifyPassword)
-}
-
-// isAccountLocked checks if user account is locked
-func (a *AuthenticationService) isAccountLocked(user *dto.UserDTO) bool {
-	return user.AccountBlockedUntil.After(time.Now())
 }
 
 // generateToken creates an authentication token
