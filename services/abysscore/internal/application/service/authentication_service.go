@@ -184,7 +184,10 @@ func (a *AuthenticationService) prepareCredentials(ctx context.Context, credenti
 }
 
 // findAuthByUsername finds authentication data by username
-func (a *AuthenticationService) findAuthByUsername(ctx context.Context, username string) (*entity.AuthenticationData, error) {
+func (a *AuthenticationService) findAuthByUsername(ctx context.Context, username string) (
+	*entity.AuthenticationData,
+	error,
+) {
 	lowerUsername := strings.ToLower(username)
 	return tracer.TraceFnWithResult(
 		ctx, "userRepository.FindAuthenticationByLowerUsername",
@@ -195,7 +198,11 @@ func (a *AuthenticationService) findAuthByUsername(ctx context.Context, username
 }
 
 // verifyPassword checks if the provided password matches the stored one
-func (a *AuthenticationService) verifyPassword(ctx context.Context, auth *entity.AuthenticationData, password string) bool {
+func (a *AuthenticationService) verifyPassword(
+	ctx context.Context,
+	auth *entity.AuthenticationData,
+	password string,
+) bool {
 	return tracer.Trace1(
 		ctx, "authentication.ComparePassword", func(ctx context.Context) bool {
 			return auth.ComparePassword(password, a.credentialsHelper.VerifyPassword)
@@ -204,7 +211,11 @@ func (a *AuthenticationService) verifyPassword(ctx context.Context, auth *entity
 }
 
 // verifyAndUpdateHWID validates HWID and updates it if necessary
-func (a *AuthenticationService) verifyAndUpdateHWID(ctx context.Context, auth *entity.AuthenticationData, hwid string) error {
+func (a *AuthenticationService) verifyAndUpdateHWID(
+	ctx context.Context,
+	auth *entity.AuthenticationData,
+	hwid string,
+) error {
 	// Проверка HWID
 	hwidOk, needsUpdate := tracer.Trace2(
 		ctx, "authentication.CompareHWID", func(ctx context.Context) (bool, bool) {
@@ -257,7 +268,11 @@ func (a *AuthenticationService) encodeHWID(ctx context.Context, rawHwid string) 
 }
 
 // createAuthResult creates authentication result with token and online count
-func (a *AuthenticationService) createAuthResult(ctx context.Context, tokenData *entity.TokenData, user *dto.UserFullDTO) *domainservice.AuthenticationResult {
+func (a *AuthenticationService) createAuthResult(
+	ctx context.Context,
+	tokenData *entity.TokenData,
+	user *dto.UserFullDTO,
+) *domainservice.AuthenticationResult {
 	token := a.generateToken(ctx, tokenData)
 	online := a.getOnlineCount(ctx)
 	return domainservice.NewAuthenticationResult(token, user, online)
@@ -333,7 +348,12 @@ func (a *AuthenticationService) generateToken(ctx context.Context, tokenData *en
 func (a *AuthenticationService) getOnlineCount(ctx context.Context) int {
 	return tracer.Trace1(
 		ctx, "mainWebsocketService.GetOnlineSoft", func(ctx context.Context) int {
-			res := a.mainWebsocketService.GetOnlineSoft(ctx)
+			res, err := a.mainWebsocketService.GetOnline(ctx)
+
+			if err != nil {
+				return 0
+			}
+
 			return int(res.Online)
 		},
 	)
