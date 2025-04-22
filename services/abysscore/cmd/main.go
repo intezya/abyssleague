@@ -15,6 +15,12 @@ import (
 	_ "github.com/lib/pq"
 )
 
+// @title AbyssCore API
+// @version 1.0
+// @description API of AbyssCore server
+// @host localhost:8080
+// @BasePath /
+// @schemes http https
 func main() {
 	appConfig := config.LoadConfig()
 

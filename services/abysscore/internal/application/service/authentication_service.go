@@ -44,9 +44,7 @@ func (a *AuthenticationService) Register(
 	ctx context.Context,
 	credentials *dto.CredentialsDTO,
 ) (*domainservice.AuthenticationResult, error) {
-	if err := a.prepareCredentials(ctx, credentials); err != nil {
-		return nil, err
-	}
+	a.prepareCredentials(ctx, credentials)
 
 	user, err := tracer.TraceFnWithResult(
 		ctx, "userRepository.Create", func(ctx context.Context) (*entity.AuthenticationData, error) {
@@ -57,7 +55,7 @@ func (a *AuthenticationService) Register(
 		return nil, err // Username or hardware ID conflict
 	}
 
-	return a.createAuthResult(ctx, user.TokenData(), nil)
+	return a.createAuthResult(ctx, user.TokenData(), nil), nil
 }
 
 // Authenticate validates user credentials and returns authentication result
@@ -95,7 +93,7 @@ func (a *AuthenticationService) Authenticate(ctx context.Context, credentials *d
 	// Async login processing (statistics, bonuses, etc)
 	go a.processPostLoginTasks(ctx, user.UserDTO)
 
-	return a.createAuthResult(ctx, authentication.TokenData(), user)
+	return a.createAuthResult(ctx, authentication.TokenData(), user), nil
 }
 
 // ValidateToken validates the authentication token and returns user data
@@ -172,7 +170,7 @@ func (a *AuthenticationService) ChangePassword(
 		return nil, err
 	}
 
-	return a.createAuthResult(ctx, authentication.TokenData(), user)
+	return a.createAuthResult(ctx, authentication.TokenData(), user), nil
 }
 
 /*
@@ -180,10 +178,9 @@ func (a *AuthenticationService) ChangePassword(
 */
 
 // prepareCredentials encodes password and HWID
-func (a *AuthenticationService) prepareCredentials(ctx context.Context, credentials *dto.CredentialsDTO) error {
+func (a *AuthenticationService) prepareCredentials(ctx context.Context, credentials *dto.CredentialsDTO) {
 	credentials.Password = a.encodePassword(ctx, credentials.Password)
 	credentials.Hwid = a.encodeHWID(ctx, credentials.Hwid)
-	return nil
 }
 
 // findAuthByUsername finds authentication data by username
@@ -260,10 +257,10 @@ func (a *AuthenticationService) encodeHWID(ctx context.Context, rawHwid string) 
 }
 
 // createAuthResult creates authentication result with token and online count
-func (a *AuthenticationService) createAuthResult(ctx context.Context, tokenData *entity.TokenData, user *dto.UserFullDTO) (*domainservice.AuthenticationResult, error) {
+func (a *AuthenticationService) createAuthResult(ctx context.Context, tokenData *entity.TokenData, user *dto.UserFullDTO) *domainservice.AuthenticationResult {
 	token := a.generateToken(ctx, tokenData)
 	online := a.getOnlineCount(ctx)
-	return domainservice.NewAuthenticationResult(token, user, online), nil
+	return domainservice.NewAuthenticationResult(token, user, online)
 }
 
 // processPostLoginTasks handles all post-login actions

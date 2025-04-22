@@ -52,8 +52,8 @@ func (f *GrpcClientFactory) GetWebsocketApiGatewayClient(address string) websock
 		return client.(websocketpb.WebsocketServiceClient)
 	}
 
-	maxRetries := 5
-	retryInterval := 5 * time.Second
+	maxRetries := 1
+	retryInterval := 1 * time.Second
 	var conn *grpc.ClientConn
 	var err error
 

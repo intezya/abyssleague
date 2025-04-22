@@ -1,0 +1,259 @@
+basePath: /
+definitions:
+  base.ErrorResponse:
+    properties:
+      code:
+        type: integer
+      detail:
+        type: string
+      message:
+        type: string
+      path:
+        type: string
+    type: object
+  domainservice.AuthenticationResult:
+    properties:
+      online_count:
+        type: integer
+      token:
+        example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+        type: string
+      user:
+        $ref: '#/definitions/dto.UserFullDTO'
+    type: object
+  dto.InventoryItemDTO:
+    properties:
+      collection:
+        type: string
+      game_item_id:
+        description: Edges
+        type: integer
+      id:
+        type: integer
+      name:
+        type: string
+      obtained_at:
+        type: string
+      rarity:
+        type: integer
+      type:
+        type: integer
+    type: object
+  dto.UserDTO:
+    properties:
+      avatar_url:
+        type: string
+      created_at:
+        type: string
+      email:
+        type: string
+      genshin_uid:
+        type: string
+      hoyolab_login:
+        type: string
+      id:
+        type: integer
+      invites_enabled:
+        type: boolean
+      login_streak:
+        type: integer
+      username:
+        type: string
+    type: object
+  dto.UserFullDTO:
+    properties:
+      avatar_url:
+        type: string
+      created_at:
+        type: string
+      current_item:
+        $ref: '#/definitions/dto.InventoryItemDTO'
+      email:
+        type: string
+      friends:
+        description: Statistics []*Statistic `json:"statistics"`
+        items:
+          $ref: '#/definitions/dto.UserDTO'
+        type: array
+      genshin_uid:
+        type: string
+      hoyolab_login:
+        type: string
+      id:
+        type: integer
+      invites_enabled:
+        type: boolean
+      items:
+        description: |-
+          SentFriendRequests []*FriendRequest `json:"sent_friend_requests"`
+          ReceivedFriendRequests []*FriendRequest `json:"received_friend_requests"`
+        items:
+          $ref: '#/definitions/dto.InventoryItemDTO'
+        type: array
+      login_streak:
+        type: integer
+      username:
+        type: string
+    type: object
+  examples.UsernameConflictResponse:
+    properties:
+      code:
+        example: 409
+        type: integer
+      detail:
+        type: string
+      message:
+        example: user already exists
+        type: string
+      path:
+        type: string
+    type: object
+  request.AuthenticationRequest:
+    properties:
+      hwid:
+        example: QXV0aGVudGljQU1ENjA3NDA0
+        type: string
+      password:
+        example: STr0ngP@55w0rD!_
+        type: string
+      username:
+        example: my_legendary_username
+        type: string
+    required:
+      - hwid
+      - password
+      - username
+    type: object
+  request.PasswordChangeRequest:
+    properties:
+      new_password:
+        example: QXV0aGVudGljQU1ENjA3NDA0
+        type: string
+      old_password:
+        example: STr0ngP@55w0rD!_
+        type: string
+      username:
+        example: my_legendary_username
+        type: string
+    required:
+      - new_password
+      - old_password
+      - username
+    type: object
+host: localhost:8080
+info:
+  contact: { }
+  description: API of AbyssCore server
+  title: AbyssCore API
+  version: "1.0"
+paths:
+  /api/auth/change_password:
+    post:
+      consumes:
+        - application/json
+      description: Changes the password for an existing user
+      parameters:
+        - description: Password change details
+          in: body
+          name: request
+          required: true
+          schema:
+            $ref: '#/definitions/request.PasswordChangeRequest'
+      produces:
+        - application/json
+      responses:
+        "200":
+          description: Password successfully changed
+          schema:
+            $ref: '#/definitions/domainservice.AuthenticationResult'
+        "400":
+          description: Bad request - validation error
+          schema:
+            $ref: '#/definitions/base.ErrorResponse'
+        "401":
+          description: Unauthorized - invalid credentials
+          schema:
+            $ref: '#/definitions/base.ErrorResponse'
+        "404":
+          description: Not found - user does not exist
+          schema:
+            $ref: '#/definitions/base.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/base.ErrorResponse'
+      summary: Change user password
+      tags:
+        - Authentication
+  /api/auth/login:
+    post:
+      consumes:
+        - application/json
+      description: Authenticates a user with username and password
+      parameters:
+        - description: User login credentials
+          in: body
+          name: request
+          required: true
+          schema:
+            $ref: '#/definitions/request.AuthenticationRequest'
+      produces:
+        - application/json
+      responses:
+        "200":
+          description: Successfully authenticated
+          schema:
+            $ref: '#/definitions/domainservice.AuthenticationResult'
+        "400":
+          description: Bad request - validation error
+          schema:
+            $ref: '#/definitions/base.ErrorResponse'
+        "401":
+          description: Unauthorized - invalid credentials
+          schema:
+            $ref: '#/definitions/base.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/base.ErrorResponse'
+      summary: Authenticate user
+      tags:
+        - Authentication
+  /api/auth/register:
+    post:
+      consumes:
+        - application/json
+      description: Creates a new user account with the provided credentials
+      parameters:
+        - description: User registration details
+          in: body
+          name: request
+          required: true
+          schema:
+            $ref: '#/definitions/request.AuthenticationRequest'
+      produces:
+        - application/json
+      responses:
+        "200":
+          description: User successfully registered
+          schema:
+            $ref: '#/definitions/domainservice.AuthenticationResult'
+        "409":
+          description: Conflict - user with this username already exists
+          schema:
+            $ref: '#/definitions/examples.UsernameConflictResponse'
+        "422":
+          description: Unprocessable entity - validation error
+          schema:
+            $ref: '#/definitions/base.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/base.ErrorResponse'
+      summary: Register a new user
+      tags:
+        - Authentication
+schemes:
+  - http
+  - https
+swagger: "2.0"

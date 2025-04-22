@@ -5,7 +5,6 @@ import (
 	"abysscore/internal/common/errors/base"
 	"errors"
 	"github.com/go-playground/validator/v10"
-	"github.com/gofiber/fiber/v2"
 )
 
 type Validator struct {
@@ -26,7 +25,7 @@ func (v *Validator) ValidateStruct(s interface{}) error {
 
 var validationError = adaptererror.UnprocessableEntity(errors.New("validation error"))
 
-func ValidateJSON(dto interface{}, c *fiber.Ctx) error {
+func ValidateJSON(dto interface{}) error {
 	if err := v.ValidateStruct(dto); err != nil {
 		var validationErrors validator.ValidationErrors
 		if errors.As(err, &validationErrors) {

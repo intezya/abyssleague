@@ -4,20 +4,22 @@ import (
 	"abysscore/internal/domain/dto"
 )
 
+// AuthenticationRequest provide credentials for user registration/login
 type AuthenticationRequest struct {
-	Username string `json:"username" validate:"required"`
-	Password string `json:"password" validate:"required"`
-	Hwid     string `json:"hwid" validate:"required"`
+	Username string `json:"username" validate:"required" example:"my_legendary_username"`
+	Password string `json:"password" validate:"required" example:"STr0ngP@55w0rD!_"`
+	Hwid     string `json:"hwid" validate:"required" example:"QXV0aGVudGljQU1ENjA3NDA0"`
 }
 
 func (a *AuthenticationRequest) ToCredentialsDTO() *dto.CredentialsDTO {
 	return dto.NewCredentialsDTO(a.Username, a.Password, a.Hwid)
 }
 
+// PasswordChangeRequest provide credentials for password changing
 type PasswordChangeRequest struct {
-	Username    string `json:"username" validate:"required"`
-	OldPassword string `json:"old_password" validate:"required"`
-	NewPassword string `json:"new_password" validate:"required"`
+	Username    string `json:"username" validate:"required" example:"my_legendary_username"`
+	OldPassword string `json:"old_password" validate:"required" example:"STr0ngP@55w0rD!_"`
+	NewPassword string `json:"new_password" validate:"required" example:"QXV0aGVudGljQU1ENjA3NDA0"`
 }
 
 func (a *PasswordChangeRequest) ToDTO() *dto.ChangePasswordDTO {

@@ -7,7 +7,7 @@ import (
 )
 
 type AuthenticationResult struct {
-	Token       string           `json:"token,omitempty"`
+	Token       string           `json:"token,omitempty" example:"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."`
 	User        *dto.UserFullDTO `json:"user,omitempty"`
 	OnlineCount int              `json:"online_count"`
 }

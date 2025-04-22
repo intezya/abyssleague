@@ -1,6 +1,7 @@
 package server
 
 import (
+	_ "abysscore/docs" // Path to generated docs
 	"abysscore/internal/adapters/config"
 	"abysscore/internal/adapters/controller/http/middleware"
 	"abysscore/internal/adapters/controller/http/server/routes"
@@ -9,6 +10,7 @@ import (
 	"github.com/gofiber/fiber/v2/middleware/healthcheck"
 	"github.com/gofiber/fiber/v2/middleware/pprof"
 	"github.com/gofiber/fiber/v2/middleware/requestid"
+	"github.com/gofiber/swagger"
 	"github.com/intezya/pkglib/logger"
 	jsoniter "github.com/json-iterator/go"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
@@ -53,8 +55,12 @@ func createFiberApp(config *config.Config) *fiber.App {
 // setupCoreMiddleware sets up the common middleware for all routes
 func setupCoreMiddleware(app *fiber.App, config *config.Config) {
 	if config.IsDebug {
-		logger.Log.Info("Setting up pprof middleware")
+		// TODO: add debug logging middleware
+
+		logger.Log.Debug("Setting up pprof middleware")
 		app.Use(pprof.New())
+		logger.Log.Debugw("Setting up swagger middleware")
+		app.Get("/swagger/**", swagger.HandlerDefault)
 	}
 
 	app.Use(requestid.New(config.FiberRequestIDConfig))
