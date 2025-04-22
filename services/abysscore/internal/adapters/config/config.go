@@ -80,14 +80,15 @@ func LoadConfig() *Config {
 	// Setup Logger Configuration
 	config.LoggerConfig = &LoggerConfig{
 		lokiConfig: &logger.LokiConfig{
-			URL:         getEnvString("LOKI_ENDPOINT_URL", "localhost:3100"),
-			Labels:      parseLokiLabels(getEnvString("LOKI_LABELS", "")),
-			BatchSize:   getEnvInt("LOKI_BATCH_SIZE", 100),
-			MaxWait:     getEnvDuration("LOKI_MAX_WAIT", 5*time.Second),
-			Timeout:     getEnvDuration("LOKI_TIMEOUT", 10*time.Second),
-			Compression: getEnvBool("LOKI_COMPRESSION", true),
-			RetryCount:  getEnvInt("LOKI_RETRY_COUNT", 3),
-			RetryWait:   getEnvDuration("LOKI_RETRY_WAIT", 1*time.Second),
+			URL:                  getEnvString("LOKI_ENDPOINT_URL", "localhost:3100"),
+			Labels:               parseLokiLabels(getEnvString("LOKI_LABELS", "")),
+			BatchSize:            getEnvInt("LOKI_BATCH_SIZE", 100),
+			MaxWait:              getEnvDuration("LOKI_MAX_WAIT", 5*time.Second),
+			Timeout:              getEnvDuration("LOKI_TIMEOUT", 10*time.Second),
+			Compression:          getEnvBool("LOKI_COMPRESSION", true),
+			RetryCount:           getEnvInt("LOKI_RETRY_COUNT", 3),
+			RetryWait:            getEnvDuration("LOKI_RETRY_WAIT", 1*time.Second),
+			SuppressSinkWarnings: getEnvBool("LOKI_SUPPRESS_WARNINGS", false),
 		},
 	}
 
