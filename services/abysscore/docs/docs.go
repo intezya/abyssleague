@@ -46,28 +46,28 @@ const docTemplate = `{
                             "$ref": "#/definitions/domainservice.AuthenticationResult"
                         }
                     },
-                    "400": {
-                        "description": "Bad request - validation error",
-                        "schema": {
-                            "$ref": "#/definitions/base.ErrorResponse"
-                        }
-                    },
                     "401": {
-                        "description": "Unauthorized - invalid credentials",
+                        "description": "Unauthorized - wrong password",
                         "schema": {
-                            "$ref": "#/definitions/base.ErrorResponse"
+                            "$ref": "#/definitions/examples.UserWrongPasswordResponse"
                         }
                     },
                     "404": {
-                        "description": "Not found - user does not exist",
+                        "description": "Not found - user with this username not found",
                         "schema": {
-                            "$ref": "#/definitions/base.ErrorResponse"
+                            "$ref": "#/definitions/examples.UserNotFoundResponse"
                         }
                     },
-                    "500": {
-                        "description": "Internal server error",
+                    "422": {
+                        "description": "Unprocessable entity - validation error",
                         "schema": {
-                            "$ref": "#/definitions/base.ErrorResponse"
+                            "$ref": "#/definitions/examples.UnprocessableErrorResponse"
+                        }
+                    },
+                    "429": {
+                        "description": "Too many requests - received too many auth requests",
+                        "schema": {
+                            "$ref": "#/definitions/examples.TooManyRequestsResponse"
                         }
                     }
                 }
@@ -104,22 +104,34 @@ const docTemplate = `{
                             "$ref": "#/definitions/domainservice.AuthenticationResult"
                         }
                     },
-                    "400": {
-                        "description": "Bad request - validation error",
-                        "schema": {
-                            "$ref": "#/definitions/base.ErrorResponse"
-                        }
-                    },
                     "401": {
-                        "description": "Unauthorized - invalid credentials",
+                        "description": "Unauthorized - wrong hardware id",
                         "schema": {
-                            "$ref": "#/definitions/base.ErrorResponse"
+                            "$ref": "#/definitions/examples.UserWrongHardwareIDResponse"
                         }
                     },
-                    "500": {
-                        "description": "Internal server error",
+                    "404": {
+                        "description": "Not found - user with this username not found",
                         "schema": {
-                            "$ref": "#/definitions/base.ErrorResponse"
+                            "$ref": "#/definitions/examples.UserNotFoundResponse"
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict - only one account per device allowed",
+                        "schema": {
+                            "$ref": "#/definitions/examples.HardwareIDConflictResponse"
+                        }
+                    },
+                    "422": {
+                        "description": "Unprocessable entity - validation error",
+                        "schema": {
+                            "$ref": "#/definitions/examples.UnprocessableErrorResponse"
+                        }
+                    },
+                    "429": {
+                        "description": "Too many requests - received too many auth requests",
+                        "schema": {
+                            "$ref": "#/definitions/examples.TooManyRequestsResponse"
                         }
                     }
                 }
@@ -157,15 +169,21 @@ const docTemplate = `{
                         }
                     },
                     "409": {
-                        "description": "Conflict - user with this username already exists",
+                        "description": "Conflict - only one account per device allowed",
                         "schema": {
-                            "$ref": "#/definitions/examples.UsernameConflictResponse"
+                            "$ref": "#/definitions/examples.HardwareIDConflictResponse"
                         }
                     },
                     "422": {
                         "description": "Unprocessable entity - validation error",
                         "schema": {
-                            "$ref": "#/definitions/base.ErrorResponse"
+                            "$ref": "#/definitions/examples.UnprocessableErrorResponse"
+                        }
+                    },
+                    "429": {
+                        "description": "Too many requests - received too many auth requests",
+                        "schema": {
+                            "$ref": "#/definitions/examples.TooManyRequestsResponse"
                         }
                     },
                     "500": {
@@ -315,6 +333,126 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "username": {
+                    "type": "string"
+                }
+            }
+        },
+        "examples.HardwareIDConflictResponse": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "integer",
+                    "example": 409
+                },
+                "detail": {
+                    "type": "string"
+                },
+                "message": {
+                    "type": "string",
+                    "example": "user hwid conflict"
+                },
+                "path": {
+                    "type": "string"
+                }
+            }
+        },
+        "examples.TooManyRequestsResponse": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "integer",
+                    "example": 429
+                },
+                "detail": {
+                    "type": "string"
+                },
+                "message": {
+                    "type": "string",
+                    "example": "too many requests"
+                },
+                "path": {
+                    "type": "string"
+                }
+            }
+        },
+        "examples.UnprocessableErrorResponse": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "integer",
+                    "example": 422
+                },
+                "detail": {
+                    "type": "string"
+                },
+                "errors": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "message": {
+                    "type": "string",
+                    "example": "unprocessable entity"
+                },
+                "path": {
+                    "type": "string"
+                }
+            }
+        },
+        "examples.UserNotFoundResponse": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "integer",
+                    "example": 404
+                },
+                "detail": {
+                    "type": "string"
+                },
+                "message": {
+                    "type": "string",
+                    "example": "user not found"
+                },
+                "path": {
+                    "type": "string"
+                }
+            }
+        },
+        "examples.UserWrongHardwareIDResponse": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "integer",
+                    "example": 401
+                },
+                "detail": {
+                    "type": "string"
+                },
+                "message": {
+                    "type": "string",
+                    "example": "wrong hwid"
+                },
+                "path": {
+                    "type": "string"
+                }
+            }
+        },
+        "examples.UserWrongPasswordResponse": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "integer",
+                    "example": 401
+                },
+                "detail": {
+                    "type": "string"
+                },
+                "message": {
+                    "type": "string",
+                    "example": "wrong password"
+                },
+                "path": {
                     "type": "string"
                 }
             }

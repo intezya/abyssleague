@@ -95,6 +95,88 @@ definitions:
       username:
         type: string
     type: object
+  examples.HardwareIDConflictResponse:
+    properties:
+      code:
+        example: 409
+        type: integer
+      detail:
+        type: string
+      message:
+        example: user hwid conflict
+        type: string
+      path:
+        type: string
+    type: object
+  examples.TooManyRequestsResponse:
+    properties:
+      code:
+        example: 429
+        type: integer
+      detail:
+        type: string
+      message:
+        example: too many requests
+        type: string
+      path:
+        type: string
+    type: object
+  examples.UnprocessableErrorResponse:
+    properties:
+      code:
+        example: 422
+        type: integer
+      detail:
+        type: string
+      errors:
+        items:
+          type: string
+        type: array
+      message:
+        example: unprocessable entity
+        type: string
+      path:
+        type: string
+    type: object
+  examples.UserNotFoundResponse:
+    properties:
+      code:
+        example: 404
+        type: integer
+      detail:
+        type: string
+      message:
+        example: user not found
+        type: string
+      path:
+        type: string
+    type: object
+  examples.UserWrongHardwareIDResponse:
+    properties:
+      code:
+        example: 401
+        type: integer
+      detail:
+        type: string
+      message:
+        example: wrong hwid
+        type: string
+      path:
+        type: string
+    type: object
+  examples.UserWrongPasswordResponse:
+    properties:
+      code:
+        example: 401
+        type: integer
+      detail:
+        type: string
+      message:
+        example: wrong password
+        type: string
+      path:
+        type: string
+    type: object
   examples.UsernameConflictResponse:
     properties:
       code:
@@ -166,22 +248,22 @@ paths:
           description: Password successfully changed
           schema:
             $ref: '#/definitions/domainservice.AuthenticationResult'
-        "400":
-          description: Bad request - validation error
-          schema:
-            $ref: '#/definitions/base.ErrorResponse'
         "401":
-          description: Unauthorized - invalid credentials
+          description: Unauthorized - wrong password
           schema:
-            $ref: '#/definitions/base.ErrorResponse'
+            $ref: '#/definitions/examples.UserWrongPasswordResponse'
         "404":
-          description: Not found - user does not exist
+          description: Not found - user with this username not found
           schema:
-            $ref: '#/definitions/base.ErrorResponse'
-        "500":
-          description: Internal server error
+            $ref: '#/definitions/examples.UserNotFoundResponse'
+        "422":
+          description: Unprocessable entity - validation error
           schema:
-            $ref: '#/definitions/base.ErrorResponse'
+            $ref: '#/definitions/examples.UnprocessableErrorResponse'
+        "429":
+          description: Too many requests - received too many auth requests
+          schema:
+            $ref: '#/definitions/examples.TooManyRequestsResponse'
       summary: Change user password
       tags:
         - Authentication
@@ -204,18 +286,26 @@ paths:
           description: Successfully authenticated
           schema:
             $ref: '#/definitions/domainservice.AuthenticationResult'
-        "400":
-          description: Bad request - validation error
-          schema:
-            $ref: '#/definitions/base.ErrorResponse'
         "401":
-          description: Unauthorized - invalid credentials
+          description: Unauthorized - wrong hardware id
           schema:
-            $ref: '#/definitions/base.ErrorResponse'
-        "500":
-          description: Internal server error
+            $ref: '#/definitions/examples.UserWrongHardwareIDResponse'
+        "404":
+          description: Not found - user with this username not found
           schema:
-            $ref: '#/definitions/base.ErrorResponse'
+            $ref: '#/definitions/examples.UserNotFoundResponse'
+        "409":
+          description: Conflict - only one account per device allowed
+          schema:
+            $ref: '#/definitions/examples.HardwareIDConflictResponse'
+        "422":
+          description: Unprocessable entity - validation error
+          schema:
+            $ref: '#/definitions/examples.UnprocessableErrorResponse'
+        "429":
+          description: Too many requests - received too many auth requests
+          schema:
+            $ref: '#/definitions/examples.TooManyRequestsResponse'
       summary: Authenticate user
       tags:
         - Authentication
@@ -239,13 +329,17 @@ paths:
           schema:
             $ref: '#/definitions/domainservice.AuthenticationResult'
         "409":
-          description: Conflict - user with this username already exists
+          description: Conflict - only one account per device allowed
           schema:
-            $ref: '#/definitions/examples.UsernameConflictResponse'
+            $ref: '#/definitions/examples.HardwareIDConflictResponse'
         "422":
           description: Unprocessable entity - validation error
           schema:
-            $ref: '#/definitions/base.ErrorResponse'
+            $ref: '#/definitions/examples.UnprocessableErrorResponse'
+        "429":
+          description: Too many requests - received too many auth requests
+          schema:
+            $ref: '#/definitions/examples.TooManyRequestsResponse'
         "500":
           description: Internal server error
           schema:
