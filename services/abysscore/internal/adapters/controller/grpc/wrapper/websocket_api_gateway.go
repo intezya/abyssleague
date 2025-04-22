@@ -17,13 +17,20 @@ type WebsocketServiceWrapper struct {
 	timeout     time.Duration
 }
 
+func (w *WebsocketServiceWrapper) SetClient(client interface{}) {
+	w.client = client.(websocketpb.WebsocketServiceClient)
+}
+
 func NewWebsocketServiceWrapper(factory *factory.GrpcClientFactory, serviceAddr string) *WebsocketServiceWrapper {
-	return &WebsocketServiceWrapper{
+	wrapper := &WebsocketServiceWrapper{
 		factory:     factory,
 		serviceAddr: serviceAddr,
-		client:      factory.GetWebsocketApiGatewayClient(serviceAddr),
 		timeout:     500 * time.Millisecond,
 	}
+
+	go factory.GetAndSetWebsocketApiGatewayClient(serviceAddr, wrapper)
+
+	return wrapper
 }
 
 func (w *WebsocketServiceWrapper) ensureClient() bool {
@@ -32,7 +39,7 @@ func (w *WebsocketServiceWrapper) ensureClient() bool {
 	}
 
 	logger.Log.Info("WebsocketService client is nil, attempting to reconnect...")
-	w.client = w.factory.GetWebsocketApiGatewayClient(w.serviceAddr)
+	w.client = w.factory.GetAndSetWebsocketApiGatewayClient(w.serviceAddr, nil)
 
 	if w.client == nil {
 		logger.Log.Warn("Failed to reconnect to WebsocketService")
@@ -61,16 +68,6 @@ func (w *WebsocketServiceWrapper) GetOnline(ctx context.Context) (*websocketpb.G
 	return response, nil
 }
 
-func (w *WebsocketServiceWrapper) GetOnlineSoft(ctx context.Context) *websocketpb.GetOnlineResponse {
-	res, err := w.GetOnline(ctx)
-
-	if err != nil {
-		return &websocketpb.GetOnlineResponse{Online: 0}
-	}
-
-	return res
-}
-
 func (w *WebsocketServiceWrapper) GetOnlineUsers(ctx context.Context) (*websocketpb.GetOnlineUsersResponse, error) {
 	ctx, cancel := context.WithTimeout(ctx, w.timeout)
 	defer cancel()
@@ -87,16 +84,6 @@ func (w *WebsocketServiceWrapper) GetOnlineUsers(ctx context.Context) (*websocke
 	}
 
 	return response, nil
-}
-
-func (w *WebsocketServiceWrapper) GetOnlineUsersSoft(ctx context.Context) *websocketpb.GetOnlineUsersResponse {
-	res, err := w.GetOnlineUsers(ctx)
-
-	if err != nil {
-		return &websocketpb.GetOnlineUsersResponse{Users: []*websocketpb.OnlineUser{}}
-	}
-
-	return res
 }
 
 func (w *WebsocketServiceWrapper) SendMessage(ctx context.Context, request *websocketpb.SendMessageRequest) error {

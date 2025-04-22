@@ -79,6 +79,8 @@ github.com/intezya/pkglib/logger v0.0.0-20250410075734-66680663f021 h1:WnIcoAoki
 github.com/intezya/pkglib/logger v0.0.0-20250410075734-66680663f021/go.mod h1:UYtu1iQz80okQNaoPw+K+zpEx/3w822RcisIVztzBU8=
 github.com/intezya/pkglib/logger v0.1.1 h1:klaaqTX/FaqrbZv4QoRKD1W+BmhLKRLmNzkaYDsQu+E=
 github.com/intezya/pkglib/logger v0.1.1/go.mod h1:UYtu1iQz80okQNaoPw+K+zpEx/3w822RcisIVztzBU8=
+github.com/intezya/pkglib/logger v0.1.2 h1:n2yir6DaaH7cxex4Zw+6aigNK3o5y8A7QdzEgaMKzzY=
+github.com/intezya/pkglib/logger v0.1.2/go.mod h1:UYtu1iQz80okQNaoPw+K+zpEx/3w822RcisIVztzBU8=
 github.com/joho/godotenv v1.5.1 h1:7eLL/+HRGLY0ldzfGMeQkb7vMd0as4CfYvUVzLqw0N0=
 github.com/joho/godotenv v1.5.1/go.mod h1:f4LDr5Voq0i2e/R5DDNOoa2zzDfwtkZa6DnEwAbqwq4=
 github.com/json-iterator/go v1.1.12 h1:PV8peI4a0ysnczrg+LtxykD8LfKY9ML6u2jnxaEnrnM=

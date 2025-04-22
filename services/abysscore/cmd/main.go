@@ -12,6 +12,7 @@ import (
 	"abysscore/internal/infrastructure/metrics/tracer"
 	"abysscore/internal/infrastructure/persistence"
 	"abysscore/internal/pkg/auth"
+	"github.com/intezya/pkglib/logger"
 	_ "github.com/lib/pq"
 )
 
@@ -31,8 +32,10 @@ func main() {
 
 	grpcFactory := factory.NewGrpcClientFactory()
 	defer grpcFactory.CloseAll()
+	logger.Log.Debug("grpcFactory has been initialized")
 
 	gRPCDependencies := wrapper.NewDependencyProvider(appConfig.GRPCConfig, grpcFactory)
+	logger.Log.Debug("grpcDependencies has been initialized")
 
 	repositoryDependencies := persistence.NewDependencyProvider(entClient)
 

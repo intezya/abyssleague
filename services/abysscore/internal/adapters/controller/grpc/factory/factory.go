@@ -44,11 +44,21 @@ func NewGrpcClientFactory() *GrpcClientFactory {
 	}
 }
 
-func (f *GrpcClientFactory) GetWebsocketApiGatewayClient(address string) websocketpb.WebsocketServiceClient {
+type ClientReceiver interface {
+	SetClient(client interface{})
+}
+
+func (f *GrpcClientFactory) GetAndSetWebsocketApiGatewayClient(
+	address string,
+	receiver ClientReceiver,
+) websocketpb.WebsocketServiceClient {
 	key := "websocket-" + address
 
 	if client, exists := f.clients[key]; exists {
 		logger.Log.Info("Using existing connection: ", address)
+		if receiver != nil {
+			receiver.SetClient(client)
+		}
 		return client.(websocketpb.WebsocketServiceClient)
 	}
 
@@ -67,11 +77,13 @@ func (f *GrpcClientFactory) GetWebsocketApiGatewayClient(address string) websock
 				grpc.MaxCallRecvMsgSize(10*1024*1024),
 				grpc.MaxCallSendMsgSize(10*1024*1024),
 			),
-			grpc.WithKeepaliveParams(keepalive.ClientParameters{
-				Time:                20 * time.Second,
-				Timeout:             time.Second,
-				PermitWithoutStream: true,
-			}),
+			grpc.WithKeepaliveParams(
+				keepalive.ClientParameters{
+					Time:                20 * time.Second,
+					Timeout:             time.Second,
+					PermitWithoutStream: true,
+				},
+			),
 		)
 
 		if err == nil {
@@ -95,6 +107,9 @@ func (f *GrpcClientFactory) GetWebsocketApiGatewayClient(address string) websock
 	client := websocketpb.NewWebsocketServiceClient(conn)
 	f.clients[key] = client
 
+	if receiver != nil {
+		receiver.SetClient(client)
+	}
 	return client
 }
 
