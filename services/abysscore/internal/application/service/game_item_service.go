@@ -5,15 +5,16 @@ import (
 	"abysscore/internal/domain/dto"
 	"abysscore/internal/domain/entity/gameitementity"
 	repositoryports "abysscore/internal/domain/repository"
+	"abysscore/internal/infrastructure/metrics/tracer"
 	"context"
 )
 
 type GameItemService struct {
-	repository repositoryports.GameItemRepository
+	gameItemRepository repositoryports.GameItemRepository
 }
 
 func NewGameItemService(repository repositoryports.GameItemRepository) *GameItemService {
-	return &GameItemService{repository: repository}
+	return &GameItemService{gameItemRepository: repository}
 }
 
 func (g *GameItemService) Create(
@@ -23,18 +24,42 @@ func (g *GameItemService) Create(
 ) (*dto.GameItemDTO, error) {
 	// TODO: log performer action
 
-	return g.repository.Create(ctx, request.ToDTO())
+	result, err := tracer.TraceFnWithResult(ctx, "gameItemRepository.Create", func(ctx context.Context) (*dto.GameItemDTO, error) {
+		return g.gameItemRepository.Create(ctx, request.ToDTO())
+	})
+
+	if err != nil {
+		return nil, err // ???
+	}
+
+	return result, nil
 }
 
 func (g *GameItemService) FindByID(ctx context.Context, id int) (*dto.GameItemDTO, error) {
-	return g.repository.FindByID(ctx, id)
+	result, err := tracer.TraceFnWithResult(ctx, "gameItemRepository.FindByID", func(ctx context.Context) (*dto.GameItemDTO, error) {
+		return g.gameItemRepository.FindByID(ctx, id)
+	})
+
+	if err != nil {
+		return nil, err // not found
+	}
+
+	return result, nil
 }
 
 func (g *GameItemService) FindAllPaged(
 	ctx context.Context,
 	query *request.PaginationQuery[gameitementity.OrderBy],
 ) (*dto.PaginatedResult[*dto.GameItemDTO], error) {
-	return g.repository.FindAllPaged(ctx, query.Page, query.Size, query.OrderBy, query.OrderType)
+	result, err := tracer.TraceFnWithResult(ctx, "gameItemRepository.FindAllPaged", func(ctx context.Context) (*dto.PaginatedResult[*dto.GameItemDTO], error) {
+		return g.gameItemRepository.FindAllPaged(ctx, query.Page, query.Size, query.OrderBy, query.OrderType)
+	})
+
+	if err != nil {
+		return nil, err // ???
+	}
+
+	return result, nil
 }
 
 func (g *GameItemService) Update(
@@ -45,7 +70,15 @@ func (g *GameItemService) Update(
 ) error {
 	// TODO: log performer action
 
-	return g.repository.UpdateByID(ctx, id, request.ToDTO())
+	err := tracer.TraceFn(ctx, "gameItemRepository.UpdateByID", func(ctx context.Context) error {
+		return g.gameItemRepository.UpdateByID(ctx, id, request.ToDTO())
+	})
+
+	if err != nil {
+		return err // not found
+	}
+
+	return nil
 }
 
 func (g *GameItemService) Delete(
@@ -55,5 +88,13 @@ func (g *GameItemService) Delete(
 ) error {
 	// TODO: log performer action
 
-	return g.repository.DeleteByID(ctx, id)
+	err := tracer.TraceFn(ctx, "gameItemRepository.DeleteByID", func(ctx context.Context) error {
+		return g.gameItemRepository.DeleteByID(ctx, id)
+	})
+
+	if err != nil {
+		return err // not found
+	}
+
+	return nil
 }
