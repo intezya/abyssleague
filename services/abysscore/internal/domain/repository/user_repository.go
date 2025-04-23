@@ -19,4 +19,5 @@ type UserRepository interface {
 	UpdateLoginStreakLoginAtByID(ctx context.Context, id int, loginStreak int, loginAt time.Time) error
 
 	SetBlockUntilAndLevelAndReasonFromUser(ctx context.Context, user *dto.UserDTO) error
+	SetInventoryItemAsCurrent(ctx context.Context, user *dto.UserDTO, item *dto.InventoryItemDTO) error
 }

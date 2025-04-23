@@ -154,6 +154,23 @@ func (r *UserRepository) SetBlockUntilAndLevelAndReasonFromUser(ctx context.Cont
 	return r.handleUpdateError(err)
 }
 
+func (r *UserRepository) SetInventoryItemAsCurrent(
+	ctx context.Context,
+	user *dto.UserDTO,
+	item *dto.InventoryItemDTO,
+) error {
+	_, err := r.client.User.
+		UpdateOneID(user.ID).
+		SetCurrentItemID(item.ID).
+		Save(ctx)
+
+	if err != nil {
+		return r.handleUpdateError(err)
+	}
+
+	return nil
+}
+
 // Helper methods for error handling
 
 // handleQueryError transforms Ent query errors into domain-specific errors
@@ -173,6 +190,10 @@ func (r *UserRepository) handleQueryError(err error) error {
 func (r *UserRepository) handleUpdateError(err error) error {
 	if err == nil {
 		return nil
+	}
+
+	if ent.IsNotFound(err) {
+		return repositoryerrors.WrapUserNotFound(err)
 	}
 
 	return repositoryerrors.WrapUnexpectedError(err)

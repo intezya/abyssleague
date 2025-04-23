@@ -54,15 +54,23 @@ func (r *InventoryItemRepository) FindByUserID(ctx context.Context, userID int) 
 	return mapped, nil
 }
 
-func (r *InventoryItemRepository) ExistsByUserIDAndID(ctx context.Context, userID, id int) bool {
-	exists, err := r.client.InventoryItem.Query().
+func (r *InventoryItemRepository) FindByUserIDAndID(
+	ctx context.Context,
+	userID, id int,
+) (*dto.InventoryItemDTO, error) {
+	item, err := r.client.InventoryItem.
+		Query().
 		Where(
 			inventoryitem.IDEQ(id),
 			inventoryitem.UserIDEQ(userID),
 		).
-		Exist(ctx)
+		First(ctx)
 
-	return err == nil && exists
+	if err != nil {
+		return nil, r.handleQueryError(err)
+	}
+
+	return mapper.ToInventoryItemDTOFromEnt(item), nil
 }
 
 func (r *InventoryItemRepository) Delete(ctx context.Context, inventoryItemID int) error {

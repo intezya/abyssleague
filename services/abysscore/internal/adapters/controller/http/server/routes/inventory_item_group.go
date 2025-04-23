@@ -7,7 +7,7 @@ import (
 )
 
 func GetInventoryItemGroup(handlers *handlers.DependencyProvider, provider *DependencyProvider) *RouteGroup {
-	inventoryItemGroup := NewRouteGroup(path.Join(provider.apiPrefix, "user"))
+	inventoryItemGroup := NewRouteGroup(path.Join(provider.apiPrefix, "users"))
 
 	inventoryItemGroup.Add(
 		"/:user_id/inventory", NewRoute(
@@ -40,6 +40,14 @@ func GetInventoryItemGroup(handlers *handlers.DependencyProvider, provider *Depe
 			handlers.InventoryItemHandler.RevokeByAdmin,
 			MethodDelete,
 			WithAccessLevel(access_level.RevokeItem),
+		),
+	)
+
+	inventoryItemGroup.Add(
+		"/me/inventory/set_item",
+		NewRoute(
+			handlers.InventoryItemHandler.SetInventoryItem,
+			MethodPost,
 		),
 	)
 

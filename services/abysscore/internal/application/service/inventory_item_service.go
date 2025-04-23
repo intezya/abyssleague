@@ -1,18 +1,21 @@
 package applicationservice
 
 import (
-	applicationerror "abysscore/internal/common/errors/application"
 	"abysscore/internal/domain/dto"
 	repositoryports "abysscore/internal/domain/repository"
 	"context"
 )
 
 type InventoryItemService struct {
-	repository repositoryports.InventoryItemRepository
+	repository     repositoryports.InventoryItemRepository
+	userRepository repositoryports.UserRepository
 }
 
-func NewInventoryItemService(repository repositoryports.InventoryItemRepository) *InventoryItemService {
-	return &InventoryItemService{repository: repository}
+func NewInventoryItemService(
+	repository repositoryports.InventoryItemRepository,
+	userRepository repositoryports.UserRepository,
+) *InventoryItemService {
+	return &InventoryItemService{repository: repository, userRepository: userRepository}
 }
 
 func (i *InventoryItemService) GrantToUserByAdmin(
@@ -54,17 +57,39 @@ func (i *InventoryItemService) RevokeByAdmin(
 	inventoryItemID int,
 	performer *dto.UserDTO,
 ) error {
-	if !i.repository.ExistsByUserIDAndID(ctx, userID, inventoryItemID) {
-		return applicationerror.ErrItemNotFoundInInventory
+	_, err := i.repository.FindByUserIDAndID(ctx, userID, inventoryItemID)
+
+	if err != nil {
+		return err
 	}
 
-	err := i.repository.Delete(ctx, inventoryItemID)
+	err = i.repository.Delete(ctx, inventoryItemID)
 
 	if err != nil {
 		return err
 	}
 
 	// TODO: send notification to user
+
+	return nil
+}
+
+func (i *InventoryItemService) SetInventoryItemAsCurrent(
+	ctx context.Context,
+	user *dto.UserDTO,
+	inventoryItemID int,
+) error {
+	item, err := i.repository.FindByUserIDAndID(ctx, user.ID, inventoryItemID)
+
+	if err != nil {
+		return err // item not found in inventory
+	}
+
+	err = i.userRepository.SetInventoryItemAsCurrent(ctx, user, item)
+
+	if err != nil {
+		return err // ???
+	}
 
 	return nil
 }

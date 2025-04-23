@@ -14,3 +14,7 @@ func (g *GrantInventoryItemToUser) ToCreateDTO(performerID int) *dto.CreateInven
 		ReceivedFromID: performerID,
 	}
 }
+
+type SetItemAsCurrent struct {
+	InventoryItemID int `json:"inventory_item_id"`
+}

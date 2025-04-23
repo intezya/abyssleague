@@ -35,7 +35,10 @@ func NewDependencyProvider(
 			passwordHelper,
 			tokenHelper,
 		),
-		GameItemService:      NewGameItemService(repositoryDependencyProvider.GameItemRepository),
-		InventoryItemService: NewInventoryItemService(repositoryDependencyProvider.InventoryItemRepository),
+		GameItemService: NewGameItemService(repositoryDependencyProvider.GameItemRepository),
+		InventoryItemService: NewInventoryItemService(
+			repositoryDependencyProvider.InventoryItemRepository,
+			repositoryDependencyProvider.UserRepository,
+		),
 	}
 }

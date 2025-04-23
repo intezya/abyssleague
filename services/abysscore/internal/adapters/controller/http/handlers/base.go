@@ -31,7 +31,7 @@ func (h *BaseHandler) validateRequest(req interface{}, c *fiber.Ctx) error {
 	}
 
 	err = tracer.TraceFn(ctx, "validator.ValidateJSON", func(ctx context.Context) error {
-		return validator.ValidateJSON(req, c)
+		return validator.ValidateJSON(req)
 	})
 
 	if err != nil {

@@ -18,4 +18,6 @@ type InventoryItemService interface {
 
 	RevokeByAdmin(ctx context.Context, userID int, inventoryItemID int, performer *dto.UserDTO) error
 	//RevokeBySystem(ctx context.Context, inventoryItemID int, performer *dto.UserDTO) error
+
+	SetInventoryItemAsCurrent(ctx context.Context, user *dto.UserDTO, inventoryItemID int) error
 }

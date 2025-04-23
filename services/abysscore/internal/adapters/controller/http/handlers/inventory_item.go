@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"abysscore/internal/adapters/controller/http/dto/request"
 	"abysscore/internal/domain/dto"
 	domainservice "abysscore/internal/domain/service"
 	"abysscore/internal/infrastructure/metrics/tracer"
@@ -106,6 +107,29 @@ func (h *InventoryItemHandler) RevokeByAdmin(c *fiber.Ctx) error {
 		return h.inventoryItemService.RevokeByAdmin(ctx, userID, itemID, admin)
 	})
 
+	if err != nil {
+		return h.handleError(err, c)
+	}
+
+	return h.sendNoContent(c)
+}
+
+func (h *InventoryItemHandler) SetInventoryItem(c *fiber.Ctx) error {
+	ctx := c.UserContext()
+
+	user, err := h.extractUser(ctx)
+	if err != nil {
+		return h.handleError(err, c)
+	}
+
+	r := &request.SetItemAsCurrent{}
+
+	err = h.validateRequest(r, c)
+	if err != nil {
+		return h.handleError(err, c)
+	}
+
+	err = h.inventoryItemService.SetInventoryItemAsCurrent(ctx, user, r.InventoryItemID)
 	if err != nil {
 		return h.handleError(err, c)
 	}
