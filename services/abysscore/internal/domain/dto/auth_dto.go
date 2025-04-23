@@ -9,11 +9,11 @@ type ChangePasswordDTO struct {
 
 // CredentialsDTO holds user authentication input data
 type CredentialsDTO struct {
-	Username string
-	Password string
-	Hwid     string
+	Username   string
+	Password   string
+	HardwareID string
 }
 
-func NewCredentialsDTO(username string, password string, hwid string) *CredentialsDTO {
-	return &CredentialsDTO{Username: username, Password: password, Hwid: hwid}
+func NewCredentialsDTO(username string, password string, hardwareID string) *CredentialsDTO {
+	return &CredentialsDTO{Username: username, Password: password, HardwareID: hardwareID}
 }

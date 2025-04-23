@@ -72,7 +72,7 @@ func (a *AuthenticationService) Authenticate(ctx context.Context, credentials *d
 		return nil, applicationerror.ErrWrongPassword
 	}
 
-	if err := a.verifyAndUpdateHWID(ctx, authentication, credentials.Hwid); err != nil {
+	if err := a.verifyAndUpdateHWID(ctx, authentication, credentials.HardwareID); err != nil {
 		return nil, err
 	}
 
@@ -98,7 +98,6 @@ func (a *AuthenticationService) Authenticate(ctx context.Context, credentials *d
 
 // ValidateToken validates the authentication token and returns user data
 func (a *AuthenticationService) ValidateToken(ctx context.Context, token string) (*dto.UserDTO, error) {
-	// Валидация токена
 	tokenData, err := tracer.TraceFnWithResult(
 		ctx, "tokenHelper.ValidateToken", func(ctx context.Context) (*entity.TokenData, error) {
 			return a.tokenHelper.ValidateToken(token)
@@ -115,12 +114,12 @@ func (a *AuthenticationService) ValidateToken(ctx context.Context, token string)
 		return nil, err
 	}
 
-	hwidOk, needsUpdate := tracer.Trace2(
-		ctx, "authentication.CompareHWID", func(ctx context.Context) (bool, bool) {
-			return authentication.CompareHWID(tokenData.Hwid, a.credentialsHelper.VerifyHardwareID)
+	hardwareIDOk, needsUpdate := tracer.Trace2(
+		ctx, "authentication.CompareHardwareID", func(ctx context.Context) (bool, bool) {
+			return authentication.CompareHardwareID(tokenData.Hwid, a.credentialsHelper.VerifyTokenHardwareID)
 		},
 	)
-	if !hwidOk || needsUpdate {
+	if !hardwareIDOk || needsUpdate {
 		return nil, applicationerror.ErrTokenHwidIsInvalid
 	}
 
@@ -180,7 +179,7 @@ func (a *AuthenticationService) ChangePassword(
 // prepareCredentials encodes password and HWID
 func (a *AuthenticationService) prepareCredentials(ctx context.Context, credentials *dto.CredentialsDTO) {
 	credentials.Password = a.encodePassword(ctx, credentials.Password)
-	credentials.Hwid = a.encodeHWID(ctx, credentials.Hwid)
+	credentials.HardwareID = a.encodeHWID(ctx, credentials.HardwareID)
 }
 
 // findAuthByUsername finds authentication data by username
@@ -218,8 +217,8 @@ func (a *AuthenticationService) verifyAndUpdateHWID(
 ) error {
 	// Проверка HWID
 	hwidOk, needsUpdate := tracer.Trace2(
-		ctx, "authentication.CompareHWID", func(ctx context.Context) (bool, bool) {
-			return auth.CompareHWID(hwid, a.credentialsHelper.VerifyHardwareID)
+		ctx, "authentication.CompareHardwareID", func(ctx context.Context) (bool, bool) {
+			return auth.CompareHardwareID(hwid, a.credentialsHelper.VerifyHardwareID)
 		},
 	)
 
@@ -227,7 +226,6 @@ func (a *AuthenticationService) verifyAndUpdateHWID(
 		return applicationerror.ErrUserWrongHwid
 	}
 
-	// Обновление HWID если необходимо
 	if needsUpdate {
 		if err := a.updateHwid(ctx, auth, hwid); err != nil {
 			return err

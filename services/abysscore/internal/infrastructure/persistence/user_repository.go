@@ -31,7 +31,7 @@ func (r *UserRepository) Create(ctx context.Context, credentials *dto.Credential
 		SetUsername(credentials.Username).
 		SetLowerUsername(strings.ToLower(credentials.Username)).
 		SetPassword(credentials.Password).
-		SetHardwareID(credentials.Hwid).
+		SetHardwareID(credentials.HardwareID).
 		Save(ctx)
 
 	if err != nil {

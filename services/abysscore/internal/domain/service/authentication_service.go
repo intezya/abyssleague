@@ -33,4 +33,5 @@ type CredentialsHelper interface {
 	VerifyPassword(raw, hash string) bool
 	EncodeHardwareID(raw string) (hash string)
 	VerifyHardwareID(raw, hash string) bool
+	VerifyTokenHardwareID(raw, hash string) bool
 }

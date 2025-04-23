@@ -8,7 +8,7 @@ type UsernameConflictResponse struct {
 }
 
 type HardwareIDConflictResponse struct {
-	Message string `json:"message" example:"user hwid conflict"`
+	Message string `json:"message" example:"user hardware id conflict"`
 	Detail  string `json:"detail"`
 	Code    int    `json:"code" example:"409"`
 	Path    string `json:"path"`
@@ -29,7 +29,7 @@ type UserWrongPasswordResponse struct {
 }
 
 type UserWrongHardwareIDResponse struct {
-	Message string `json:"message" example:"wrong hwid"`
+	Message string `json:"message" example:"wrong hardware id"`
 	Detail  string `json:"detail"`
 	Code    int    `json:"code" example:"401"`
 	Path    string `json:"path"`

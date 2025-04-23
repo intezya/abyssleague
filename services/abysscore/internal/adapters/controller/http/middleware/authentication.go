@@ -51,7 +51,7 @@ func (a *AuthenticationMiddleware) Handle() fiber.Handler {
 
 		if err != nil {
 			logger.Log.Debug("Error checking token in cache: ", err)
-			user, err = a.authenticationService.ValidateToken(c.Context(), authorizationHeaderValue)
+			user, err = a.authenticationService.ValidateToken(c.UserContext(), authorizationHeaderValue)
 
 			if err != nil {
 				logger.Log.Debug("Error validating token: ", err)

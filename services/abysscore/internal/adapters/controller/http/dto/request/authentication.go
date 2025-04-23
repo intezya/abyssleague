@@ -6,13 +6,13 @@ import (
 
 // AuthenticationRequest provide credentials for user registration/login
 type AuthenticationRequest struct {
-	Username string `json:"username" validate:"required" example:"my_legendary_username"`
-	Password string `json:"password" validate:"required" example:"STr0ngP@55w0rD!_"`
-	Hwid     string `json:"hwid" validate:"required" example:"QXV0aGVudGljQU1ENjA3NDA0"`
+	Username   string `json:"username" validate:"required" example:"my_legendary_username"`
+	Password   string `json:"password" validate:"required" example:"STr0ngP@55w0rD!_"`
+	HardwareID string `json:"hardware_id" validate:"required" example:"QXV0aGVudGljQU1ENjA3NDA0"`
 }
 
 func (a *AuthenticationRequest) ToCredentialsDTO() *dto.CredentialsDTO {
-	return dto.NewCredentialsDTO(a.Username, a.Password, a.Hwid)
+	return dto.NewCredentialsDTO(a.Username, a.Password, a.HardwareID)
 }
 
 // PasswordChangeRequest provide credentials for password changing

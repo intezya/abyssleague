@@ -38,12 +38,15 @@ func (a *AuthenticationData) ComparePassword(password string, comparator passwor
 	return comparator(password, a.password)
 }
 
-func (a *AuthenticationData) CompareHWID(hwid string, comparator passwordComparator) (ok bool, needsUpdate bool) {
+func (a *AuthenticationData) CompareHardwareID(
+	hardwareID string,
+	comparator passwordComparator,
+) (ok bool, needsUpdate bool) {
 	if a.hwid == nil {
 		return true, true
 	}
 
-	return comparator(hwid, *a.hwid), false
+	return comparator(hardwareID, *a.hwid), false
 }
 
 func (a *AuthenticationData) IsAccountLocked() bool {

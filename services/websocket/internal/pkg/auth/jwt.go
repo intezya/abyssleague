@@ -9,7 +9,7 @@ import (
 type TokenData struct {
 	ID       int    `json:"id"`
 	Username string `json:"username"`
-	Hwid     string `json:"hwid"`
+	Hwid     string `json:"hardware_id"`
 }
 
 type JWTConfiguration struct {

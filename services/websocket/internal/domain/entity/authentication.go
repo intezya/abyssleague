@@ -6,16 +6,16 @@ import (
 )
 
 type AuthenticationData struct {
-	id       int
-	username string
-	hwid     string
+	id         int
+	username   string
+	hardwareID string
 }
 
-func NewAuthenticationData(id int, username string, hwid string) *AuthenticationData {
+func NewAuthenticationData(id int, username string, hardwareID string) *AuthenticationData {
 	return &AuthenticationData{
-		id:       id,
-		username: username,
-		hwid:     hwid,
+		id:         id,
+		username:   username,
+		hardwareID: hardwareID,
 	}
 }
 
@@ -28,21 +28,21 @@ func (a *AuthenticationData) Username() string {
 }
 
 func (a *AuthenticationData) HardwareID() string {
-	return a.hwid
+	return a.hardwareID
 }
 
 func (a *AuthenticationData) Encode() map[string]string {
 	return map[string]string{
-		"id":       strconv.Itoa(a.id),
-		"username": a.username,
-		"hwid":     a.hwid,
+		"id":         strconv.Itoa(a.id),
+		"username":   a.username,
+		"hardwareID": a.hardwareID,
 	}
 }
 
 func DecodeToAuthenticationData(data *auth.TokenData) *AuthenticationData {
 	return &AuthenticationData{
-		id:       data.ID,
-		username: data.Username,
-		hwid:     data.Hwid,
+		id:         data.ID,
+		username:   data.Username,
+		hardwareID: data.Hwid,
 	}
 }

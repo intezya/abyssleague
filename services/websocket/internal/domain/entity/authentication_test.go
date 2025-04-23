@@ -40,9 +40,9 @@ func TestAuthenticationData_Encode(t *testing.T) {
 	encoded := authData.Encode()
 
 	expectedMap := map[string]string{
-		"id":       "123",
-		"username": "testuser",
-		"hwid":     "testhwid",
+		"id":         "123",
+		"username":   "testuser",
+		"hardwareID": "testhwid",
 	}
 
 	if !reflect.DeepEqual(encoded, expectedMap) {
