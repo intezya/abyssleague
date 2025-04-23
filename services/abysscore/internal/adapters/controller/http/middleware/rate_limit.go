@@ -147,10 +147,10 @@ func (r *RateLimitMiddleware) HandleForAuth() fiber.Handler {
 	}
 }
 
-// HandleDefault возвращает middleware для общего ограничения частоты запросов по IP
+// HandleDefault
 func (r *RateLimitMiddleware) HandleDefault() fiber.Handler {
 	return func(c *fiber.Ctx) error {
-		if r.redisClient == nil {
+		if r.redisClient == nil || r.redisClient.Client == nil {
 			logger.Log.Warn("Redis client is not available in RateLimitMiddleware")
 			return c.Next()
 		}

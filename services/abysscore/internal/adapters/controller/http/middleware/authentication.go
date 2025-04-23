@@ -6,15 +6,21 @@ import (
 	"abysscore/internal/domain/service"
 	rediswrapper "abysscore/internal/infrastructure/cache/redis"
 	"context"
-	"encoding/json"
-	"errors"
 	"fmt"
-	"github.com/go-redis/redis/v8"
 	"github.com/gofiber/fiber/v2"
 	"github.com/intezya/pkglib/logger"
 	"strings"
+	"sync"
 	"time"
 )
+
+/* TODO:
+
+1) 	Cache logic must use redis, not sync.Map (care about full user serializing,
+	because most fields of UserDTO is necessary, but not all can be in http-response
+	json and they are use tag json:"-")
+
+*/
 
 type CtxKey string
 
@@ -25,6 +31,8 @@ const UserCtxKey CtxKey = "user"
 type AuthenticationMiddleware struct {
 	authenticationService domainservice.AuthenticationService
 	redisClient           *rediswrapper.ClientWrapper
+
+	localCache sync.Map
 }
 
 func NewAuthenticationMiddleware(
@@ -49,7 +57,7 @@ func (a *AuthenticationMiddleware) Handle() fiber.Handler {
 
 		user, err := a.checkTokenCache(authorizationHeaderValue)
 
-		if err != nil {
+		if err != nil || user == nil {
 			logger.Log.Debug("Error checking token in cache: ", err)
 			user, err = a.authenticationService.ValidateToken(c.UserContext(), authorizationHeaderValue)
 
@@ -69,42 +77,26 @@ func (a *AuthenticationMiddleware) Handle() fiber.Handler {
 }
 
 func (a *AuthenticationMiddleware) checkTokenCache(token string) (*dto.UserDTO, error) {
-	ctx := context.Background()
-
-	cachedUser, err := a.redisClient.Client.Get(ctx, token).Result()
-
-	if err == nil {
-		return deserializeUser(cachedUser), nil
+	val, ok := a.localCache.Load(token)
+	if !ok {
+		return nil, nil
 	}
 
-	if !errors.Is(err, redis.Nil) {
-		return nil, fmt.Errorf("redis error: %v", err)
+	user, ok := val.(*dto.UserDTO)
+	if !ok {
+		return nil, fmt.Errorf("invalid cache type")
 	}
 
-	return nil, nil // not in cache
+	return user, nil
 }
 
 func (a *AuthenticationMiddleware) cacheToken(token string, user *dto.UserDTO) {
-	ctx := context.Background()
+	a.localCache.Store(token, user)
 
-	serializedUser := serializeUser(user)
-
-	err := a.redisClient.Client.Set(ctx, token, serializedUser, 10*time.Minute).Err()
-
-	if err != nil {
-		logger.Log.Error("Error caching token: ", err)
-	}
-}
-
-func serializeUser(user *dto.UserDTO) string {
-	b, _ := json.Marshal(user)
-	return string(b)
-}
-
-func deserializeUser(data string) *dto.UserDTO {
-	var user dto.UserDTO
-	_ = json.Unmarshal([]byte(data), &user)
-	return &user
+	go func() {
+		time.Sleep(10 * time.Second)
+		a.localCache.Delete(token)
+	}()
 }
 
 func parseAuthorizationValue(authorizationHeaderValue string) string {

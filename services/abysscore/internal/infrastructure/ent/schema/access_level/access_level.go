@@ -3,6 +3,7 @@ package access_level
 import (
 	"database/sql/driver"
 	"fmt"
+	"github.com/intezya/pkglib/logger"
 	"strings"
 )
 
@@ -32,14 +33,29 @@ func (a AccessLevel) Value() (driver.Value, error) {
 
 // Scan implements the sql.Scanner interface for reading from DB (as string)
 func (a *AccessLevel) Scan(value interface{}) error {
-	strVal, ok := value.(string)
-	if !ok {
-		return fmt.Errorf("invalid AccessLevel value: %v", value)
+	switch v := value.(type) {
+	case string:
+		for i := User; i <= Dev; i++ {
+			if strings.EqualFold(i.String(), v) {
+				*a = i
+				return nil
+			}
+		}
+		logger.Log.Debugf("unknown AccessLevel: %v", value)
+		return fmt.Errorf("unknown AccessLevel: %v", value)
+	case []byte:
+		return a.Scan(string(v))
+	case int64:
+		if v >= int64(User) && v <= int64(Dev) {
+			*a = AccessLevel(v)
+			return nil
+		}
+		logger.Log.Debugf("AccessLevel out of range: %v", value)
+		return fmt.Errorf("AccessLevel out of range: %v", value)
+	default:
+		logger.Log.Debugf("invalid AccessLevel value type: %T", value)
+		return fmt.Errorf("invalid AccessLevel value type: %T", value)
 	}
-
-	*a = FromStringOrDefault(strVal)
-
-	return nil
 }
 
 // FromStringOrDefault converts string to AccessLevel (optional helper)

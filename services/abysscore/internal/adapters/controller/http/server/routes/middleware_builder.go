@@ -6,6 +6,7 @@ import (
 	"abysscore/internal/domain/dto"
 	"abysscore/internal/infrastructure/ent/schema/access_level"
 	"github.com/gofiber/fiber/v2"
+	"github.com/intezya/pkglib/logger"
 )
 
 type MiddlewareLinker struct {
@@ -33,6 +34,15 @@ func NewMiddlewareLinker(
 func createAccessLevelChecker(requiredLevel *access_level.AccessLevel) fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		user := c.UserContext().Value(middleware.UserCtxKey).(*dto.UserDTO)
+
+		logger.Log.Debug("user is nil?: ", user)
+
+		logger.Log.Debugw(
+			"debug createAccessLevelChecker",
+			"user", user,
+			"required access level", requiredLevel,
+			"have access level", user.AccessLevel,
+		)
 
 		if user.AccessLevel < *requiredLevel {
 			return adaptererror.InsufficientAccessLevel.ToErrorResponse(c)
