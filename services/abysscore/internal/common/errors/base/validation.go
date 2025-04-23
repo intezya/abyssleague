@@ -24,7 +24,7 @@ type ValidationErrorResponse struct {
 	Path    string   `json:"path"`
 }
 
-func NewValidationError(wrapped error, errors []string) *ValidationError {
+func NewValidationError(wrapped error, errors []string) error {
 	return &ValidationError{
 		Custom:  unprocessableEntityError,
 		Wrapped: wrapped,

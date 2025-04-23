@@ -27,7 +27,7 @@ func (h *BaseHandler) validateRequest(req interface{}, c *fiber.Ctx) error {
 	})
 
 	if err != nil {
-		return base.ParseErrorOrInternalResponse(invalidRequestBodyError, c)
+		return invalidRequestBodyError
 	}
 
 	err = tracer.TraceFn(ctx, "validator.ValidateJSON", func(ctx context.Context) error {
@@ -35,7 +35,7 @@ func (h *BaseHandler) validateRequest(req interface{}, c *fiber.Ctx) error {
 	})
 
 	if err != nil {
-		return base.ParseErrorOrInternalResponse(err, c)
+		return err
 	}
 
 	return nil

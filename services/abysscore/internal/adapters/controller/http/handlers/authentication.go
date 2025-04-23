@@ -41,7 +41,7 @@ func (a *AuthenticationHandler) Register(c *fiber.Ctx) error {
 	r := &request.AuthenticationRequest{}
 
 	if err := a.validateRequest(r, c); err != nil {
-		return err
+		return a.handleError(err, c)
 	}
 
 	result, err := tracer.TraceFnWithResult(ctx, "authService.Register", func(ctx context.Context) (*domainservice.AuthenticationResult, error) {
@@ -76,7 +76,7 @@ func (a *AuthenticationHandler) Login(c *fiber.Ctx) error {
 
 	r := &request.AuthenticationRequest{}
 	if err := a.validateRequest(r, c); err != nil {
-		return err
+		return a.handleError(err, c)
 	}
 
 	result, err := tracer.TraceFnWithResult(ctx, "authService.Authenticate", func(ctx context.Context) (*domainservice.AuthenticationResult, error) {
@@ -105,10 +105,10 @@ func (a *AuthenticationHandler) Login(c *fiber.Ctx) error {
 // @Router /api/auth/change_password [post]
 func (a *AuthenticationHandler) ChangePassword(c *fiber.Ctx) error {
 	ctx := c.UserContext()
-	r := &request.PasswordChangeRequest{}
 
+	r := &request.PasswordChangeRequest{}
 	if err := a.validateRequest(r, c); err != nil {
-		return err
+		return a.handleError(err, c)
 	}
 
 	result, err := tracer.TraceFnWithResult(ctx, "authService.ChangePassword", func(ctx context.Context) (*domainservice.AuthenticationResult, error) {
