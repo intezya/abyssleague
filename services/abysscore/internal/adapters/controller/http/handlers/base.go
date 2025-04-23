@@ -11,6 +11,7 @@ import (
 	"context"
 	"errors"
 	"github.com/gofiber/fiber/v2"
+	"github.com/intezya/pkglib/logger"
 )
 
 // BaseHandler provides common functionality for all handlers
@@ -27,6 +28,8 @@ func (h *BaseHandler) validateRequest(req interface{}, c *fiber.Ctx) error {
 	})
 
 	if err != nil {
+		logger.Log.Debugw("failed to parse request body", "err", err)
+
 		return invalidRequestBodyError
 	}
 

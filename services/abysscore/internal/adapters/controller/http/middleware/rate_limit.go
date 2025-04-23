@@ -65,7 +65,7 @@ func (r *RateLimitMiddleware) HandleForAuth() fiber.Handler {
 
 			var req loginRequest
 			if err := c.BodyParser(&req); err != nil || req.Username == "" {
-				return adaptererror.BadRequest.ToErrorResponse(c)
+				return c.Next() // will be handled as bad request
 			}
 			username = req.Username
 		}

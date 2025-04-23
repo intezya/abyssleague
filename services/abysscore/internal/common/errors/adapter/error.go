@@ -20,7 +20,7 @@ var (
 	Unauthorized = func(wrapped error) *base.Error {
 		return base.NewError(errors.New("unauthorized"), wrapped, 401)
 	}
-	InsufficientAccessLevel = base.NewError(errors.New("insufficient access level"), nil, 401)
+	InsufficientAccessLevel = base.NewError(errors.New("insufficient access level"), nil, 403)
 	UserMatchStateError     = func(wrapped error) *base.Error {
 		return base.NewError(errors.New(wrapped.Error()), wrapped, 403)
 	}

@@ -5,6 +5,7 @@ import (
 	"abysscore/internal/common/errors/base"
 	"errors"
 	"github.com/go-playground/validator/v10"
+	"github.com/intezya/pkglib/logger"
 )
 
 type Validator struct {
@@ -34,8 +35,13 @@ func ValidateJSON(dto interface{}) error {
 				errorMessages[i] = formatValidationError(err)
 			}
 
+			logger.Log.Debugw("many validation errors", "errors", errorMessages, "err", err)
+
 			return base.NewValidationError(nil, errorMessages)
 		}
+
+		logger.Log.Debugw("validation error", "err", err)
+
 		return validationError
 	}
 
