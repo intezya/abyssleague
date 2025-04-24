@@ -1,10 +1,10 @@
 package applicationservice
 
 import (
-	"abysscore/internal/domain/dto"
-	repositoryports "abysscore/internal/domain/repository"
-	"abysscore/internal/infrastructure/metrics/tracer"
 	"context"
+	"github.com/intezya/abyssleague/services/abysscore/internal/domain/dto"
+	repositoryports "github.com/intezya/abyssleague/services/abysscore/internal/domain/repository"
+	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/metrics/tracer"
 )
 
 type InventoryItemService struct {

@@ -1,6 +1,6 @@
 package examples
 
-import "abysscore/internal/domain/dto"
+import "github.com/intezya/abyssleague/services/abysscore/internal/domain/dto"
 
 type PaginatedGameItemsDTOResponse struct {
 	Data []dto.GameItemDTO `json:"data"`

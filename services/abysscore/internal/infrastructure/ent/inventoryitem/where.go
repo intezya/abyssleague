@@ -3,7 +3,7 @@
 package inventoryitem
 
 import (
-	"abysscore/internal/infrastructure/ent/predicate"
+	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/ent/predicate"
 	"time"
 
 	"entgo.io/ent/dialect/sql"

@@ -2,11 +2,11 @@ package websocket
 
 import (
 	"github.com/gorilla/websocket"
+	"github.com/intezya/abyssleague/services/websocket/internal/adapters/controller/http/middleware"
+	"github.com/intezya/abyssleague/services/websocket/internal/adapters/controller/http/routes"
+	"github.com/intezya/abyssleague/services/websocket/internal/infrastructure/hub"
+	"github.com/intezya/abyssleague/services/websocket/internal/pkg/auth"
 	"net/http"
-	"websocket/internal/adapters/controller/http/middleware"
-	"websocket/internal/adapters/controller/http/routes"
-	"websocket/internal/infrastructure/hub"
-	"websocket/internal/pkg/auth"
 )
 
 func SetupRoute(

@@ -2,10 +2,10 @@ package hub
 
 import (
 	"context"
+	"github.com/intezya/abyssleague/services/websocket/internal/domain/entity"
 	logger2 "github.com/intezya/pkglib/logger"
 	"testing"
 	"time"
-	"websocket/internal/domain/entity"
 )
 
 // MockClient is a simplified client for testing

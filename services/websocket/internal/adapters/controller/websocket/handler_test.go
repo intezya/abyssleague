@@ -1,11 +1,11 @@
 package websocket
 
 import (
+	"github.com/intezya/abyssleague/services/websocket/internal/domain/entity"
 	"github.com/intezya/pkglib/logger"
 	"net/http"
 	"net/http/httptest"
 	"testing"
-	"websocket/internal/domain/entity"
 )
 
 // Initialize logger for tests

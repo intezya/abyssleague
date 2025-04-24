@@ -1,9 +1,9 @@
 package adaptererror
 
 import (
-	"abysscore/internal/common/errors/base"
 	"errors"
 	"github.com/gofiber/fiber/v2"
+	"github.com/intezya/abyssleague/services/abysscore/internal/common/errors/base"
 )
 
 var (

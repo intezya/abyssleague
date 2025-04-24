@@ -1,9 +1,9 @@
 package applicationservice
 
 import (
-	"abysscore/internal/adapters/controller/grpc/wrapper"
-	domainservice "abysscore/internal/domain/service"
-	"abysscore/internal/infrastructure/persistence"
+	"github.com/intezya/abyssleague/services/abysscore/internal/adapters/controller/grpc/wrapper"
+	domainservice "github.com/intezya/abyssleague/services/abysscore/internal/domain/service"
+	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/persistence"
 )
 
 type DependencyProvider struct {

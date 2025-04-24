@@ -1,11 +1,11 @@
 package middleware
 
 import (
-	adaptererror "abysscore/internal/common/errors/adapter"
-	"abysscore/internal/common/errors/base"
 	"fmt"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/requestid"
+	adaptererror "github.com/intezya/abyssleague/services/abysscore/internal/common/errors/adapter"
+	"github.com/intezya/abyssleague/services/abysscore/internal/common/errors/base"
 	"github.com/intezya/pkglib/logger"
 	"runtime/debug"
 )

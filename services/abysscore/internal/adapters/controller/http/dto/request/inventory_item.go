@@ -1,6 +1,6 @@
 package request
 
-import "abysscore/internal/domain/dto"
+import "github.com/intezya/abyssleague/services/abysscore/internal/domain/dto"
 
 type GrantInventoryItemToUser struct {
 	UserID int `json:"user_id"`

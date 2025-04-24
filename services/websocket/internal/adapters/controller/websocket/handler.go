@@ -3,10 +3,10 @@ package websocket
 import (
 	"encoding/json"
 	"github.com/gorilla/websocket"
+	"github.com/intezya/abyssleague/services/websocket/internal/adapters/controller/http/middleware"
+	"github.com/intezya/abyssleague/services/websocket/internal/infrastructure/hub"
 	"github.com/intezya/pkglib/logger"
 	"net/http"
-	"websocket/internal/adapters/controller/http/middleware"
-	"websocket/internal/infrastructure/hub"
 )
 
 type Handler struct {

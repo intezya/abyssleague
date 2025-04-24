@@ -2,8 +2,8 @@ package hub
 
 import (
 	"github.com/gorilla/websocket"
+	"github.com/intezya/abyssleague/services/websocket/internal/domain/entity"
 	"testing"
-	"websocket/internal/domain/entity"
 )
 
 // Note: Testing the Client struct is challenging because it depends on a real

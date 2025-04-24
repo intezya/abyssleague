@@ -1,10 +1,10 @@
 package entity
 
 import (
+	"github.com/intezya/abyssleague/services/websocket/internal/pkg/auth"
 	"reflect"
 	"strconv"
 	"testing"
-	"websocket/internal/pkg/auth"
 )
 
 func TestNewAuthenticationData(t *testing.T) {

@@ -1,10 +1,10 @@
 package domainservice
 
 import (
-	"abysscore/internal/adapters/controller/http/dto/request"
-	"abysscore/internal/domain/dto"
-	"abysscore/internal/domain/entity/gameitementity"
 	"context"
+	"github.com/intezya/abyssleague/services/abysscore/internal/adapters/controller/http/dto/request"
+	"github.com/intezya/abyssleague/services/abysscore/internal/domain/dto"
+	"github.com/intezya/abyssleague/services/abysscore/internal/domain/entity/gameitementity"
 )
 
 type GameItemService interface {

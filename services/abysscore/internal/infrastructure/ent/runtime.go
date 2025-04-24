@@ -3,16 +3,16 @@
 package ent
 
 import (
-	"abysscore/internal/infrastructure/ent/friendrequest"
-	"abysscore/internal/infrastructure/ent/gameitem"
-	"abysscore/internal/infrastructure/ent/inventoryitem"
-	"abysscore/internal/infrastructure/ent/match"
-	"abysscore/internal/infrastructure/ent/playermatchresult"
-	"abysscore/internal/infrastructure/ent/schema"
-	"abysscore/internal/infrastructure/ent/schema/access_level"
-	"abysscore/internal/infrastructure/ent/statistic"
-	"abysscore/internal/infrastructure/ent/user"
-	"abysscore/internal/infrastructure/ent/userbalance"
+	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/ent/friendrequest"
+	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/ent/gameitem"
+	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/ent/inventoryitem"
+	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/ent/match"
+	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/ent/playermatchresult"
+	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/ent/schema"
+	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/ent/schema/access_level"
+	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/ent/statistic"
+	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/ent/user"
+	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/ent/userbalance"
 	"time"
 )
 

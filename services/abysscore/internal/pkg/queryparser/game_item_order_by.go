@@ -1,7 +1,7 @@
 package queryparser
 
 import (
-	"abysscore/internal/domain/entity/gameitementity"
+	"github.com/intezya/abyssleague/services/abysscore/internal/domain/entity/gameitementity"
 )
 
 func ParseGameEntityOrderBy(s string) (gameitementity.OrderBy, error) {

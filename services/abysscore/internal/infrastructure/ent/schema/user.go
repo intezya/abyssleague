@@ -1,10 +1,10 @@
 package schema
 
 import (
-	"abysscore/internal/infrastructure/ent/schema/access_level"
 	"entgo.io/ent"
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
+	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/ent/schema/access_level"
 	"time"
 )
 

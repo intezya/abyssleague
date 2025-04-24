@@ -3,11 +3,11 @@
 package ent
 
 import (
-	"abysscore/internal/infrastructure/ent/friendrequest"
-	"abysscore/internal/infrastructure/ent/predicate"
 	"context"
 	"errors"
 	"fmt"
+	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/ent/friendrequest"
+	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/ent/predicate"
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"

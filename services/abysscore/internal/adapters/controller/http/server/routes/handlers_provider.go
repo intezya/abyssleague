@@ -1,10 +1,10 @@
 package routes
 
 import (
-	"abysscore/internal/adapters/config"
-	"abysscore/internal/adapters/controller/http/handlers"
-	domainservice "abysscore/internal/domain/service"
-	rediswrapper "abysscore/internal/infrastructure/cache/redis"
+	"github.com/intezya/abyssleague/services/abysscore/internal/adapters/config"
+	"github.com/intezya/abyssleague/services/abysscore/internal/adapters/controller/http/handlers"
+	domainservice "github.com/intezya/abyssleague/services/abysscore/internal/domain/service"
+	rediswrapper "github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/cache/redis"
 	"path"
 )
 

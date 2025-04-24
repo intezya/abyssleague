@@ -4,13 +4,13 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/intezya/abyssleague/services/websocket/internal/adapters/config"
+	"github.com/intezya/abyssleague/services/websocket/internal/adapters/controller/http/middleware"
+	"github.com/intezya/abyssleague/services/websocket/internal/adapters/controller/http/routes"
 	"github.com/intezya/pkglib/logger"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"net/http"
 	"time"
-	"websocket/internal/adapters/config"
-	"websocket/internal/adapters/controller/http/middleware"
-	"websocket/internal/adapters/controller/http/routes"
 )
 
 type HttpApp struct {

@@ -1,13 +1,13 @@
 package middleware
 
 import (
-	adaptererror "abysscore/internal/common/errors/adapter"
-	"abysscore/internal/domain/dto"
-	"abysscore/internal/domain/service"
-	rediswrapper "abysscore/internal/infrastructure/cache/redis"
 	"context"
 	"errors"
 	"github.com/gofiber/fiber/v2"
+	adaptererror "github.com/intezya/abyssleague/services/abysscore/internal/common/errors/adapter"
+	"github.com/intezya/abyssleague/services/abysscore/internal/domain/dto"
+	"github.com/intezya/abyssleague/services/abysscore/internal/domain/service"
+	rediswrapper "github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/cache/redis"
 	"github.com/intezya/pkglib/logger"
 	"strings"
 	"sync"

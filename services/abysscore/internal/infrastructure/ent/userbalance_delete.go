@@ -3,9 +3,9 @@
 package ent
 
 import (
-	"abysscore/internal/infrastructure/ent/predicate"
-	"abysscore/internal/infrastructure/ent/userbalance"
 	"context"
+	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/ent/predicate"
+	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/ent/userbalance"
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"

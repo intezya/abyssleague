@@ -1,8 +1,8 @@
 package repositoryports
 
 import (
-	"abysscore/internal/domain/dto"
 	"context"
+	"github.com/intezya/abyssleague/services/abysscore/internal/domain/dto"
 )
 
 type InventoryItemRepository interface {

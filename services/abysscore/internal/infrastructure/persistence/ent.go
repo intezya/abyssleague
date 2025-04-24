@@ -1,10 +1,10 @@
 package persistence
 
 import (
-	"abysscore/internal/infrastructure/ent"
 	"context"
 	"errors"
 	"fmt"
+	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/ent"
 	"github.com/intezya/pkglib/logger"
 	"time"
 )

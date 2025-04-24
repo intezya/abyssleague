@@ -1,11 +1,11 @@
 package routes
 
 import (
-	"abysscore/internal/adapters/controller/http/middleware"
-	adaptererror "abysscore/internal/common/errors/adapter"
-	"abysscore/internal/domain/dto"
-	"abysscore/internal/infrastructure/ent/schema/access_level"
 	"github.com/gofiber/fiber/v2"
+	"github.com/intezya/abyssleague/services/abysscore/internal/adapters/controller/http/middleware"
+	adaptererror "github.com/intezya/abyssleague/services/abysscore/internal/common/errors/adapter"
+	"github.com/intezya/abyssleague/services/abysscore/internal/domain/dto"
+	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/ent/schema/access_level"
 	"github.com/intezya/pkglib/logger"
 )
 

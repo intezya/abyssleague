@@ -1,9 +1,9 @@
 package repositoryports
 
 import (
-	"abysscore/internal/domain/dto"
-	"abysscore/internal/domain/entity"
 	"context"
+	"github.com/intezya/abyssleague/services/abysscore/internal/domain/dto"
+	"github.com/intezya/abyssleague/services/abysscore/internal/domain/entity"
 	"time"
 )
 

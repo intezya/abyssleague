@@ -1,11 +1,11 @@
 package middleware
 
 import (
+	"github.com/intezya/abyssleague/services/websocket/internal/domain/entity"
+	"github.com/intezya/abyssleague/services/websocket/internal/pkg/auth"
 	"github.com/intezya/pkglib/logger"
 	"net/http"
 	"strings"
-	"websocket/internal/domain/entity"
-	"websocket/internal/pkg/auth"
 )
 
 type SecurityMiddleware struct {

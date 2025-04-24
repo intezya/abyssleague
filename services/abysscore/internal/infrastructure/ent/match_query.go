@@ -3,13 +3,13 @@
 package ent
 
 import (
-	"abysscore/internal/infrastructure/ent/match"
-	"abysscore/internal/infrastructure/ent/playermatchresult"
-	"abysscore/internal/infrastructure/ent/predicate"
-	"abysscore/internal/infrastructure/ent/user"
 	"context"
 	"database/sql/driver"
 	"fmt"
+	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/ent/match"
+	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/ent/playermatchresult"
+	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/ent/predicate"
+	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/ent/user"
 	"math"
 
 	"entgo.io/ent"

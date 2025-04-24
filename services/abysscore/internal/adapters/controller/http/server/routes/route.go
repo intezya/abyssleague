@@ -1,8 +1,8 @@
 package routes
 
 import (
-	"abysscore/internal/infrastructure/ent/schema/access_level"
 	"github.com/gofiber/fiber/v2"
+	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/ent/schema/access_level"
 )
 
 type (

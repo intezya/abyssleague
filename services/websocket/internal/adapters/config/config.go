@@ -2,6 +2,7 @@ package config
 
 import (
 	"fmt"
+	"github.com/intezya/abyssleague/services/websocket/internal/pkg/auth"
 	"github.com/intezya/pkglib/configloader"
 	"github.com/intezya/pkglib/itertools"
 	"github.com/intezya/pkglib/logger"
@@ -10,7 +11,6 @@ import (
 	"strconv"
 	"strings"
 	"time"
-	"websocket/internal/pkg/auth"
 )
 
 /*

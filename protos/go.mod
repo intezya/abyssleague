@@ -1,4 +1,4 @@
-module abyssproto
+module github.com/intezya/abyssleague/proto
 
 go 1.24
 

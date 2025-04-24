@@ -3,8 +3,8 @@
 package user
 
 import (
-	"abysscore/internal/infrastructure/ent/predicate"
-	"abysscore/internal/infrastructure/ent/schema/access_level"
+	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/ent/predicate"
+	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/ent/schema/access_level"
 	"time"
 
 	"entgo.io/ent/dialect/sql"

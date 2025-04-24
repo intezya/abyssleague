@@ -1,11 +1,11 @@
 package handlers
 
 import (
-	"abysscore/internal/adapters/controller/http/dto/request"
-	domainservice "abysscore/internal/domain/service"
-	"abysscore/internal/infrastructure/metrics/tracer"
 	"context"
 	"github.com/gofiber/fiber/v2"
+	"github.com/intezya/abyssleague/services/abysscore/internal/adapters/controller/http/dto/request"
+	domainservice "github.com/intezya/abyssleague/services/abysscore/internal/domain/service"
+	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/metrics/tracer"
 )
 
 type AuthenticationHandler struct {

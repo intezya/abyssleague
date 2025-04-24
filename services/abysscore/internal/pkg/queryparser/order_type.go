@@ -1,7 +1,7 @@
 package queryparser
 
 import (
-	"abysscore/internal/domain/entity/types"
+	"github.com/intezya/abyssleague/services/abysscore/internal/domain/entity/types"
 	"strings"
 )
 

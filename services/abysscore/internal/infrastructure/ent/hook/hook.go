@@ -3,9 +3,9 @@
 package hook
 
 import (
-	"abysscore/internal/infrastructure/ent"
 	"context"
 	"fmt"
+
 )
 
 // The FriendRequestFunc type is an adapter to allow the use of ordinary

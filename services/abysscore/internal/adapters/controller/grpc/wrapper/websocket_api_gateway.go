@@ -1,8 +1,8 @@
 package wrapper
 
 import (
-	"abysscore/internal/adapters/controller/grpc/factory"
 	"context"
+	"github.com/intezya/abyssleague/services/abysscore/internal/adapters/controller/grpc/factory"
 	"time"
 
 	websocketpb "abyssproto/websocket"

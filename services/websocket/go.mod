@@ -1,4 +1,4 @@
-module websocket
+module github.com/intezya/abyssleague/services/websocket
 
 go 1.24.2
 

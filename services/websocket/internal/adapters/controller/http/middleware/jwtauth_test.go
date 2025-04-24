@@ -1,13 +1,13 @@
 package middleware
 
 import (
+	"github.com/intezya/abyssleague/services/websocket/internal/domain/entity"
+	"github.com/intezya/abyssleague/services/websocket/internal/pkg/auth"
 	"github.com/intezya/pkglib/logger"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 	"time"
-	"websocket/internal/domain/entity"
-	"websocket/internal/pkg/auth"
 )
 
 func TestNewMiddleware(t *testing.T) {

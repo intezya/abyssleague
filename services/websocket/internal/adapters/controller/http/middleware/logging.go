@@ -3,12 +3,12 @@ package middleware
 import (
 	"bufio"
 	"fmt"
+	"github.com/intezya/abyssleague/services/websocket/internal/adapters/controller/http/routes"
+	"github.com/intezya/abyssleague/services/websocket/internal/infrastructure/metrics"
 	"github.com/intezya/pkglib/logger"
 	"net"
 	"net/http"
 	"time"
-	"websocket/internal/adapters/controller/http/routes"
-	"websocket/internal/infrastructure/metrics"
 )
 
 func LoggingMiddleware(next http.Handler) http.Handler {

@@ -2,9 +2,9 @@ package hub
 
 import (
 	"github.com/gorilla/websocket"
+	"github.com/intezya/abyssleague/services/websocket/internal/domain/entity"
 	"github.com/intezya/pkglib/logger"
 	"time"
-	"websocket/internal/domain/entity"
 )
 
 type Client struct {

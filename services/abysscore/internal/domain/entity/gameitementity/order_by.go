@@ -1,9 +1,9 @@
 package gameitementity
 
 import (
-	"abysscore/internal/domain/entity/types"
-	"abysscore/internal/infrastructure/ent"
-	"abysscore/internal/infrastructure/ent/gameitem"
+	"github.com/intezya/abyssleague/services/abysscore/internal/domain/entity/types"
+	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/ent"
+	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/ent/gameitem"
 )
 
 type OrderBy string

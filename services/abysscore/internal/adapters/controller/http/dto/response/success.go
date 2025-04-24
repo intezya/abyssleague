@@ -1,8 +1,8 @@
 package response
 
 import (
-	"abysscore/internal/domain/dto"
 	"github.com/gofiber/fiber/v2"
+	"github.com/intezya/abyssleague/services/abysscore/internal/domain/dto"
 )
 
 type Response struct {

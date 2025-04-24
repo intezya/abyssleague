@@ -1,17 +1,17 @@
 package main
 
 import (
-	"abysscore/internal/adapters/config"
-	"abysscore/internal/adapters/controller/grpc/factory"
-	"abysscore/internal/adapters/controller/grpc/wrapper"
-	"abysscore/internal/adapters/controller/http/handlers"
-	"abysscore/internal/adapters/controller/http/server"
-	"abysscore/internal/adapters/controller/http/server/routes"
-	applicationservice "abysscore/internal/application/service"
-	rediswrapper "abysscore/internal/infrastructure/cache/redis"
-	"abysscore/internal/infrastructure/metrics/tracer"
-	"abysscore/internal/infrastructure/persistence"
-	"abysscore/internal/pkg/auth"
+	"github.com/intezya/abyssleague/services/abysscore/internal/adapters/config"
+	"github.com/intezya/abyssleague/services/abysscore/internal/adapters/controller/grpc/factory"
+	"github.com/intezya/abyssleague/services/abysscore/internal/adapters/controller/grpc/wrapper"
+	"github.com/intezya/abyssleague/services/abysscore/internal/adapters/controller/http/handlers"
+	"github.com/intezya/abyssleague/services/abysscore/internal/adapters/controller/http/server"
+	"github.com/intezya/abyssleague/services/abysscore/internal/adapters/controller/http/server/routes"
+	applicationservice "github.com/intezya/abyssleague/services/abysscore/internal/application/service"
+	rediswrapper "github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/cache/redis"
+	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/metrics/tracer"
+	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/persistence"
+	"github.com/intezya/abyssleague/services/abysscore/internal/pkg/auth"
 	"github.com/intezya/pkglib/logger"
 	_ "github.com/lib/pq"
 )

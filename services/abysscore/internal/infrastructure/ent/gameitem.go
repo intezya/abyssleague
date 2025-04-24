@@ -3,8 +3,8 @@
 package ent
 
 import (
-	"abysscore/internal/infrastructure/ent/gameitem"
 	"fmt"
+	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/ent/gameitem"
 	"strings"
 	"time"
 

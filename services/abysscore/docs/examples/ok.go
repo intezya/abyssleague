@@ -1,8 +1,8 @@
 package examples
 
 import (
-	"abysscore/internal/domain/dto"
-	domainservice "abysscore/internal/domain/service"
+	"github.com/intezya/abyssleague/services/abysscore/internal/domain/dto"
+	domainservice "github.com/intezya/abyssleague/services/abysscore/internal/domain/service"
 )
 
 /* TEMPLATE

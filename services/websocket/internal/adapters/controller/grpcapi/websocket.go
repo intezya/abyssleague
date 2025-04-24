@@ -3,12 +3,12 @@ package grpcapi
 import (
 	websocketpb "abyssproto/websocket"
 	"context"
+	"github.com/intezya/abyssleague/services/websocket/internal/infrastructure/service"
 	"github.com/intezya/pkglib/itertools"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/emptypb"
-	"websocket/internal/infrastructure/service"
 )
 
 type WebsocketService interface {

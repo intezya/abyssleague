@@ -1,9 +1,9 @@
 package auth
 
 import (
-	"abysscore/internal/domain/entity"
 	"errors"
 	"github.com/golang-jwt/jwt/v5"
+	"github.com/intezya/abyssleague/services/abysscore/internal/domain/entity"
 	"time"
 )
 

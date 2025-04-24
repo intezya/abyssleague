@@ -3,8 +3,8 @@ package service
 import (
 	"context"
 	"errors"
-	"websocket/internal/domain/entity"
-	hubpackage "websocket/internal/infrastructure/hub"
+	"github.com/intezya/abyssleague/services/websocket/internal/domain/entity"
+	hubpackage "github.com/intezya/abyssleague/services/websocket/internal/infrastructure/hub"
 )
 
 type OnlineUser struct {

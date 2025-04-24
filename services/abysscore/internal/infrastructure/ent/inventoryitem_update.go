@@ -3,11 +3,11 @@
 package ent
 
 import (
-	"abysscore/internal/infrastructure/ent/inventoryitem"
-	"abysscore/internal/infrastructure/ent/predicate"
 	"context"
 	"errors"
 	"fmt"
+	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/ent/inventoryitem"
+	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/ent/predicate"
 	"time"
 
 	"entgo.io/ent/dialect/sql"

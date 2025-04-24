@@ -1,10 +1,10 @@
 package repositoryports
 
 import (
-	"abysscore/internal/domain/dto"
-	"abysscore/internal/domain/entity/gameitementity"
-	"abysscore/internal/domain/entity/types"
 	"context"
+	"github.com/intezya/abyssleague/services/abysscore/internal/domain/dto"
+	"github.com/intezya/abyssleague/services/abysscore/internal/domain/entity/gameitementity"
+	"github.com/intezya/abyssleague/services/abysscore/internal/domain/entity/types"
 )
 
 type GameItemRepository interface {

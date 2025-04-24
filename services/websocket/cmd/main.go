@@ -3,20 +3,20 @@ package main
 import (
 	"context"
 	"fmt"
+	"github.com/intezya/abyssleague/services/websocket/internal/adapters/controller/websocket"
+	"github.com/intezya/abyssleague/services/websocket/internal/infrastructure/hub"
+	"github.com/intezya/abyssleague/services/websocket/internal/infrastructure/service"
+	"github.com/intezya/abyssleague/services/websocket/internal/pkg/auth"
 	"github.com/intezya/pkglib/logger"
 	"os"
 	"os/signal"
 	"sync"
 	"syscall"
 	"time"
-	"websocket/internal/adapters/controller/websocket"
-	"websocket/internal/infrastructure/hub"
-	"websocket/internal/infrastructure/service"
-	"websocket/internal/pkg/auth"
 
-	"websocket/cmd/app"
-	"websocket/internal/adapters/config"
-	"websocket/internal/adapters/controller/grpcapi"
+	"github.com/intezya/abyssleague/services/websocket/cmd/app"
+	"github.com/intezya/abyssleague/services/websocket/internal/adapters/config"
+	"github.com/intezya/abyssleague/services/websocket/internal/adapters/controller/grpcapi"
 )
 
 func main() {

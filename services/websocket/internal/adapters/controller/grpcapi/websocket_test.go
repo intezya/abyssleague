@@ -4,11 +4,11 @@ import (
 	websocketpb "abyssproto/websocket"
 	"context"
 	"errors"
+	"github.com/intezya/abyssleague/services/websocket/internal/infrastructure/service"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/emptypb"
 	"testing"
-	"websocket/internal/infrastructure/service"
 )
 
 // MockWebsocketService is a mock implementation of the WebsocketService interface

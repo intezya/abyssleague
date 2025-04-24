@@ -1,8 +1,8 @@
 package mapper
 
 import (
-	"abysscore/internal/domain/dto"
-	"abysscore/internal/infrastructure/ent"
+	"github.com/intezya/abyssleague/services/abysscore/internal/domain/dto"
+	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/ent"
 )
 
 func ToGameItemDTOFromEnt(gameItem *ent.GameItem) *dto.GameItemDTO {

@@ -1,11 +1,11 @@
 package hub
 
 import (
+	"github.com/intezya/abyssleague/services/websocket/internal/domain/message"
+	"github.com/intezya/abyssleague/services/websocket/internal/infrastructure/metrics"
 	"github.com/intezya/pkglib/logger"
 	"sync"
 	"time"
-	"websocket/internal/domain/message"
-	"websocket/internal/infrastructure/metrics"
 )
 
 const (

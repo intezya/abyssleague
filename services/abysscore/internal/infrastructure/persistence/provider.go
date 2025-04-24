@@ -1,8 +1,8 @@
 package persistence
 
 import (
-	repositoryports "abysscore/internal/domain/repository"
-	"abysscore/internal/infrastructure/ent"
+	repositoryports "github.com/intezya/abyssleague/services/abysscore/internal/domain/repository"
+	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/ent"
 )
 
 type DependencyProvider struct {

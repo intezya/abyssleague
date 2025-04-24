@@ -5,11 +5,11 @@ package enttest
 import (
 	"context"
 
-	"abysscore/internal/infrastructure/ent"
+	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/ent"
 	// required by schema hooks.
-	_ "abysscore/internal/infrastructure/ent/runtime"
+	_ "github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/ent/runtime"
 
-	"abysscore/internal/infrastructure/ent/migrate"
+	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/ent/migrate"
 
 	"entgo.io/ent/dialect/sql/schema"
 )

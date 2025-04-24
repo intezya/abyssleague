@@ -1,15 +1,15 @@
 package handlers
 
 import (
-	"abysscore/internal/adapters/controller/http/dto/request"
-	adaptererror "abysscore/internal/common/errors/adapter"
-	"abysscore/internal/domain/dto"
-	"abysscore/internal/domain/entity/gameitementity"
-	domainservice "abysscore/internal/domain/service"
-	"abysscore/internal/infrastructure/metrics/tracer"
-	"abysscore/internal/pkg/queryparser"
 	"context"
 	"github.com/gofiber/fiber/v2"
+	"github.com/intezya/abyssleague/services/abysscore/internal/adapters/controller/http/dto/request"
+	adaptererror "github.com/intezya/abyssleague/services/abysscore/internal/common/errors/adapter"
+	"github.com/intezya/abyssleague/services/abysscore/internal/domain/dto"
+	"github.com/intezya/abyssleague/services/abysscore/internal/domain/entity/gameitementity"
+	domainservice "github.com/intezya/abyssleague/services/abysscore/internal/domain/service"
+	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/metrics/tracer"
+	"github.com/intezya/abyssleague/services/abysscore/internal/pkg/queryparser"
 )
 
 // GameItemHandler handles HTTP requests for game items.

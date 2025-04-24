@@ -1,8 +1,8 @@
 package routes
 
 import (
-	"abysscore/internal/adapters/controller/http/handlers"
-	"abysscore/internal/infrastructure/ent/schema/access_level"
+	"github.com/intezya/abyssleague/services/abysscore/internal/adapters/controller/http/handlers"
+	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/ent/schema/access_level"
 	"path"
 )
 

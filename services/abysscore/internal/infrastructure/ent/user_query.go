@@ -3,16 +3,16 @@
 package ent
 
 import (
-	"abysscore/internal/infrastructure/ent/friendrequest"
-	"abysscore/internal/infrastructure/ent/inventoryitem"
-	"abysscore/internal/infrastructure/ent/match"
-	"abysscore/internal/infrastructure/ent/predicate"
-	"abysscore/internal/infrastructure/ent/statistic"
-	"abysscore/internal/infrastructure/ent/user"
-	"abysscore/internal/infrastructure/ent/userbalance"
 	"context"
 	"database/sql/driver"
 	"fmt"
+	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/ent/friendrequest"
+	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/ent/inventoryitem"
+	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/ent/match"
+	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/ent/predicate"
+	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/ent/statistic"
+	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/ent/user"
+	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/ent/userbalance"
 	"math"
 
 	"entgo.io/ent"

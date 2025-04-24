@@ -1,7 +1,7 @@
 package handlers
 
 import (
-	applicationservice "abysscore/internal/application/service"
+	applicationservice "github.com/intezya/abyssleague/services/abysscore/internal/application/service"
 )
 
 type DependencyProvider struct {

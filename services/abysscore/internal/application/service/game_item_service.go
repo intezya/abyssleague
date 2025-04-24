@@ -1,12 +1,12 @@
 package applicationservice
 
 import (
-	"abysscore/internal/adapters/controller/http/dto/request"
-	"abysscore/internal/domain/dto"
-	"abysscore/internal/domain/entity/gameitementity"
-	repositoryports "abysscore/internal/domain/repository"
-	"abysscore/internal/infrastructure/metrics/tracer"
 	"context"
+	"github.com/intezya/abyssleague/services/abysscore/internal/adapters/controller/http/dto/request"
+	"github.com/intezya/abyssleague/services/abysscore/internal/domain/dto"
+	"github.com/intezya/abyssleague/services/abysscore/internal/domain/entity/gameitementity"
+	repositoryports "github.com/intezya/abyssleague/services/abysscore/internal/domain/repository"
+	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/metrics/tracer"
 )
 
 type GameItemService struct {

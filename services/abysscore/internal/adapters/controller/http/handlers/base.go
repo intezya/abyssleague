@@ -1,15 +1,15 @@
 package handlers
 
 import (
-	"abysscore/internal/adapters/controller/http/dto/response"
-	"abysscore/internal/adapters/controller/http/middleware"
-	adaptererror "abysscore/internal/common/errors/adapter"
-	"abysscore/internal/common/errors/base"
-	"abysscore/internal/domain/dto"
-	"abysscore/internal/infrastructure/metrics/tracer"
-	"abysscore/internal/pkg/validator"
 	"context"
 	"github.com/gofiber/fiber/v2"
+	"github.com/intezya/abyssleague/services/abysscore/internal/adapters/controller/http/dto/response"
+	"github.com/intezya/abyssleague/services/abysscore/internal/adapters/controller/http/middleware"
+	adaptererror "github.com/intezya/abyssleague/services/abysscore/internal/common/errors/adapter"
+	"github.com/intezya/abyssleague/services/abysscore/internal/common/errors/base"
+	"github.com/intezya/abyssleague/services/abysscore/internal/domain/dto"
+	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/metrics/tracer"
+	"github.com/intezya/abyssleague/services/abysscore/internal/pkg/validator"
 )
 
 var wrapInvalidRequestBody = func(wrapped error) error {

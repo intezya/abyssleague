@@ -1,8 +1,8 @@
 package mapper
 
 import (
-	"abysscore/internal/domain/entity"
-	"abysscore/internal/infrastructure/ent"
+	"github.com/intezya/abyssleague/services/abysscore/internal/domain/entity"
+	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/ent"
 )
 
 func ToAuthenticationDataFromEnt(user *ent.User) *entity.AuthenticationData {

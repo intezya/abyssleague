@@ -1,16 +1,16 @@
 package server
 
 import (
-	_ "abysscore/docs" // Path to generated docs
-	"abysscore/internal/adapters/config"
-	"abysscore/internal/adapters/controller/http/middleware"
-	"abysscore/internal/adapters/controller/http/server/routes"
 	"fmt"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/healthcheck"
 	"github.com/gofiber/fiber/v2/middleware/pprof"
 	"github.com/gofiber/fiber/v2/middleware/requestid"
 	"github.com/gofiber/swagger"
+	_ "github.com/intezya/abyssleague/services/abysscore/docs" // Path to generated docs
+	"github.com/intezya/abyssleague/services/abysscore/internal/adapters/config"
+	"github.com/intezya/abyssleague/services/abysscore/internal/adapters/controller/http/middleware"
+	"github.com/intezya/abyssleague/services/abysscore/internal/adapters/controller/http/server/routes"
 	"github.com/intezya/pkglib/logger"
 	jsoniter "github.com/json-iterator/go"
 	"github.com/prometheus/client_golang/prometheus/promhttp"

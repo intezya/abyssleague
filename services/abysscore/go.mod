@@ -1,4 +1,4 @@
-module abysscore
+module github.com/intezya/abyssleague/services/abysscore
 
 go 1.24.2
 

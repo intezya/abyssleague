@@ -1,10 +1,10 @@
 package request
 
 import (
-	adaptererror "abysscore/internal/common/errors/adapter"
-	"abysscore/internal/domain/entity/types"
-	"abysscore/internal/pkg/queryparser"
 	"github.com/gofiber/fiber/v2"
+	adaptererror "github.com/intezya/abyssleague/services/abysscore/internal/common/errors/adapter"
+	"github.com/intezya/abyssleague/services/abysscore/internal/domain/entity/types"
+	"github.com/intezya/abyssleague/services/abysscore/internal/pkg/queryparser"
 )
 
 const defaultPage = 1

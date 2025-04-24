@@ -3,9 +3,9 @@
 package ent
 
 import (
-	"abysscore/internal/infrastructure/ent/statistic"
-	"abysscore/internal/infrastructure/ent/user"
 	"fmt"
+	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/ent/statistic"
+	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/ent/user"
 	"strings"
 	"time"
 

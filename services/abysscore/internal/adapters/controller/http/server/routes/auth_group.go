@@ -1,7 +1,7 @@
 package routes
 
 import (
-	"abysscore/internal/adapters/controller/http/handlers"
+	"github.com/intezya/abyssleague/services/abysscore/internal/adapters/controller/http/handlers"
 	"path"
 )
 

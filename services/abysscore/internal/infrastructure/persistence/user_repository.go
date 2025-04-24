@@ -1,13 +1,13 @@
 package persistence
 
 import (
-	"abysscore/internal/adapters/mapper"
-	repositoryerrors "abysscore/internal/common/errors/repository"
-	"abysscore/internal/domain/dto"
-	"abysscore/internal/domain/entity"
-	"abysscore/internal/infrastructure/ent"
-	entUser "abysscore/internal/infrastructure/ent/user"
 	"context"
+	"github.com/intezya/abyssleague/services/abysscore/internal/adapters/mapper"
+	repositoryerrors "github.com/intezya/abyssleague/services/abysscore/internal/common/errors/repository"
+	"github.com/intezya/abyssleague/services/abysscore/internal/domain/dto"
+	"github.com/intezya/abyssleague/services/abysscore/internal/domain/entity"
+	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/ent"
+	entUser "github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/ent/user"
 	"strings"
 	"time"
 )

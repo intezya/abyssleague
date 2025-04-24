@@ -1,7 +1,7 @@
 package wrapper
 
 import (
-	"abysscore/internal/adapters/controller/grpc/factory"
+	"github.com/intezya/abyssleague/services/abysscore/internal/adapters/controller/grpc/factory"
 	"time"
 )
 

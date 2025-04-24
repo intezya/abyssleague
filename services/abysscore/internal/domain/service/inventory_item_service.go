@@ -1,8 +1,8 @@
 package domainservice
 
 import (
-	"abysscore/internal/domain/dto"
 	"context"
+	"github.com/intezya/abyssleague/services/abysscore/internal/domain/dto"
 )
 
 type InventoryItemService interface {

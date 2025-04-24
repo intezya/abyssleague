@@ -1,10 +1,10 @@
 package validator
 
 import (
-	adaptererror "abysscore/internal/common/errors/adapter"
-	"abysscore/internal/common/errors/base"
 	"errors"
 	"github.com/go-playground/validator/v10"
+	adaptererror "github.com/intezya/abyssleague/services/abysscore/internal/common/errors/adapter"
+	"github.com/intezya/abyssleague/services/abysscore/internal/common/errors/base"
 	"github.com/intezya/pkglib/logger"
 )
 

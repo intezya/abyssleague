@@ -3,8 +3,8 @@ package service
 import (
 	"context"
 	"errors"
+	"github.com/intezya/abyssleague/services/websocket/internal/domain/entity"
 	"testing"
-	"websocket/internal/domain/entity"
 )
 
 // MockHub is a mock implementation of the Hub interface for testing

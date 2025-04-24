@@ -1,7 +1,7 @@
 package dto
 
 import (
-	"abysscore/internal/infrastructure/ent/schema/access_level"
+	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/ent/schema/access_level"
 	"time"
 )
 

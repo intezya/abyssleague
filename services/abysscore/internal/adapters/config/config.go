@@ -1,14 +1,14 @@
 package config
 
 import (
-	"abysscore/internal/adapters/controller/grpc/factory"
-	rediswrapper "abysscore/internal/infrastructure/cache/redis"
-	"abysscore/internal/infrastructure/metrics/tracer"
-	"abysscore/internal/infrastructure/persistence"
-	"abysscore/internal/pkg/auth"
 	"fmt"
 	"github.com/gofiber/fiber/v2/middleware/healthcheck"
 	"github.com/gofiber/fiber/v2/middleware/requestid"
+	"github.com/intezya/abyssleague/services/abysscore/internal/adapters/controller/grpc/factory"
+	rediswrapper "github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/cache/redis"
+	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/metrics/tracer"
+	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/persistence"
+	"github.com/intezya/abyssleague/services/abysscore/internal/pkg/auth"
 	"github.com/intezya/pkglib/itertools"
 	"github.com/intezya/pkglib/logger"
 	"github.com/redis/go-redis/v9"

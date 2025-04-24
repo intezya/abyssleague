@@ -1,7 +1,7 @@
 package request
 
 import (
-	"abysscore/internal/domain/dto"
+	"github.com/intezya/abyssleague/services/abysscore/internal/domain/dto"
 	"time"
 )
 

@@ -1,12 +1,12 @@
 package handlers
 
 import (
-	"abysscore/internal/adapters/controller/http/dto/request"
-	"abysscore/internal/domain/dto"
-	domainservice "abysscore/internal/domain/service"
-	"abysscore/internal/infrastructure/metrics/tracer"
 	"context"
 	"github.com/gofiber/fiber/v2"
+	"github.com/intezya/abyssleague/services/abysscore/internal/adapters/controller/http/dto/request"
+	"github.com/intezya/abyssleague/services/abysscore/internal/domain/dto"
+	domainservice "github.com/intezya/abyssleague/services/abysscore/internal/domain/service"
+	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/metrics/tracer"
 )
 
 type InventoryItemHandler struct {

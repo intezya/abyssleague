@@ -1,8 +1,8 @@
 package middleware
 
 import (
-	"abysscore/internal/adapters/config"
 	"fmt"
+	"github.com/intezya/abyssleague/services/abysscore/internal/adapters/config"
 	"go.opentelemetry.io/otel/trace"
 	"go.uber.org/zap"
 	"strconv"

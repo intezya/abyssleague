@@ -2,8 +2,8 @@ package hub
 
 import (
 	"context"
-	"websocket/internal/domain/entity"
-	"websocket/internal/infrastructure/metrics"
+	"github.com/intezya/abyssleague/services/websocket/internal/domain/entity"
+	"github.com/intezya/abyssleague/services/websocket/internal/infrastructure/metrics"
 )
 
 func (h *Hub) RegisterClient(client *Client) {
