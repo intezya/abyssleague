@@ -18,7 +18,7 @@ type ValidationErrorResponse struct {
 	Message string   `json:"message"`
 	Detail  string   `json:"detail"`
 	Errors  []string `json:"errors"`
-	Code    int      `json:"code"`
+	Code    int      `json:"StatusCode"`
 	Path    string   `json:"path"`
 }
 

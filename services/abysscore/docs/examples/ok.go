@@ -9,7 +9,7 @@ import (
 type SuccessResponse struct {
 	Message string `json:"message" example:"success"`
 	Data    T      `json:"data"`
-	Code    int    `json:"code" example:"200"`
+	StatusCode    int    `json:"code" example:"200"`
 	Path    string `json:"path"`
 }
 */

@@ -16,7 +16,7 @@ import (
 
 /* TODO:
 
-1) 	Cache logic must use redis, not sync.Map (care about full user serializing,
+1) 	Cache logic should use redis, not sync.Map (care about full user serializing,
 	because most fields of UserDTO is necessary, but not all can be in http-response
 	json and they are use tag json:"-")
 

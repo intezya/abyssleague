@@ -3,6 +3,7 @@ package middleware
 import (
 	"fmt"
 	"github.com/intezya/abyssleague/services/abysscore/internal/adapters/config"
+	"github.com/intezya/abyssleague/services/abysscore/internal/common/errors/errorutils"
 	"go.opentelemetry.io/otel/trace"
 	"go.uber.org/zap"
 	"strconv"
@@ -133,7 +134,7 @@ func (l *LoggingMiddleware) Handle() fiber.Handler {
 
 		l.updateMetrics(c, statusCode, requestDuration)
 
-		logRequest(log, statusCode, requestDuration, l.slowRequestThreshold)
+		logRequest(log, err, statusCode, requestDuration, l.slowRequestThreshold)
 
 		updateSpanWithResponseData(span, statusCode, c, requestDuration, err)
 
@@ -228,6 +229,7 @@ func (l *LoggingMiddleware) updateMetrics(c *fiber.Ctx, statusCode int, duration
 
 func logRequest(
 	log *zap.SugaredLogger,
+	err error,
 	statusCode int,
 	duration time.Duration,
 	slowThreshold time.Duration,
@@ -239,6 +241,7 @@ func logRequest(
 	switch {
 	case isError:
 		log.Error("http request failed with server error")
+		errorutils.LogError(err)
 	case isWarning:
 		log.Info("http request failed with client error")
 	case isSlow:
