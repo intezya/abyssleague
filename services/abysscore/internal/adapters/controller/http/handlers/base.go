@@ -12,38 +12,37 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-// BaseHandler provides common functionality for all handlers.
-type BaseHandler struct{}
-
 var wrapInvalidRequestBody = func(wrapped error) error {
 	return adaptererror.UnprocessableEntity(wrapped)
 }
 
-// ValidateRequest validates the request body and binds it to the provided struct.
-func (h *BaseHandler) validateRequest(req interface{}, c *fiber.Ctx) error {
+// getRequest parses and validates the request body into the given generic struct T.
+// returns the parsed struct or a validation/parsing error.
+func getRequest[T interface{}](c *fiber.Ctx) (*T, error) {
 	ctx := c.UserContext()
 
-	err := tracer.TraceFn(ctx, "c.BodyParser", func(ctx context.Context) error {
-		return c.BodyParser(req)
-	})
+	var request T
 
+	err := tracer.TraceFn(ctx, "c.BodyParser", func(ctx context.Context) error {
+		return c.BodyParser(&request)
+	})
 	if err != nil {
-		return wrapInvalidRequestBody(err)
+		return nil, wrapInvalidRequestBody(err)
 	}
 
 	err = tracer.TraceFn(ctx, "validator.ValidateJSON", func(ctx context.Context) error {
-		return validator.ValidateJSON(req)
+		return validator.ValidateJSON(&request)
 	})
-
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	return nil
+	return &request, nil
 }
 
-// ExtractUser extracts the user from the context.
-func (h *BaseHandler) extractUser(ctx context.Context) (*dto.UserDTO, error) {
+// extractUser retrieves the authenticated user from the context.
+// returns an error if the user is missing or has the wrong type.
+func extractUser(ctx context.Context) (*dto.UserDTO, error) {
 	user, ok := ctx.Value(middleware.UserCtxKey).(*dto.UserDTO)
 	if !ok {
 		return nil, adaptererror.InternalServerError
@@ -52,8 +51,9 @@ func (h *BaseHandler) extractUser(ctx context.Context) (*dto.UserDTO, error) {
 	return user, nil
 }
 
-// ExtractIntParam extracts an integer parameter from the URL.
-func (h *BaseHandler) extractIntParam(key string, c *fiber.Ctx) (int, error) {
+// extractIntParam extracts an integer route parameter by key.
+// returns a BadRequest error if the parameter is missing or invalid.
+func extractIntParam(key string, c *fiber.Ctx) (int, error) {
 	val, err := c.ParamsInt(key)
 	if err != nil {
 		return 0, adaptererror.BadRequestFunc(err)
@@ -62,17 +62,22 @@ func (h *BaseHandler) extractIntParam(key string, c *fiber.Ctx) (int, error) {
 	return val, nil
 }
 
-// HandleError handles errors consistently across all handlers.
-func (h *BaseHandler) handleError(err error, c *fiber.Ctx) error {
+// handleError maps and sends a consistent error response based on the error type.
+func handleError(err error, c *fiber.Ctx) error {
 	return base.ParseErrorOrInternalResponse(err, c)
 }
 
-// SendSuccess sends a success response.
-func (h *BaseHandler) sendSuccess(data interface{}, c *fiber.Ctx) error {
+// sendSuccess sends a standard JSON success response with the given data.
+func sendSuccess(data interface{}, c *fiber.Ctx) error {
 	return response.Success(data, c)
 }
 
-// SendNoContent sends a no content response.
-func (h *BaseHandler) sendNoContent(c *fiber.Ctx) error {
+// sendNoContent sends a 204 No Content response.
+func sendNoContent(c *fiber.Ctx) error {
 	return response.NoContent(c)
+}
+
+// sendSuccessPagination sends a paginated JSON response with the given data.
+func sendSuccessPagination[T any](data *dto.PaginatedResult[T], c *fiber.Ctx) error {
+	return response.SuccessPagination(data, c)
 }

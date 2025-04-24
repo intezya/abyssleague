@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"abysscore/internal/adapters/controller/http/dto/request"
-	"abysscore/internal/adapters/controller/http/dto/response"
 	adaptererror "abysscore/internal/common/errors/adapter"
 	"abysscore/internal/domain/dto"
 	"abysscore/internal/domain/entity/gameitementity"
@@ -15,8 +14,6 @@ import (
 
 // GameItemHandler handles HTTP requests for game items.
 type GameItemHandler struct {
-	BaseHandler
-
 	gameItemService domainservice.GameItemService
 
 	paginationQueryFactory func(c *fiber.Ctx) (*request.PaginationQuery[gameitementity.OrderBy], error)
@@ -37,7 +34,7 @@ func NewGameItemHandler(gameItemService domainservice.GameItemService) *GameItem
 }
 
 // getPaginationQuery gets pagination query parameters from the request.
-func (g *GameItemHandler) getPaginationQuery(c *fiber.Ctx) (*request.PaginationQuery[gameitementity.OrderBy], error) {
+func (h *GameItemHandler) getPaginationQuery(c *fiber.Ctx) (*request.PaginationQuery[gameitementity.OrderBy], error) {
 	paginationQuery, err := request.NewPaginationQuery[gameitementity.OrderBy](c, queryparser.ParseGameEntityOrderBy)
 
 	if err != nil {
@@ -59,27 +56,30 @@ func (g *GameItemHandler) getPaginationQuery(c *fiber.Ctx) (*request.PaginationQ
 // @Failure 403 {object} examples.ForbiddenByAccessLevelResponse "Forbidden - not enough rights"
 // @Failure 422 {object} examples.UnprocessableEntityResponse "Unprocessable entity - invalid request types"
 // @Router /api/items [post]
-func (g *GameItemHandler) Create(c *fiber.Ctx) error {
+func (h *GameItemHandler) Create(c *fiber.Ctx) error {
 	ctx := c.UserContext()
 
-	admin, err := g.extractUser(ctx)
+	admin, err := extractUser(ctx)
+
 	if err != nil {
-		return g.handleError(err, c)
+		return handleError(err, c)
 	}
 
-	r := &request.CreateUpdateGameItem{}
-	if err := g.validateRequest(r, c); err != nil {
-		return g.handleError(err, c)
+	req, err := getRequest[request.CreateUpdateGameItem](c)
+
+	if err != nil {
+		return handleError(err, c)
 	}
 
 	result, err := tracer.TraceFnWithResult(ctx, "gameItemService.Create", func(ctx context.Context) (*dto.GameItemDTO, error) {
-		return g.gameItemService.Create(ctx, r, admin)
+		return h.gameItemService.Create(ctx, req, admin)
 	})
+
 	if err != nil {
-		return g.handleError(err, c)
+		return handleError(err, c)
 	}
 
-	return g.sendSuccess(result, c)
+	return sendSuccess(result, c)
 }
 
 // FindByID gets a game item by ID
@@ -92,22 +92,24 @@ func (g *GameItemHandler) Create(c *fiber.Ctx) error {
 // @Failure 400 {object} examples.BadRequestResponse "Bad request - invalid ID"
 // @Failure 404 {object} examples.GameItemNotFound "Not found - no such game item"
 // @Router /api/items/{id} [get]
-func (g *GameItemHandler) FindByID(c *fiber.Ctx) error {
+func (h *GameItemHandler) FindByID(c *fiber.Ctx) error {
 	ctx := c.UserContext()
 
-	id, err := g.extractIntParam("id", c)
+	id, err := extractIntParam("id", c)
+
 	if err != nil {
-		return g.handleError(err, c)
+		return handleError(err, c)
 	}
 
 	result, err := tracer.TraceFnWithResult(ctx, "gameItemService.FindByID", func(ctx context.Context) (*dto.GameItemDTO, error) {
-		return g.gameItemService.FindByID(ctx, id)
+		return h.gameItemService.FindByID(ctx, id)
 	})
+
 	if err != nil {
-		return g.handleError(err, c)
+		return handleError(err, c)
 	}
 
-	return g.sendSuccess(result, c)
+	return sendSuccess(result, c)
 }
 
 // FindAllPaged returns paginated game items
@@ -122,23 +124,24 @@ func (g *GameItemHandler) FindByID(c *fiber.Ctx) error {
 // @Success 200 {object} examples.PaginatedGameItemsDTOResponse "Paginated list of game items"
 // @Failure 400 {object} examples.BadRequestResponse "Bad request - invalid query params"
 // @Router /api/items [get]
-func (g *GameItemHandler) FindAllPaged(c *fiber.Ctx) error {
+func (h *GameItemHandler) FindAllPaged(c *fiber.Ctx) error {
 	ctx := c.UserContext()
 
-	paginationQuery, err := g.getPaginationQuery(c)
+	paginationQuery, err := h.getPaginationQuery(c)
+
 	if err != nil {
-		return g.handleError(err, c)
+		return handleError(err, c)
 	}
 
 	result, err := tracer.TraceFnWithResult(ctx, "gameItemService.FindAllPaged", func(ctx context.Context) (*dto.PaginatedResult[*dto.GameItemDTO], error) {
-		return g.gameItemService.FindAllPaged(ctx, paginationQuery)
+		return h.gameItemService.FindAllPaged(ctx, paginationQuery)
 	})
+
 	if err != nil {
-		return g.handleError(err, c)
+		return handleError(err, c)
 	}
 
-	// SuccessPagination cannot be moved to BaseHandler because the struct methods do not support a generic type
-	return response.SuccessPagination(result, c)
+	return sendSuccessPagination(result, c)
 }
 
 // Update updates a game item
@@ -154,32 +157,36 @@ func (g *GameItemHandler) FindAllPaged(c *fiber.Ctx) error {
 // @Failure 403 {object} examples.ForbiddenByAccessLevelResponse "Forbidden - not enough rights"
 // @Failure 422 {object} examples.UnprocessableEntityResponse "Unprocessable entity - invalid request types"
 // @Router /api/items/{id} [put]
-func (g *GameItemHandler) Update(c *fiber.Ctx) error {
+func (h *GameItemHandler) Update(c *fiber.Ctx) error {
 	ctx := c.UserContext()
 
-	admin, err := g.extractUser(ctx)
+	admin, err := extractUser(ctx)
+
 	if err != nil {
-		return g.handleError(err, c)
+		return handleError(err, c)
 	}
 
-	itemID, err := g.extractIntParam("id", c)
+	itemID, err := extractIntParam("id", c)
+
 	if err != nil {
-		return g.handleError(err, c)
+		return handleError(err, c)
 	}
 
-	r := &request.CreateUpdateGameItem{}
-	if err := g.validateRequest(r, c); err != nil {
-		return g.handleError(err, c)
+	req, err := getRequest[request.CreateUpdateGameItem](c)
+
+	if err != nil {
+		return handleError(err, c)
 	}
 
 	err = tracer.TraceFn(ctx, "gameItemService.Update", func(ctx context.Context) error {
-		return g.gameItemService.Update(ctx, itemID, r, admin)
+		return h.gameItemService.Update(ctx, itemID, req, admin)
 	})
+
 	if err != nil {
-		return g.handleError(err, c)
+		return handleError(err, c)
 	}
 
-	return g.sendNoContent(c)
+	return sendNoContent(c)
 }
 
 // Delete handles deleting a game item
@@ -194,25 +201,28 @@ func (g *GameItemHandler) Update(c *fiber.Ctx) error {
 // @Failure 403 {object} examples.ForbiddenByAccessLevelResponse "Forbidden - not enough rights"
 // @Failure 422 {object} examples.UnprocessableEntityResponse "Unprocessable entity - invalid request types"
 // @Router /api/items/{id} [delete]
-func (g *GameItemHandler) Delete(c *fiber.Ctx) error {
+func (h *GameItemHandler) Delete(c *fiber.Ctx) error {
 	ctx := c.UserContext()
 
-	admin, err := g.extractUser(ctx)
+	admin, err := extractUser(ctx)
+
 	if err != nil {
-		return g.handleError(err, c)
+		return handleError(err, c)
 	}
 
-	itemID, err := g.extractIntParam("id", c)
+	itemID, err := extractIntParam("id", c)
+
 	if err != nil {
-		return g.handleError(err, c)
+		return handleError(err, c)
 	}
 
 	err = tracer.TraceFn(ctx, "gameItemService.Delete", func(ctx context.Context) error {
-		return g.gameItemService.Delete(ctx, itemID, admin)
+		return h.gameItemService.Delete(ctx, itemID, admin)
 	})
+
 	if err != nil {
-		return g.handleError(err, c)
+		return handleError(err, c)
 	}
 
-	return g.sendNoContent(c)
+	return sendNoContent(c)
 }

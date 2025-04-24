@@ -10,7 +10,6 @@ import (
 )
 
 type InventoryItemHandler struct {
-	BaseHandler
 	inventoryItemService domainservice.InventoryItemService
 }
 
@@ -23,55 +22,62 @@ func NewInventoryItemHandler(
 func (h *InventoryItemHandler) GrantInventoryItemToUser(c *fiber.Ctx) error {
 	ctx := c.UserContext()
 
-	admin, err := h.extractUser(ctx)
+	admin, err := extractUser(ctx)
+
 	if err != nil {
-		return h.handleError(err, c)
+		return handleError(err, c)
 	}
 
-	userID, err := h.extractIntParam("user_id", c)
+	userID, err := extractIntParam("user_id", c)
+
 	if err != nil {
-		return h.handleError(err, c)
+		return handleError(err, c)
 	}
 
-	itemID, err := h.extractIntParam("item_id", c)
+	itemID, err := extractIntParam("item_id", c)
+
 	if err != nil {
-		return h.handleError(err, c)
+		return handleError(err, c)
 	}
 
 	result, err := tracer.TraceFnWithResult(ctx, "inventoryItemService.GrantToUserByAdmin", func(ctx context.Context) (*dto.InventoryItemDTO, error) {
 		return h.inventoryItemService.GrantToUserByAdmin(ctx, userID, itemID, admin)
 	})
+
 	if err != nil {
-		return h.handleError(err, c)
+		return handleError(err, c)
 	}
 
-	return h.sendSuccess(result, c)
+	return sendSuccess(result, c)
 }
 
 func (h *InventoryItemHandler) GetAllByAuthorization(c *fiber.Ctx) error {
 	ctx := c.UserContext()
 
-	user, err := h.extractUser(ctx)
+	user, err := extractUser(ctx)
+
 	if err != nil {
-		return h.handleError(err, c)
+		return handleError(err, c)
 	}
 
 	result, err := tracer.TraceFnWithResult(ctx, "inventoryItemService.FindAllByID", func(ctx context.Context) ([]*dto.InventoryItemDTO, error) {
 		return h.inventoryItemService.FindAllByUserID(ctx, user.ID)
 	})
+
 	if err != nil {
-		return h.handleError(err, c)
+		return handleError(err, c)
 	}
 
-	return h.sendSuccess(result, c)
+	return sendSuccess(result, c)
 }
 
 func (h *InventoryItemHandler) GetAllByUserID(c *fiber.Ctx) error {
 	ctx := c.UserContext()
 
-	userID, err := h.extractIntParam("user_id", c)
+	userID, err := extractIntParam("user_id", c)
+
 	if err != nil {
-		return h.handleError(err, c)
+		return handleError(err, c)
 	}
 
 	result, err := tracer.TraceFnWithResult(ctx, "inventoryItemService.FindAllByUserID", func(ctx context.Context) ([]*dto.InventoryItemDTO, error) {
@@ -79,28 +85,31 @@ func (h *InventoryItemHandler) GetAllByUserID(c *fiber.Ctx) error {
 	})
 
 	if err != nil {
-		return h.handleError(err, c)
+		return handleError(err, c)
 	}
 
-	return h.sendSuccess(result, c)
+	return sendSuccess(result, c)
 }
 
 func (h *InventoryItemHandler) RevokeByAdmin(c *fiber.Ctx) error {
 	ctx := c.UserContext()
 
-	admin, err := h.extractUser(ctx)
+	admin, err := extractUser(ctx)
+
 	if err != nil {
-		return h.handleError(err, c)
+		return handleError(err, c)
 	}
 
-	userID, err := h.extractIntParam("user_id", c)
+	userID, err := extractIntParam("user_id", c)
+
 	if err != nil {
-		return h.handleError(err, c)
+		return handleError(err, c)
 	}
 
-	itemID, err := h.extractIntParam("item_id", c)
+	itemID, err := extractIntParam("item_id", c)
+
 	if err != nil {
-		return h.handleError(err, c)
+		return handleError(err, c)
 	}
 
 	err = tracer.TraceFn(ctx, "inventoryItemService.RevokeByAdmin", func(ctx context.Context) error {
@@ -108,31 +117,30 @@ func (h *InventoryItemHandler) RevokeByAdmin(c *fiber.Ctx) error {
 	})
 
 	if err != nil {
-		return h.handleError(err, c)
+		return handleError(err, c)
 	}
 
-	return h.sendNoContent(c)
+	return sendNoContent(c)
 }
 
 func (h *InventoryItemHandler) SetInventoryItem(c *fiber.Ctx) error {
 	ctx := c.UserContext()
 
-	user, err := h.extractUser(ctx)
+	user, err := extractUser(ctx)
 	if err != nil {
-		return h.handleError(err, c)
+		return handleError(err, c)
 	}
 
-	r := &request.SetItemAsCurrent{}
+	req, err := getRequest[request.SetItemAsCurrent](c)
 
-	err = h.validateRequest(r, c)
 	if err != nil {
-		return h.handleError(err, c)
+		return handleError(err, c)
 	}
 
-	err = h.inventoryItemService.SetInventoryItemAsCurrent(ctx, user, r.InventoryItemID)
+	err = h.inventoryItemService.SetInventoryItemAsCurrent(ctx, user, req.InventoryItemID)
 	if err != nil {
-		return h.handleError(err, c)
+		return handleError(err, c)
 	}
 
-	return h.sendNoContent(c)
+	return sendNoContent(c)
 }

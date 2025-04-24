@@ -9,8 +9,6 @@ import (
 )
 
 type AuthenticationHandler struct {
-	BaseHandler
-
 	authenticationService domainservice.AuthenticationService
 }
 
@@ -36,23 +34,24 @@ func NewAuthenticationHandler(
 // @Failure 422 {object} examples.UnprocessableEntityResponse "Unprocessable entity - invalid request types"
 // @Failure 429 {object} examples.TooManyRequestsResponse "Too many requests - received too many auth requests"
 // @Router /api/auth/register [post]
-func (a *AuthenticationHandler) Register(c *fiber.Ctx) error {
+func (h *AuthenticationHandler) Register(c *fiber.Ctx) error {
 	ctx := c.UserContext()
-	r := &request.AuthenticationRequest{}
 
-	if err := a.validateRequest(r, c); err != nil {
-		return a.handleError(err, c)
+	req, err := getRequest[request.AuthenticationRequest](c)
+
+	if err != nil {
+		return handleError(err, c)
 	}
 
 	result, err := tracer.TraceFnWithResult(ctx, "authService.Register", func(ctx context.Context) (*domainservice.AuthenticationResult, error) {
-		return a.authenticationService.Register(ctx, r.ToCredentialsDTO())
+		return h.authenticationService.Register(ctx, req.ToCredentialsDTO())
 	})
 
 	if err != nil {
-		return a.handleError(err, c)
+		return handleError(err, c)
 	}
 
-	return a.sendSuccess(result, c)
+	return sendSuccess(result, c)
 }
 
 // Login handles user authentication
@@ -72,23 +71,24 @@ func (a *AuthenticationHandler) Register(c *fiber.Ctx) error {
 // @Failure 422 {object} examples.UnprocessableEntityResponse "Unprocessable entity - invalid request types"
 // @Failure 429 {object} examples.TooManyRequestsResponse "Too many requests - received too many auth requests"
 // @Router /api/auth/login [post]
-func (a *AuthenticationHandler) Login(c *fiber.Ctx) error {
+func (h *AuthenticationHandler) Login(c *fiber.Ctx) error {
 	ctx := c.UserContext()
 
-	r := &request.AuthenticationRequest{}
-	if err := a.validateRequest(r, c); err != nil {
-		return a.handleError(err, c)
+	req, err := getRequest[request.AuthenticationRequest](c)
+
+	if err != nil {
+		return handleError(err, c)
 	}
 
 	result, err := tracer.TraceFnWithResult(ctx, "authService.Authenticate", func(ctx context.Context) (*domainservice.AuthenticationResult, error) {
-		return a.authenticationService.Authenticate(ctx, r.ToCredentialsDTO())
+		return h.authenticationService.Authenticate(ctx, req.ToCredentialsDTO())
 	})
 
 	if err != nil {
-		return a.handleError(err, c)
+		return handleError(err, c)
 	}
 
-	return a.sendSuccess(result, c)
+	return sendSuccess(result, c)
 }
 
 // ChangePassword handles changing user password
@@ -105,21 +105,22 @@ func (a *AuthenticationHandler) Login(c *fiber.Ctx) error {
 // @Failure 422 {object} examples.UnprocessableEntityResponse "Unprocessable entity - invalid request types"
 // @Failure 429 {object} examples.TooManyRequestsResponse "Too many requests - received too many auth requests"
 // @Router /api/auth/change_password [post]
-func (a *AuthenticationHandler) ChangePassword(c *fiber.Ctx) error {
+func (h *AuthenticationHandler) ChangePassword(c *fiber.Ctx) error {
 	ctx := c.UserContext()
 
-	r := &request.PasswordChangeRequest{}
-	if err := a.validateRequest(r, c); err != nil {
-		return a.handleError(err, c)
+	req, err := getRequest[request.PasswordChangeRequest](c)
+
+	if err != nil {
+		return handleError(err, c)
 	}
 
 	result, err := tracer.TraceFnWithResult(ctx, "authService.ChangePassword", func(ctx context.Context) (*domainservice.AuthenticationResult, error) {
-		return a.authenticationService.ChangePassword(ctx, r.ToDTO())
+		return h.authenticationService.ChangePassword(ctx, req.ToDTO())
 	})
 
 	if err != nil {
-		return a.handleError(err, c)
+		return handleError(err, c)
 	}
 
-	return a.sendSuccess(result, c)
+	return sendSuccess(result, c)
 }
