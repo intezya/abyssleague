@@ -99,6 +99,19 @@ definitions:
       username:
         type: string
     type: object
+  examples.AuthenticationSuccessResponse:
+    properties:
+      code:
+        example: 200
+        type: integer
+      data:
+        $ref: '#/definitions/domainservice.AuthenticationResult'
+      message:
+        example: success
+        type: string
+      path:
+        type: string
+    type: object
   examples.BadRequestResponse:
     properties:
       code:
@@ -347,7 +360,7 @@ paths:
         "200":
           description: Password successfully changed
           schema:
-            $ref: '#/definitions/domainservice.AuthenticationResult'
+            $ref: '#/definitions/examples.AuthenticationSuccessResponse'
         "400":
           description: Bad request - missed request fields
           schema:
@@ -389,7 +402,7 @@ paths:
         "200":
           description: Successfully authenticated
           schema:
-            $ref: '#/definitions/domainservice.AuthenticationResult'
+            $ref: '#/definitions/examples.AuthenticationSuccessResponse'
         "400":
           description: Bad request - missed request fields
           schema:
@@ -435,7 +448,7 @@ paths:
         "200":
           description: User successfully registered
           schema:
-            $ref: '#/definitions/domainservice.AuthenticationResult'
+            $ref: '#/definitions/examples.AuthenticationSuccessResponse'
         "400":
           description: Bad request - missed request fields
           schema:

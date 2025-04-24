@@ -43,7 +43,7 @@ const docTemplate = `{
                     "200": {
                         "description": "Password successfully changed",
                         "schema": {
-                            "$ref": "#/definitions/domainservice.AuthenticationResult"
+                            "$ref": "#/definitions/examples.AuthenticationSuccessResponse"
                         }
                     },
                     "400": {
@@ -107,7 +107,7 @@ const docTemplate = `{
                     "200": {
                         "description": "Successfully authenticated",
                         "schema": {
-                            "$ref": "#/definitions/domainservice.AuthenticationResult"
+                            "$ref": "#/definitions/examples.AuthenticationSuccessResponse"
                         }
                     },
                     "400": {
@@ -177,7 +177,7 @@ const docTemplate = `{
                     "200": {
                         "description": "User successfully registered",
                         "schema": {
-                            "$ref": "#/definitions/domainservice.AuthenticationResult"
+                            "$ref": "#/definitions/examples.AuthenticationSuccessResponse"
                         }
                     },
                     "400": {
@@ -601,6 +601,25 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "username": {
+                    "type": "string"
+                }
+            }
+        },
+        "examples.AuthenticationSuccessResponse": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "integer",
+                    "example": 200
+                },
+                "data": {
+                    "$ref": "#/definitions/domainservice.AuthenticationResult"
+                },
+                "message": {
+                    "type": "string",
+                    "example": "success"
+                },
+                "path": {
                     "type": "string"
                 }
             }

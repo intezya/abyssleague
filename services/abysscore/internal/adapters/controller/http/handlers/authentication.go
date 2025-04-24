@@ -29,7 +29,7 @@ func NewAuthenticationHandler(
 // @Accept json
 // @Produce json
 // @Param request body request.AuthenticationRequest true "User registration details"
-// @Success 200 {object} domainservice.AuthenticationResult "User successfully registered"
+// @Success 200 {object} examples.AuthenticationSuccessResponse "User successfully registered"
 // @Failure 400 {object} examples.BadRequestResponse "Bad request - missed request fields"
 // @Failure 409 {object} examples.UsernameConflictResponse "Conflict - user with this username already exists"
 // @Failure 409 {object} examples.HardwareIDConflictResponse "Conflict - only one account per device allowed"
@@ -62,7 +62,7 @@ func (a *AuthenticationHandler) Register(c *fiber.Ctx) error {
 // @Accept json
 // @Produce json
 // @Param request body request.AuthenticationRequest true "User login credentials"
-// @Success 200 {object} domainservice.AuthenticationResult "Successfully authenticated"
+// @Success 200 {object} examples.AuthenticationSuccessResponse "Successfully authenticated"
 // @Failure 400 {object} examples.BadRequestResponse "Bad request - missed request fields"
 // @Failure 401 {object} examples.UserWrongPasswordResponse "Unauthorized - wrong password"
 // @Failure 401 {object} examples.UserWrongHardwareIDResponse "Unauthorized - wrong hardware id"
@@ -98,7 +98,7 @@ func (a *AuthenticationHandler) Login(c *fiber.Ctx) error {
 // @Accept json
 // @Produce json
 // @Param request body request.PasswordChangeRequest true "Password change details"
-// @Success 200 {object} domainservice.AuthenticationResult "Password successfully changed"
+// @Success 200 {object} examples.AuthenticationSuccessResponse "Password successfully changed"
 // @Failure 400 {object} examples.BadRequestResponse "Bad request - missed request fields"
 // @Failure 401 {object} examples.UserWrongPasswordResponse "Unauthorized - wrong password"
 // @Failure 404 {object} examples.UserNotFoundResponse "Not found - user with this username not found"
