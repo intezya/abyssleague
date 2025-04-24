@@ -5,9 +5,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-const unprocessableEntityErrorMessage = "unprocessable entity"
-
-var unprocessableEntityError = errors.New(unprocessableEntityErrorMessage)
+var badRequestError = errors.New("bad request")
 
 type ValidationError struct {
 	Custom  error
@@ -26,10 +24,10 @@ type ValidationErrorResponse struct {
 
 func NewValidationError(wrapped error, errors []string) error {
 	return &ValidationError{
-		Custom:  unprocessableEntityError,
+		Custom:  badRequestError,
 		Wrapped: wrapped,
 		errors:  errors,
-		code:    fiber.StatusUnprocessableEntity,
+		code:    fiber.StatusBadRequest,
 	}
 }
 

@@ -9,15 +9,15 @@ import (
 	"abysscore/internal/infrastructure/metrics/tracer"
 	"abysscore/internal/pkg/validator"
 	"context"
-	"errors"
 	"github.com/gofiber/fiber/v2"
-	"github.com/intezya/pkglib/logger"
 )
 
 // BaseHandler provides common functionality for all handlers
 type BaseHandler struct{}
 
-var invalidRequestBodyError = adaptererror.BadRequestFunc(errors.New("invalid request body"))
+var wrapInvalidRequestBody = func(wrapped error) error {
+	return adaptererror.UnprocessableEntity(wrapped)
+}
 
 // ValidateRequest validates the request body and binds it to the provided struct
 func (h *BaseHandler) validateRequest(req interface{}, c *fiber.Ctx) error {
@@ -28,9 +28,7 @@ func (h *BaseHandler) validateRequest(req interface{}, c *fiber.Ctx) error {
 	})
 
 	if err != nil {
-		logger.Log.Debugw("failed to parse request body", "err", err)
-
-		return invalidRequestBodyError
+		return wrapInvalidRequestBody(err)
 	}
 
 	err = tracer.TraceFn(ctx, "validator.ValidateJSON", func(ctx context.Context) error {

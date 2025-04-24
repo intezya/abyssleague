@@ -14,7 +14,7 @@ var (
 	}
 
 	UnprocessableEntity = func(wrapped error) *base.Error {
-		return base.NewError(errors.New("unprocessable entity"), nil, 422)
+		return base.NewError(errors.New("unprocessable entity"), wrapped, 422)
 	}
 
 	Unauthorized = func(wrapped error) *base.Error {

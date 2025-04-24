@@ -1,16 +1,5 @@
 basePath: /
 definitions:
-  base.ErrorResponse:
-    properties:
-      code:
-        type: integer
-      detail:
-        type: string
-      message:
-        type: string
-      path:
-        type: string
-    type: object
   domainservice.AuthenticationResult:
     properties:
       online_count:
@@ -20,6 +9,21 @@ definitions:
         type: string
       user:
         $ref: '#/definitions/dto.UserFullDTO'
+    type: object
+  dto.GameItemDTO:
+    properties:
+      collection:
+        type: string
+      created_at:
+        type: string
+      id:
+        type: integer
+      name:
+        type: string
+      rarity:
+        type: integer
+      type:
+        type: integer
     type: object
   dto.InventoryItemDTO:
     properties:
@@ -95,6 +99,75 @@ definitions:
       username:
         type: string
     type: object
+  examples.BadRequestResponse:
+    properties:
+      code:
+        example: 400
+        type: integer
+      detail:
+        type: string
+      errors:
+        items:
+          type: string
+        type: array
+      message:
+        example: bad request
+        type: string
+      path:
+        type: string
+    type: object
+  examples.CreateGameItemDTOSuccessResponse:
+    properties:
+      code:
+        example: 200
+        type: integer
+      data:
+        $ref: '#/definitions/dto.GameItemDTO'
+      message:
+        example: success
+        type: string
+      path:
+        type: string
+    type: object
+  examples.FindGameItemDTOSuccessResponse:
+    properties:
+      code:
+        example: 200
+        type: integer
+      data:
+        $ref: '#/definitions/dto.GameItemDTO'
+      message:
+        example: success
+        type: string
+      path:
+        type: string
+    type: object
+  examples.ForbiddenByAccessLevelResponse:
+    properties:
+      code:
+        example: 403
+        type: integer
+      detail:
+        type: string
+      message:
+        example: insufficient access level
+        type: string
+      path:
+        type: string
+    type: object
+  examples.GameItemNotFound:
+    properties:
+      code:
+        example: 404
+        type: integer
+      detail:
+        type: string
+      message:
+        example: game item not found
+        type: string
+      path:
+        type: string
+    type: object
   examples.HardwareIDConflictResponse:
     properties:
       code:
@@ -103,10 +176,25 @@ definitions:
       detail:
         type: string
       message:
-        example: user hwid conflict
+        example: user hardware id conflict
         type: string
       path:
         type: string
+    type: object
+  examples.PaginatedGameItemsDTOResponse:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/dto.GameItemDTO'
+        type: array
+      page:
+        type: integer
+      size:
+        type: integer
+      total_items:
+        type: integer
+      total_pages:
+        type: integer
     type: object
   examples.TooManyRequestsResponse:
     properties:
@@ -121,17 +209,13 @@ definitions:
       path:
         type: string
     type: object
-  examples.UnprocessableErrorResponse:
+  examples.UnprocessableEntityResponse:
     properties:
       code:
         example: 422
         type: integer
       detail:
         type: string
-      errors:
-        items:
-          type: string
-        type: array
       message:
         example: unprocessable entity
         type: string
@@ -159,7 +243,7 @@ definitions:
       detail:
         type: string
       message:
-        example: wrong hwid
+        example: wrong hardware id
         type: string
       path:
         type: string
@@ -192,7 +276,7 @@ definitions:
     type: object
   request.AuthenticationRequest:
     properties:
-      hwid:
+      hardware_id:
         example: QXV0aGVudGljQU1ENjA3NDA0
         type: string
       password:
@@ -202,9 +286,25 @@ definitions:
         example: my_legendary_username
         type: string
     required:
-      - hwid
+      - hardware_id
       - password
       - username
+    type: object
+  request.CreateUpdateGameItem:
+    properties:
+      collection:
+        type: string
+      name:
+        type: string
+      rarity:
+        type: integer
+      type:
+        type: integer
+    required:
+      - collection
+      - name
+      - rarity
+      - type
     type: object
   request.PasswordChangeRequest:
     properties:
@@ -248,6 +348,10 @@ paths:
           description: Password successfully changed
           schema:
             $ref: '#/definitions/domainservice.AuthenticationResult'
+        "400":
+          description: Bad request - missed request fields
+          schema:
+            $ref: '#/definitions/examples.BadRequestResponse'
         "401":
           description: Unauthorized - wrong password
           schema:
@@ -257,9 +361,9 @@ paths:
           schema:
             $ref: '#/definitions/examples.UserNotFoundResponse'
         "422":
-          description: Unprocessable entity - validation error
+          description: Unprocessable entity - invalid request types
           schema:
-            $ref: '#/definitions/examples.UnprocessableErrorResponse'
+            $ref: '#/definitions/examples.UnprocessableEntityResponse'
         "429":
           description: Too many requests - received too many auth requests
           schema:
@@ -286,6 +390,10 @@ paths:
           description: Successfully authenticated
           schema:
             $ref: '#/definitions/domainservice.AuthenticationResult'
+        "400":
+          description: Bad request - missed request fields
+          schema:
+            $ref: '#/definitions/examples.BadRequestResponse'
         "401":
           description: Unauthorized - wrong hardware id
           schema:
@@ -299,9 +407,9 @@ paths:
           schema:
             $ref: '#/definitions/examples.HardwareIDConflictResponse'
         "422":
-          description: Unprocessable entity - validation error
+          description: Unprocessable entity - invalid request types
           schema:
-            $ref: '#/definitions/examples.UnprocessableErrorResponse'
+            $ref: '#/definitions/examples.UnprocessableEntityResponse'
         "429":
           description: Too many requests - received too many auth requests
           schema:
@@ -328,25 +436,192 @@ paths:
           description: User successfully registered
           schema:
             $ref: '#/definitions/domainservice.AuthenticationResult'
+        "400":
+          description: Bad request - missed request fields
+          schema:
+            $ref: '#/definitions/examples.BadRequestResponse'
         "409":
           description: Conflict - only one account per device allowed
           schema:
             $ref: '#/definitions/examples.HardwareIDConflictResponse'
         "422":
-          description: Unprocessable entity - validation error
+          description: Unprocessable entity - invalid request types
           schema:
-            $ref: '#/definitions/examples.UnprocessableErrorResponse'
+            $ref: '#/definitions/examples.UnprocessableEntityResponse'
         "429":
           description: Too many requests - received too many auth requests
           schema:
             $ref: '#/definitions/examples.TooManyRequestsResponse'
-        "500":
-          description: Internal server error
-          schema:
-            $ref: '#/definitions/base.ErrorResponse'
       summary: Register a new user
       tags:
         - Authentication
+  /api/items:
+    get:
+      description: Returns a paginated list of game items with sorting
+      parameters:
+        - description: 'Page number (default: 1)'
+          in: query
+          name: page
+          type: integer
+        - description: 'Page size (default: 10)'
+          in: query
+          name: size
+          type: integer
+        - description: Field to sort by
+          enum:
+            - created_at
+            - name
+            - collection
+            - type
+            - rarity
+          in: query
+          name: order_by
+          type: string
+        - description: Sort order
+          enum:
+            - asc
+            - desc
+          in: query
+          name: order_type
+          type: string
+      produces:
+        - application/json
+      responses:
+        "200":
+          description: Paginated list of game items
+          schema:
+            $ref: '#/definitions/examples.PaginatedGameItemsDTOResponse'
+        "400":
+          description: Bad request - invalid query params
+          schema:
+            $ref: '#/definitions/examples.BadRequestResponse'
+      summary: List game items
+      tags:
+        - Game Items
+    post:
+      consumes:
+        - application/json
+      description: Admin creates a new game item
+      parameters:
+        - description: Game item data
+          in: body
+          name: request
+          required: true
+          schema:
+            $ref: '#/definitions/request.CreateUpdateGameItem'
+      produces:
+        - application/json
+      responses:
+        "200":
+          description: Created game item
+          schema:
+            $ref: '#/definitions/examples.CreateGameItemDTOSuccessResponse'
+        "400":
+          description: Bad request - missed request fields
+          schema:
+            $ref: '#/definitions/examples.BadRequestResponse'
+        "403":
+          description: Forbidden - not enough rights
+          schema:
+            $ref: '#/definitions/examples.ForbiddenByAccessLevelResponse'
+        "422":
+          description: Unprocessable entity - invalid request types
+          schema:
+            $ref: '#/definitions/examples.UnprocessableEntityResponse'
+      summary: Create game item
+      tags:
+        - Game Items
+  /api/items/{id}:
+    delete:
+      description: Admin deletes a game item by ID
+      parameters:
+        - description: Game item ID
+          in: path
+          name: id
+          required: true
+          type: integer
+      produces:
+        - application/json
+      responses:
+        "204":
+          description: Game item deleted
+        "400":
+          description: Bad request - invalid ID
+          schema:
+            $ref: '#/definitions/examples.BadRequestResponse'
+        "403":
+          description: Forbidden - not enough rights
+          schema:
+            $ref: '#/definitions/examples.ForbiddenByAccessLevelResponse'
+        "422":
+          description: Unprocessable entity - invalid request types
+          schema:
+            $ref: '#/definitions/examples.UnprocessableEntityResponse'
+      summary: Delete game item
+      tags:
+        - Game Items
+    get:
+      description: Returns game item by its ID
+      parameters:
+        - description: Game item ID
+          in: path
+          name: id
+          required: true
+          type: integer
+      produces:
+        - application/json
+      responses:
+        "200":
+          description: Game item
+          schema:
+            $ref: '#/definitions/examples.FindGameItemDTOSuccessResponse'
+        "400":
+          description: Bad request - invalid ID
+          schema:
+            $ref: '#/definitions/examples.BadRequestResponse'
+        "404":
+          description: Not found - no such game item
+          schema:
+            $ref: '#/definitions/examples.GameItemNotFound'
+      summary: Get game item by ID
+      tags:
+        - Game Items
+    put:
+      consumes:
+        - application/json
+      description: Admin updates a game item by ID
+      parameters:
+        - description: Game item ID
+          in: path
+          name: id
+          required: true
+          type: integer
+        - description: Updated game item data
+          in: body
+          name: request
+          required: true
+          schema:
+            $ref: '#/definitions/request.CreateUpdateGameItem'
+      produces:
+        - application/json
+      responses:
+        "204":
+          description: Game item updated
+        "400":
+          description: Bad request - missed request fields
+          schema:
+            $ref: '#/definitions/examples.BadRequestResponse'
+        "403":
+          description: Forbidden - not enough rights
+          schema:
+            $ref: '#/definitions/examples.ForbiddenByAccessLevelResponse'
+        "422":
+          description: Unprocessable entity - invalid request types
+          schema:
+            $ref: '#/definitions/examples.UnprocessableEntityResponse'
+      summary: Update game item
+      tags:
+        - Game Items
 schemes:
   - http
   - https

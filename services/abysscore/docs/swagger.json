@@ -44,6 +44,12 @@
               "$ref": "#/definitions/domainservice.AuthenticationResult"
             }
           },
+          "400": {
+            "description": "Bad request - missed request fields",
+            "schema": {
+              "$ref": "#/definitions/examples.BadRequestResponse"
+            }
+          },
           "401": {
             "description": "Unauthorized - wrong password",
             "schema": {
@@ -57,9 +63,9 @@
             }
           },
           "422": {
-            "description": "Unprocessable entity - validation error",
+            "description": "Unprocessable entity - invalid request types",
             "schema": {
-              "$ref": "#/definitions/examples.UnprocessableErrorResponse"
+              "$ref": "#/definitions/examples.UnprocessableEntityResponse"
             }
           },
           "429": {
@@ -102,6 +108,12 @@
               "$ref": "#/definitions/domainservice.AuthenticationResult"
             }
           },
+          "400": {
+            "description": "Bad request - missed request fields",
+            "schema": {
+              "$ref": "#/definitions/examples.BadRequestResponse"
+            }
+          },
           "401": {
             "description": "Unauthorized - wrong hardware id",
             "schema": {
@@ -121,9 +133,9 @@
             }
           },
           "422": {
-            "description": "Unprocessable entity - validation error",
+            "description": "Unprocessable entity - invalid request types",
             "schema": {
-              "$ref": "#/definitions/examples.UnprocessableErrorResponse"
+              "$ref": "#/definitions/examples.UnprocessableEntityResponse"
             }
           },
           "429": {
@@ -166,6 +178,12 @@
               "$ref": "#/definitions/domainservice.AuthenticationResult"
             }
           },
+          "400": {
+            "description": "Bad request - missed request fields",
+            "schema": {
+              "$ref": "#/definitions/examples.BadRequestResponse"
+            }
+          },
           "409": {
             "description": "Conflict - only one account per device allowed",
             "schema": {
@@ -173,9 +191,9 @@
             }
           },
           "422": {
-            "description": "Unprocessable entity - validation error",
+            "description": "Unprocessable entity - invalid request types",
             "schema": {
-              "$ref": "#/definitions/examples.UnprocessableErrorResponse"
+              "$ref": "#/definitions/examples.UnprocessableEntityResponse"
             }
           },
           "429": {
@@ -183,11 +201,255 @@
             "schema": {
               "$ref": "#/definitions/examples.TooManyRequestsResponse"
             }
+          }
+        }
+      }
+    },
+    "/api/items": {
+      "get": {
+        "description": "Returns a paginated list of game items with sorting",
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "Game Items"
+        ],
+        "summary": "List game items",
+        "parameters": [
+          {
+            "type": "integer",
+            "description": "Page number (default: 1)",
+            "name": "page",
+            "in": "query"
           },
-          "500": {
-            "description": "Internal server error",
+          {
+            "type": "integer",
+            "description": "Page size (default: 10)",
+            "name": "size",
+            "in": "query"
+          },
+          {
+            "enum": [
+              "created_at",
+              "name",
+              "collection",
+              "type",
+              "rarity"
+            ],
+            "type": "string",
+            "description": "Field to sort by",
+            "name": "order_by",
+            "in": "query"
+          },
+          {
+            "enum": [
+              "asc",
+              "desc"
+            ],
+            "type": "string",
+            "description": "Sort order",
+            "name": "order_type",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Paginated list of game items",
             "schema": {
-              "$ref": "#/definitions/base.ErrorResponse"
+              "$ref": "#/definitions/examples.PaginatedGameItemsDTOResponse"
+            }
+          },
+          "400": {
+            "description": "Bad request - invalid query params",
+            "schema": {
+              "$ref": "#/definitions/examples.BadRequestResponse"
+            }
+          }
+        }
+      },
+      "post": {
+        "description": "Admin creates a new game item",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "Game Items"
+        ],
+        "summary": "Create game item",
+        "parameters": [
+          {
+            "description": "Game item data",
+            "name": "request",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/request.CreateUpdateGameItem"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Created game item",
+            "schema": {
+              "$ref": "#/definitions/examples.CreateGameItemDTOSuccessResponse"
+            }
+          },
+          "400": {
+            "description": "Bad request - missed request fields",
+            "schema": {
+              "$ref": "#/definitions/examples.BadRequestResponse"
+            }
+          },
+          "403": {
+            "description": "Forbidden - not enough rights",
+            "schema": {
+              "$ref": "#/definitions/examples.ForbiddenByAccessLevelResponse"
+            }
+          },
+          "422": {
+            "description": "Unprocessable entity - invalid request types",
+            "schema": {
+              "$ref": "#/definitions/examples.UnprocessableEntityResponse"
+            }
+          }
+        }
+      }
+    },
+    "/api/items/{id}": {
+      "get": {
+        "description": "Returns game item by its ID",
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "Game Items"
+        ],
+        "summary": "Get game item by ID",
+        "parameters": [
+          {
+            "type": "integer",
+            "description": "Game item ID",
+            "name": "id",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Game item",
+            "schema": {
+              "$ref": "#/definitions/examples.FindGameItemDTOSuccessResponse"
+            }
+          },
+          "400": {
+            "description": "Bad request - invalid ID",
+            "schema": {
+              "$ref": "#/definitions/examples.BadRequestResponse"
+            }
+          },
+          "404": {
+            "description": "Not found - no such game item",
+            "schema": {
+              "$ref": "#/definitions/examples.GameItemNotFound"
+            }
+          }
+        }
+      },
+      "put": {
+        "description": "Admin updates a game item by ID",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "Game Items"
+        ],
+        "summary": "Update game item",
+        "parameters": [
+          {
+            "type": "integer",
+            "description": "Game item ID",
+            "name": "id",
+            "in": "path",
+            "required": true
+          },
+          {
+            "description": "Updated game item data",
+            "name": "request",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/request.CreateUpdateGameItem"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Game item updated"
+          },
+          "400": {
+            "description": "Bad request - missed request fields",
+            "schema": {
+              "$ref": "#/definitions/examples.BadRequestResponse"
+            }
+          },
+          "403": {
+            "description": "Forbidden - not enough rights",
+            "schema": {
+              "$ref": "#/definitions/examples.ForbiddenByAccessLevelResponse"
+            }
+          },
+          "422": {
+            "description": "Unprocessable entity - invalid request types",
+            "schema": {
+              "$ref": "#/definitions/examples.UnprocessableEntityResponse"
+            }
+          }
+        }
+      },
+      "delete": {
+        "description": "Admin deletes a game item by ID",
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "Game Items"
+        ],
+        "summary": "Delete game item",
+        "parameters": [
+          {
+            "type": "integer",
+            "description": "Game item ID",
+            "name": "id",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Game item deleted"
+          },
+          "400": {
+            "description": "Bad request - invalid ID",
+            "schema": {
+              "$ref": "#/definitions/examples.BadRequestResponse"
+            }
+          },
+          "403": {
+            "description": "Forbidden - not enough rights",
+            "schema": {
+              "$ref": "#/definitions/examples.ForbiddenByAccessLevelResponse"
+            }
+          },
+          "422": {
+            "description": "Unprocessable entity - invalid request types",
+            "schema": {
+              "$ref": "#/definitions/examples.UnprocessableEntityResponse"
             }
           }
         }
@@ -195,23 +457,6 @@
     }
   },
   "definitions": {
-    "base.ErrorResponse": {
-      "type": "object",
-      "properties": {
-        "code": {
-          "type": "integer"
-        },
-        "detail": {
-          "type": "string"
-        },
-        "message": {
-          "type": "string"
-        },
-        "path": {
-          "type": "string"
-        }
-      }
-    },
     "domainservice.AuthenticationResult": {
       "type": "object",
       "properties": {
@@ -224,6 +469,29 @@
         },
         "user": {
           "$ref": "#/definitions/dto.UserFullDTO"
+        }
+      }
+    },
+    "dto.GameItemDTO": {
+      "type": "object",
+      "properties": {
+        "collection": {
+          "type": "string"
+        },
+        "created_at": {
+          "type": "string"
+        },
+        "id": {
+          "type": "integer"
+        },
+        "name": {
+          "type": "string"
+        },
+        "rarity": {
+          "type": "integer"
+        },
+        "type": {
+          "type": "integer"
         }
       }
     },
@@ -335,6 +603,107 @@
         }
       }
     },
+    "examples.BadRequestResponse": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "integer",
+          "example": 400
+        },
+        "detail": {
+          "type": "string"
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "message": {
+          "type": "string",
+          "example": "bad request"
+        },
+        "path": {
+          "type": "string"
+        }
+      }
+    },
+    "examples.CreateGameItemDTOSuccessResponse": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "integer",
+          "example": 200
+        },
+        "data": {
+          "$ref": "#/definitions/dto.GameItemDTO"
+        },
+        "message": {
+          "type": "string",
+          "example": "success"
+        },
+        "path": {
+          "type": "string"
+        }
+      }
+    },
+    "examples.FindGameItemDTOSuccessResponse": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "integer",
+          "example": 200
+        },
+        "data": {
+          "$ref": "#/definitions/dto.GameItemDTO"
+        },
+        "message": {
+          "type": "string",
+          "example": "success"
+        },
+        "path": {
+          "type": "string"
+        }
+      }
+    },
+    "examples.ForbiddenByAccessLevelResponse": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "integer",
+          "example": 403
+        },
+        "detail": {
+          "type": "string"
+        },
+        "message": {
+          "type": "string",
+          "example": "insufficient access level"
+        },
+        "path": {
+          "type": "string"
+        }
+      }
+    },
+    "examples.GameItemNotFound": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "integer",
+          "example": 404
+        },
+        "detail": {
+          "type": "string"
+        },
+        "message": {
+          "type": "string",
+          "example": "game item not found"
+        },
+        "path": {
+          "type": "string"
+        }
+      }
+    },
     "examples.HardwareIDConflictResponse": {
       "type": "object",
       "properties": {
@@ -347,10 +716,33 @@
         },
         "message": {
           "type": "string",
-          "example": "user hwid conflict"
+          "example": "user hardware id conflict"
         },
         "path": {
           "type": "string"
+        }
+      }
+    },
+    "examples.PaginatedGameItemsDTOResponse": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/dto.GameItemDTO"
+          }
+        },
+        "page": {
+          "type": "integer"
+        },
+        "size": {
+          "type": "integer"
+        },
+        "total_items": {
+          "type": "integer"
+        },
+        "total_pages": {
+          "type": "integer"
         }
       }
     },
@@ -373,7 +765,7 @@
         }
       }
     },
-    "examples.UnprocessableErrorResponse": {
+    "examples.UnprocessableEntityResponse": {
       "type": "object",
       "properties": {
         "code": {
@@ -382,12 +774,6 @@
         },
         "detail": {
           "type": "string"
-        },
-        "errors": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
         },
         "message": {
           "type": "string",
@@ -429,7 +815,7 @@
         },
         "message": {
           "type": "string",
-          "example": "wrong hwid"
+          "example": "wrong hardware id"
         },
         "path": {
           "type": "string"
@@ -477,12 +863,12 @@
     "request.AuthenticationRequest": {
       "type": "object",
       "required": [
-        "hwid",
+        "hardware_id",
         "password",
         "username"
       ],
       "properties": {
-        "hwid": {
+        "hardware_id": {
           "type": "string",
           "example": "QXV0aGVudGljQU1ENjA3NDA0"
         },
@@ -493,6 +879,29 @@
         "username": {
           "type": "string",
           "example": "my_legendary_username"
+        }
+      }
+    },
+    "request.CreateUpdateGameItem": {
+      "type": "object",
+      "required": [
+        "collection",
+        "name",
+        "rarity",
+        "type"
+      ],
+      "properties": {
+        "collection": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "rarity": {
+          "type": "integer"
+        },
+        "type": {
+          "type": "integer"
         }
       }
     },
