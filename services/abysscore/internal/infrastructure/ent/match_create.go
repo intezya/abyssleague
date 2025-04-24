@@ -4,7 +4,7 @@ package ent
 
 import (
 	"abysscore/internal/infrastructure/ent/match"
-	"abysscore/internal/infrastructure/ent/matchresult"
+	"abysscore/internal/infrastructure/ent/playermatchresult"
 	"abysscore/internal/infrastructure/ent/user"
 	"context"
 	"errors"
@@ -134,17 +134,17 @@ func (mc *MatchCreate) SetPlayer2(u *User) *MatchCreate {
 	return mc.SetPlayer2ID(u.ID)
 }
 
-// AddResultIDs adds the "results" edge to the MatchResult entity by IDs.
+// AddResultIDs adds the "results" edge to the PlayerMatchResult entity by IDs.
 func (mc *MatchCreate) AddResultIDs(ids ...int) *MatchCreate {
 	mc.mutation.AddResultIDs(ids...)
 	return mc
 }
 
-// AddResults adds the "results" edges to the MatchResult entity.
-func (mc *MatchCreate) AddResults(m ...*MatchResult) *MatchCreate {
-	ids := make([]int, len(m))
-	for i := range m {
-		ids[i] = m[i].ID
+// AddResults adds the "results" edges to the PlayerMatchResult entity.
+func (mc *MatchCreate) AddResults(p ...*PlayerMatchResult) *MatchCreate {
+	ids := make([]int, len(p))
+	for i := range p {
+		ids[i] = p[i].ID
 	}
 	return mc.AddResultIDs(ids...)
 }
@@ -353,7 +353,7 @@ func (mc *MatchCreate) createSpec() (*Match, *sqlgraph.CreateSpec) {
 			Columns: []string{match.ResultsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(matchresult.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(playermatchresult.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {

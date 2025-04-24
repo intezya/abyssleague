@@ -43,9 +43,13 @@ func (h *AuthenticationHandler) Register(c *fiber.Ctx) error {
 		return handleError(err, c)
 	}
 
-	result, err := tracer.TraceFnWithResult(ctx, "authService.Register", func(ctx context.Context) (*domainservice.AuthenticationResult, error) {
-		return h.authenticationService.Register(ctx, req.ToCredentialsDTO())
-	})
+	result, err := tracer.TraceFnWithResult(
+		ctx,
+		"authService.Register",
+		func(ctx context.Context) (*domainservice.AuthenticationResult, error) {
+			return h.authenticationService.Register(ctx, req.ToCredentialsDTO())
+		},
+	)
 
 	if err != nil {
 		return handleError(err, c)
@@ -80,9 +84,13 @@ func (h *AuthenticationHandler) Login(c *fiber.Ctx) error {
 		return handleError(err, c)
 	}
 
-	result, err := tracer.TraceFnWithResult(ctx, "authService.Authenticate", func(ctx context.Context) (*domainservice.AuthenticationResult, error) {
-		return h.authenticationService.Authenticate(ctx, req.ToCredentialsDTO())
-	})
+	result, err := tracer.TraceFnWithResult(
+		ctx,
+		"authService.Authenticate",
+		func(ctx context.Context) (*domainservice.AuthenticationResult, error) {
+			return h.authenticationService.Authenticate(ctx, req.ToCredentialsDTO())
+		},
+	)
 
 	if err != nil {
 		return handleError(err, c)
@@ -114,9 +122,13 @@ func (h *AuthenticationHandler) ChangePassword(c *fiber.Ctx) error {
 		return handleError(err, c)
 	}
 
-	result, err := tracer.TraceFnWithResult(ctx, "authService.ChangePassword", func(ctx context.Context) (*domainservice.AuthenticationResult, error) {
-		return h.authenticationService.ChangePassword(ctx, req.ToDTO())
-	})
+	result, err := tracer.TraceFnWithResult(
+		ctx,
+		"authService.ChangePassword",
+		func(ctx context.Context) (*domainservice.AuthenticationResult, error) {
+			return h.authenticationService.ChangePassword(ctx, req.ToDTO())
+		},
+	)
 
 	if err != nil {
 		return handleError(err, c)

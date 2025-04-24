@@ -54,10 +54,10 @@ const (
 	// Player2Column is the table column denoting the player2 relation/edge.
 	Player2Column = "player2_id"
 	// ResultsTable is the table that holds the results relation/edge.
-	ResultsTable = "match_results"
-	// ResultsInverseTable is the table name for the MatchResult entity.
-	// It exists in this package in order to avoid circular dependency with the "matchresult" package.
-	ResultsInverseTable = "match_results"
+	ResultsTable = "player_match_results"
+	// ResultsInverseTable is the table name for the PlayerMatchResult entity.
+	// It exists in this package in order to avoid circular dependency with the "playermatchresult" package.
+	ResultsInverseTable = "player_match_results"
 	// ResultsColumn is the table column denoting the results relation/edge.
 	ResultsColumn = "match_id"
 )

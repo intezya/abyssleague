@@ -25,7 +25,7 @@ func NewWebsocketServiceWrapper(factory *factory.GrpcClientFactory, serviceAddr 
 	wrapper := &WebsocketServiceWrapper{
 		factory:     factory,
 		serviceAddr: serviceAddr,
-		timeout:     500 * time.Millisecond,
+		timeout:     defaultGRPCTimeout,
 	}
 
 	go factory.GetAndSetWebsocketApiGatewayClient(serviceAddr, wrapper)

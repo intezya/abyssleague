@@ -7,7 +7,7 @@ import (
 	"abysscore/internal/infrastructure/ent/gameitem"
 	"abysscore/internal/infrastructure/ent/inventoryitem"
 	"abysscore/internal/infrastructure/ent/match"
-	"abysscore/internal/infrastructure/ent/matchresult"
+	"abysscore/internal/infrastructure/ent/playermatchresult"
 	"abysscore/internal/infrastructure/ent/predicate"
 	"abysscore/internal/infrastructure/ent/schema/access_level"
 	"abysscore/internal/infrastructure/ent/statistic"
@@ -32,14 +32,14 @@ const (
 	OpUpdateOne = ent.OpUpdateOne
 
 	// Node types.
-	TypeFriendRequest = "FriendRequest"
-	TypeGameItem      = "GameItem"
-	TypeInventoryItem = "InventoryItem"
-	TypeMatch         = "Match"
-	TypeMatchResult   = "MatchResult"
-	TypeStatistic     = "Statistic"
-	TypeUser          = "User"
-	TypeUserBalance   = "UserBalance"
+	TypeFriendRequest     = "FriendRequest"
+	TypeGameItem          = "GameItem"
+	TypeInventoryItem     = "InventoryItem"
+	TypeMatch             = "Match"
+	TypePlayerMatchResult = "PlayerMatchResult"
+	TypeStatistic         = "Statistic"
+	TypeUser              = "User"
+	TypeUserBalance       = "UserBalance"
 )
 
 // FriendRequestMutation represents an operation that mutates the FriendRequest nodes in the graph.
@@ -2451,7 +2451,7 @@ func (m *MatchMutation) ResetPlayer2() {
 	m.clearedplayer2 = false
 }
 
-// AddResultIDs adds the "results" edge to the MatchResult entity by ids.
+// AddResultIDs adds the "results" edge to the PlayerMatchResult entity by ids.
 func (m *MatchMutation) AddResultIDs(ids ...int) {
 	if m.results == nil {
 		m.results = make(map[int]struct{})
@@ -2461,17 +2461,17 @@ func (m *MatchMutation) AddResultIDs(ids ...int) {
 	}
 }
 
-// ClearResults clears the "results" edge to the MatchResult entity.
+// ClearResults clears the "results" edge to the PlayerMatchResult entity.
 func (m *MatchMutation) ClearResults() {
 	m.clearedresults = true
 }
 
-// ResultsCleared reports if the "results" edge to the MatchResult entity was cleared.
+// ResultsCleared reports if the "results" edge to the PlayerMatchResult entity was cleared.
 func (m *MatchMutation) ResultsCleared() bool {
 	return m.clearedresults
 }
 
-// RemoveResultIDs removes the "results" edge to the MatchResult entity by IDs.
+// RemoveResultIDs removes the "results" edge to the PlayerMatchResult entity by IDs.
 func (m *MatchMutation) RemoveResultIDs(ids ...int) {
 	if m.removedresults == nil {
 		m.removedresults = make(map[int]struct{})
@@ -2482,7 +2482,7 @@ func (m *MatchMutation) RemoveResultIDs(ids ...int) {
 	}
 }
 
-// RemovedResults returns the removed IDs of the "results" edge to the MatchResult entity.
+// RemovedResults returns the removed IDs of the "results" edge to the PlayerMatchResult entity.
 func (m *MatchMutation) RemovedResultsIDs() (ids []int) {
 	for id := range m.removedresults {
 		ids = append(ids, id)
@@ -2911,15 +2911,15 @@ func (m *MatchMutation) ResetEdge(name string) error {
 	return fmt.Errorf("unknown Match edge %s", name)
 }
 
-// MatchResultMutation represents an operation that mutates the MatchResult nodes in the graph.
-type MatchResultMutation struct {
+// PlayerMatchResultMutation represents an operation that mutates the PlayerMatchResult nodes in the graph.
+type PlayerMatchResultMutation struct {
 	config
 	op            Op
 	typ           string
 	id            *int
-	value         *int
-	addvalue      *int
-	is_retry      *bool
+	score         *int
+	addscore      *int
+	is_retried    *bool
 	created_at    *time.Time
 	clearedFields map[string]struct{}
 	match         *int
@@ -2927,21 +2927,21 @@ type MatchResultMutation struct {
 	user          *int
 	cleareduser   bool
 	done          bool
-	oldValue      func(context.Context) (*MatchResult, error)
-	predicates    []predicate.MatchResult
+	oldValue      func(context.Context) (*PlayerMatchResult, error)
+	predicates    []predicate.PlayerMatchResult
 }
 
-var _ ent.Mutation = (*MatchResultMutation)(nil)
+var _ ent.Mutation = (*PlayerMatchResultMutation)(nil)
 
-// matchresultOption allows management of the mutation configuration using functional options.
-type matchresultOption func(*MatchResultMutation)
+// playermatchresultOption allows management of the mutation configuration using functional options.
+type playermatchresultOption func(*PlayerMatchResultMutation)
 
-// newMatchResultMutation creates new mutation for the MatchResult entity.
-func newMatchResultMutation(c config, op Op, opts ...matchresultOption) *MatchResultMutation {
-	m := &MatchResultMutation{
+// newPlayerMatchResultMutation creates new mutation for the PlayerMatchResult entity.
+func newPlayerMatchResultMutation(c config, op Op, opts ...playermatchresultOption) *PlayerMatchResultMutation {
+	m := &PlayerMatchResultMutation{
 		config:        c,
 		op:            op,
-		typ:           TypeMatchResult,
+		typ:           TypePlayerMatchResult,
 		clearedFields: make(map[string]struct{}),
 	}
 	for _, opt := range opts {
@@ -2950,20 +2950,20 @@ func newMatchResultMutation(c config, op Op, opts ...matchresultOption) *MatchRe
 	return m
 }
 
-// withMatchResultID sets the ID field of the mutation.
-func withMatchResultID(id int) matchresultOption {
-	return func(m *MatchResultMutation) {
+// withPlayerMatchResultID sets the ID field of the mutation.
+func withPlayerMatchResultID(id int) playermatchresultOption {
+	return func(m *PlayerMatchResultMutation) {
 		var (
 			err   error
 			once  sync.Once
-			value *MatchResult
+			value *PlayerMatchResult
 		)
-		m.oldValue = func(ctx context.Context) (*MatchResult, error) {
+		m.oldValue = func(ctx context.Context) (*PlayerMatchResult, error) {
 			once.Do(func() {
 				if m.done {
 					err = errors.New("querying old values post mutation is not allowed")
 				} else {
-					value, err = m.Client().MatchResult.Get(ctx, id)
+					value, err = m.Client().PlayerMatchResult.Get(ctx, id)
 				}
 			})
 			return value, err
@@ -2972,10 +2972,10 @@ func withMatchResultID(id int) matchresultOption {
 	}
 }
 
-// withMatchResult sets the old MatchResult of the mutation.
-func withMatchResult(node *MatchResult) matchresultOption {
-	return func(m *MatchResultMutation) {
-		m.oldValue = func(context.Context) (*MatchResult, error) {
+// withPlayerMatchResult sets the old PlayerMatchResult of the mutation.
+func withPlayerMatchResult(node *PlayerMatchResult) playermatchresultOption {
+	return func(m *PlayerMatchResultMutation) {
+		m.oldValue = func(context.Context) (*PlayerMatchResult, error) {
 			return node, nil
 		}
 		m.id = &node.ID
@@ -2984,7 +2984,7 @@ func withMatchResult(node *MatchResult) matchresultOption {
 
 // Client returns a new `ent.Client` from the mutation. If the mutation was
 // executed in a transaction (ent.Tx), a transactional client is returned.
-func (m MatchResultMutation) Client() *Client {
+func (m PlayerMatchResultMutation) Client() *Client {
 	client := &Client{config: m.config}
 	client.init()
 	return client
@@ -2992,7 +2992,7 @@ func (m MatchResultMutation) Client() *Client {
 
 // Tx returns an `ent.Tx` for mutations that were executed in transactions;
 // it returns an error otherwise.
-func (m MatchResultMutation) Tx() (*Tx, error) {
+func (m PlayerMatchResultMutation) Tx() (*Tx, error) {
 	if _, ok := m.driver.(*txDriver); !ok {
 		return nil, errors.New("ent: mutation is not running in a transaction")
 	}
@@ -3002,14 +3002,14 @@ func (m MatchResultMutation) Tx() (*Tx, error) {
 }
 
 // SetID sets the value of the id field. Note that this
-// operation is only accepted on creation of MatchResult entities.
-func (m *MatchResultMutation) SetID(id int) {
+// operation is only accepted on creation of PlayerMatchResult entities.
+func (m *PlayerMatchResultMutation) SetID(id int) {
 	m.id = &id
 }
 
 // ID returns the ID value in the mutation. Note that the ID is only available
 // if it was provided to the builder or after it was returned from the database.
-func (m *MatchResultMutation) ID() (id int, exists bool) {
+func (m *PlayerMatchResultMutation) ID() (id int, exists bool) {
 	if m.id == nil {
 		return
 	}
@@ -3020,7 +3020,7 @@ func (m *MatchResultMutation) ID() (id int, exists bool) {
 // That means, if the mutation is applied within a transaction with an isolation level such
 // as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
 // or updated by the mutation.
-func (m *MatchResultMutation) IDs(ctx context.Context) ([]int, error) {
+func (m *PlayerMatchResultMutation) IDs(ctx context.Context) ([]int, error) {
 	switch {
 	case m.op.Is(OpUpdateOne | OpDeleteOne):
 		id, exists := m.ID()
@@ -3029,19 +3029,19 @@ func (m *MatchResultMutation) IDs(ctx context.Context) ([]int, error) {
 		}
 		fallthrough
 	case m.op.Is(OpUpdate | OpDelete):
-		return m.Client().MatchResult.Query().Where(m.predicates...).IDs(ctx)
+		return m.Client().PlayerMatchResult.Query().Where(m.predicates...).IDs(ctx)
 	default:
 		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
 	}
 }
 
 // SetMatchID sets the "match_id" field.
-func (m *MatchResultMutation) SetMatchID(i int) {
+func (m *PlayerMatchResultMutation) SetMatchID(i int) {
 	m.match = &i
 }
 
 // MatchID returns the value of the "match_id" field in the mutation.
-func (m *MatchResultMutation) MatchID() (r int, exists bool) {
+func (m *PlayerMatchResultMutation) MatchID() (r int, exists bool) {
 	v := m.match
 	if v == nil {
 		return
@@ -3049,10 +3049,10 @@ func (m *MatchResultMutation) MatchID() (r int, exists bool) {
 	return *v, true
 }
 
-// OldMatchID returns the old "match_id" field's value of the MatchResult entity.
-// If the MatchResult object wasn't provided to the builder, the object is fetched from the database.
+// OldMatchID returns the old "match_id" field's value of the PlayerMatchResult entity.
+// If the PlayerMatchResult object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *MatchResultMutation) OldMatchID(ctx context.Context) (v int, err error) {
+func (m *PlayerMatchResultMutation) OldMatchID(ctx context.Context) (v int, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldMatchID is only allowed on UpdateOne operations")
 	}
@@ -3067,17 +3067,17 @@ func (m *MatchResultMutation) OldMatchID(ctx context.Context) (v int, err error)
 }
 
 // ResetMatchID resets all changes to the "match_id" field.
-func (m *MatchResultMutation) ResetMatchID() {
+func (m *PlayerMatchResultMutation) ResetMatchID() {
 	m.match = nil
 }
 
 // SetPlayerID sets the "player_id" field.
-func (m *MatchResultMutation) SetPlayerID(i int) {
+func (m *PlayerMatchResultMutation) SetPlayerID(i int) {
 	m.user = &i
 }
 
 // PlayerID returns the value of the "player_id" field in the mutation.
-func (m *MatchResultMutation) PlayerID() (r int, exists bool) {
+func (m *PlayerMatchResultMutation) PlayerID() (r int, exists bool) {
 	v := m.user
 	if v == nil {
 		return
@@ -3085,10 +3085,10 @@ func (m *MatchResultMutation) PlayerID() (r int, exists bool) {
 	return *v, true
 }
 
-// OldPlayerID returns the old "player_id" field's value of the MatchResult entity.
-// If the MatchResult object wasn't provided to the builder, the object is fetched from the database.
+// OldPlayerID returns the old "player_id" field's value of the PlayerMatchResult entity.
+// If the PlayerMatchResult object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *MatchResultMutation) OldPlayerID(ctx context.Context) (v int, err error) {
+func (m *PlayerMatchResultMutation) OldPlayerID(ctx context.Context) (v int, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldPlayerID is only allowed on UpdateOne operations")
 	}
@@ -3103,109 +3103,109 @@ func (m *MatchResultMutation) OldPlayerID(ctx context.Context) (v int, err error
 }
 
 // ResetPlayerID resets all changes to the "player_id" field.
-func (m *MatchResultMutation) ResetPlayerID() {
+func (m *PlayerMatchResultMutation) ResetPlayerID() {
 	m.user = nil
 }
 
-// SetValue sets the "value" field.
-func (m *MatchResultMutation) SetValue(i int) {
-	m.value = &i
-	m.addvalue = nil
+// SetScore sets the "score" field.
+func (m *PlayerMatchResultMutation) SetScore(i int) {
+	m.score = &i
+	m.addscore = nil
 }
 
-// Value returns the value of the "value" field in the mutation.
-func (m *MatchResultMutation) Value() (r int, exists bool) {
-	v := m.value
+// Score returns the value of the "score" field in the mutation.
+func (m *PlayerMatchResultMutation) Score() (r int, exists bool) {
+	v := m.score
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// OldValue returns the old "value" field's value of the MatchResult entity.
-// If the MatchResult object wasn't provided to the builder, the object is fetched from the database.
+// OldScore returns the old "score" field's value of the PlayerMatchResult entity.
+// If the PlayerMatchResult object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *MatchResultMutation) OldValue(ctx context.Context) (v int, err error) {
+func (m *PlayerMatchResultMutation) OldScore(ctx context.Context) (v int, err error) {
 	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldValue is only allowed on UpdateOne operations")
+		return v, errors.New("OldScore is only allowed on UpdateOne operations")
 	}
 	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldValue requires an ID field in the mutation")
+		return v, errors.New("OldScore requires an ID field in the mutation")
 	}
 	oldValue, err := m.oldValue(ctx)
 	if err != nil {
-		return v, fmt.Errorf("querying old value for OldValue: %w", err)
+		return v, fmt.Errorf("querying old value for OldScore: %w", err)
 	}
-	return oldValue.Value, nil
+	return oldValue.Score, nil
 }
 
-// AddValue adds i to the "value" field.
-func (m *MatchResultMutation) AddValue(i int) {
-	if m.addvalue != nil {
-		*m.addvalue += i
+// AddScore adds i to the "score" field.
+func (m *PlayerMatchResultMutation) AddScore(i int) {
+	if m.addscore != nil {
+		*m.addscore += i
 	} else {
-		m.addvalue = &i
+		m.addscore = &i
 	}
 }
 
-// AddedValue returns the value that was added to the "value" field in this mutation.
-func (m *MatchResultMutation) AddedValue() (r int, exists bool) {
-	v := m.addvalue
+// AddedScore returns the value that was added to the "score" field in this mutation.
+func (m *PlayerMatchResultMutation) AddedScore() (r int, exists bool) {
+	v := m.addscore
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// ResetValue resets all changes to the "value" field.
-func (m *MatchResultMutation) ResetValue() {
-	m.value = nil
-	m.addvalue = nil
+// ResetScore resets all changes to the "score" field.
+func (m *PlayerMatchResultMutation) ResetScore() {
+	m.score = nil
+	m.addscore = nil
 }
 
-// SetIsRetry sets the "is_retry" field.
-func (m *MatchResultMutation) SetIsRetry(b bool) {
-	m.is_retry = &b
+// SetIsRetried sets the "is_retried" field.
+func (m *PlayerMatchResultMutation) SetIsRetried(b bool) {
+	m.is_retried = &b
 }
 
-// IsRetry returns the value of the "is_retry" field in the mutation.
-func (m *MatchResultMutation) IsRetry() (r bool, exists bool) {
-	v := m.is_retry
+// IsRetried returns the value of the "is_retried" field in the mutation.
+func (m *PlayerMatchResultMutation) IsRetried() (r bool, exists bool) {
+	v := m.is_retried
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// OldIsRetry returns the old "is_retry" field's value of the MatchResult entity.
-// If the MatchResult object wasn't provided to the builder, the object is fetched from the database.
+// OldIsRetried returns the old "is_retried" field's value of the PlayerMatchResult entity.
+// If the PlayerMatchResult object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *MatchResultMutation) OldIsRetry(ctx context.Context) (v bool, err error) {
+func (m *PlayerMatchResultMutation) OldIsRetried(ctx context.Context) (v bool, err error) {
 	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldIsRetry is only allowed on UpdateOne operations")
+		return v, errors.New("OldIsRetried is only allowed on UpdateOne operations")
 	}
 	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldIsRetry requires an ID field in the mutation")
+		return v, errors.New("OldIsRetried requires an ID field in the mutation")
 	}
 	oldValue, err := m.oldValue(ctx)
 	if err != nil {
-		return v, fmt.Errorf("querying old value for OldIsRetry: %w", err)
+		return v, fmt.Errorf("querying old value for OldIsRetried: %w", err)
 	}
-	return oldValue.IsRetry, nil
+	return oldValue.IsRetried, nil
 }
 
-// ResetIsRetry resets all changes to the "is_retry" field.
-func (m *MatchResultMutation) ResetIsRetry() {
-	m.is_retry = nil
+// ResetIsRetried resets all changes to the "is_retried" field.
+func (m *PlayerMatchResultMutation) ResetIsRetried() {
+	m.is_retried = nil
 }
 
 // SetCreatedAt sets the "created_at" field.
-func (m *MatchResultMutation) SetCreatedAt(t time.Time) {
+func (m *PlayerMatchResultMutation) SetCreatedAt(t time.Time) {
 	m.created_at = &t
 }
 
 // CreatedAt returns the value of the "created_at" field in the mutation.
-func (m *MatchResultMutation) CreatedAt() (r time.Time, exists bool) {
+func (m *PlayerMatchResultMutation) CreatedAt() (r time.Time, exists bool) {
 	v := m.created_at
 	if v == nil {
 		return
@@ -3213,10 +3213,10 @@ func (m *MatchResultMutation) CreatedAt() (r time.Time, exists bool) {
 	return *v, true
 }
 
-// OldCreatedAt returns the old "created_at" field's value of the MatchResult entity.
-// If the MatchResult object wasn't provided to the builder, the object is fetched from the database.
+// OldCreatedAt returns the old "created_at" field's value of the PlayerMatchResult entity.
+// If the PlayerMatchResult object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *MatchResultMutation) OldCreatedAt(ctx context.Context) (v time.Time, err error) {
+func (m *PlayerMatchResultMutation) OldCreatedAt(ctx context.Context) (v time.Time, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldCreatedAt is only allowed on UpdateOne operations")
 	}
@@ -3231,25 +3231,25 @@ func (m *MatchResultMutation) OldCreatedAt(ctx context.Context) (v time.Time, er
 }
 
 // ResetCreatedAt resets all changes to the "created_at" field.
-func (m *MatchResultMutation) ResetCreatedAt() {
+func (m *PlayerMatchResultMutation) ResetCreatedAt() {
 	m.created_at = nil
 }
 
 // ClearMatch clears the "match" edge to the Match entity.
-func (m *MatchResultMutation) ClearMatch() {
+func (m *PlayerMatchResultMutation) ClearMatch() {
 	m.clearedmatch = true
-	m.clearedFields[matchresult.FieldMatchID] = struct{}{}
+	m.clearedFields[playermatchresult.FieldMatchID] = struct{}{}
 }
 
 // MatchCleared reports if the "match" edge to the Match entity was cleared.
-func (m *MatchResultMutation) MatchCleared() bool {
+func (m *PlayerMatchResultMutation) MatchCleared() bool {
 	return m.clearedmatch
 }
 
 // MatchIDs returns the "match" edge IDs in the mutation.
 // Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
 // MatchID instead. It exists only for internal usage by the builders.
-func (m *MatchResultMutation) MatchIDs() (ids []int) {
+func (m *PlayerMatchResultMutation) MatchIDs() (ids []int) {
 	if id := m.match; id != nil {
 		ids = append(ids, *id)
 	}
@@ -3257,29 +3257,29 @@ func (m *MatchResultMutation) MatchIDs() (ids []int) {
 }
 
 // ResetMatch resets all changes to the "match" edge.
-func (m *MatchResultMutation) ResetMatch() {
+func (m *PlayerMatchResultMutation) ResetMatch() {
 	m.match = nil
 	m.clearedmatch = false
 }
 
 // SetUserID sets the "user" edge to the User entity by id.
-func (m *MatchResultMutation) SetUserID(id int) {
+func (m *PlayerMatchResultMutation) SetUserID(id int) {
 	m.user = &id
 }
 
 // ClearUser clears the "user" edge to the User entity.
-func (m *MatchResultMutation) ClearUser() {
+func (m *PlayerMatchResultMutation) ClearUser() {
 	m.cleareduser = true
-	m.clearedFields[matchresult.FieldPlayerID] = struct{}{}
+	m.clearedFields[playermatchresult.FieldPlayerID] = struct{}{}
 }
 
 // UserCleared reports if the "user" edge to the User entity was cleared.
-func (m *MatchResultMutation) UserCleared() bool {
+func (m *PlayerMatchResultMutation) UserCleared() bool {
 	return m.cleareduser
 }
 
 // UserID returns the "user" edge ID in the mutation.
-func (m *MatchResultMutation) UserID() (id int, exists bool) {
+func (m *PlayerMatchResultMutation) UserID() (id int, exists bool) {
 	if m.user != nil {
 		return *m.user, true
 	}
@@ -3289,7 +3289,7 @@ func (m *MatchResultMutation) UserID() (id int, exists bool) {
 // UserIDs returns the "user" edge IDs in the mutation.
 // Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
 // UserID instead. It exists only for internal usage by the builders.
-func (m *MatchResultMutation) UserIDs() (ids []int) {
+func (m *PlayerMatchResultMutation) UserIDs() (ids []int) {
 	if id := m.user; id != nil {
 		ids = append(ids, *id)
 	}
@@ -3297,20 +3297,20 @@ func (m *MatchResultMutation) UserIDs() (ids []int) {
 }
 
 // ResetUser resets all changes to the "user" edge.
-func (m *MatchResultMutation) ResetUser() {
+func (m *PlayerMatchResultMutation) ResetUser() {
 	m.user = nil
 	m.cleareduser = false
 }
 
-// Where appends a list predicates to the MatchResultMutation builder.
-func (m *MatchResultMutation) Where(ps ...predicate.MatchResult) {
+// Where appends a list predicates to the PlayerMatchResultMutation builder.
+func (m *PlayerMatchResultMutation) Where(ps ...predicate.PlayerMatchResult) {
 	m.predicates = append(m.predicates, ps...)
 }
 
-// WhereP appends storage-level predicates to the MatchResultMutation builder. Using this method,
+// WhereP appends storage-level predicates to the PlayerMatchResultMutation builder. Using this method,
 // users can use type-assertion to append predicates that do not depend on any generated package.
-func (m *MatchResultMutation) WhereP(ps ...func(*sql.Selector)) {
-	p := make([]predicate.MatchResult, len(ps))
+func (m *PlayerMatchResultMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.PlayerMatchResult, len(ps))
 	for i := range ps {
 		p[i] = ps[i]
 	}
@@ -3318,39 +3318,39 @@ func (m *MatchResultMutation) WhereP(ps ...func(*sql.Selector)) {
 }
 
 // Op returns the operation name.
-func (m *MatchResultMutation) Op() Op {
+func (m *PlayerMatchResultMutation) Op() Op {
 	return m.op
 }
 
 // SetOp allows setting the mutation operation.
-func (m *MatchResultMutation) SetOp(op Op) {
+func (m *PlayerMatchResultMutation) SetOp(op Op) {
 	m.op = op
 }
 
-// Type returns the node type of this mutation (MatchResult).
-func (m *MatchResultMutation) Type() string {
+// Type returns the node type of this mutation (PlayerMatchResult).
+func (m *PlayerMatchResultMutation) Type() string {
 	return m.typ
 }
 
 // Fields returns all fields that were changed during this mutation. Note that in
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
-func (m *MatchResultMutation) Fields() []string {
+func (m *PlayerMatchResultMutation) Fields() []string {
 	fields := make([]string, 0, 5)
 	if m.match != nil {
-		fields = append(fields, matchresult.FieldMatchID)
+		fields = append(fields, playermatchresult.FieldMatchID)
 	}
 	if m.user != nil {
-		fields = append(fields, matchresult.FieldPlayerID)
+		fields = append(fields, playermatchresult.FieldPlayerID)
 	}
-	if m.value != nil {
-		fields = append(fields, matchresult.FieldValue)
+	if m.score != nil {
+		fields = append(fields, playermatchresult.FieldScore)
 	}
-	if m.is_retry != nil {
-		fields = append(fields, matchresult.FieldIsRetry)
+	if m.is_retried != nil {
+		fields = append(fields, playermatchresult.FieldIsRetried)
 	}
 	if m.created_at != nil {
-		fields = append(fields, matchresult.FieldCreatedAt)
+		fields = append(fields, playermatchresult.FieldCreatedAt)
 	}
 	return fields
 }
@@ -3358,17 +3358,17 @@ func (m *MatchResultMutation) Fields() []string {
 // Field returns the value of a field with the given name. The second boolean
 // return value indicates that this field was not set, or was not defined in the
 // schema.
-func (m *MatchResultMutation) Field(name string) (ent.Value, bool) {
+func (m *PlayerMatchResultMutation) Field(name string) (ent.Value, bool) {
 	switch name {
-	case matchresult.FieldMatchID:
+	case playermatchresult.FieldMatchID:
 		return m.MatchID()
-	case matchresult.FieldPlayerID:
+	case playermatchresult.FieldPlayerID:
 		return m.PlayerID()
-	case matchresult.FieldValue:
-		return m.Value()
-	case matchresult.FieldIsRetry:
-		return m.IsRetry()
-	case matchresult.FieldCreatedAt:
+	case playermatchresult.FieldScore:
+		return m.Score()
+	case playermatchresult.FieldIsRetried:
+		return m.IsRetried()
+	case playermatchresult.FieldCreatedAt:
 		return m.CreatedAt()
 	}
 	return nil, false
@@ -3377,56 +3377,56 @@ func (m *MatchResultMutation) Field(name string) (ent.Value, bool) {
 // OldField returns the old value of the field from the database. An error is
 // returned if the mutation operation is not UpdateOne, or the query to the
 // database failed.
-func (m *MatchResultMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+func (m *PlayerMatchResultMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
 	switch name {
-	case matchresult.FieldMatchID:
+	case playermatchresult.FieldMatchID:
 		return m.OldMatchID(ctx)
-	case matchresult.FieldPlayerID:
+	case playermatchresult.FieldPlayerID:
 		return m.OldPlayerID(ctx)
-	case matchresult.FieldValue:
-		return m.OldValue(ctx)
-	case matchresult.FieldIsRetry:
-		return m.OldIsRetry(ctx)
-	case matchresult.FieldCreatedAt:
+	case playermatchresult.FieldScore:
+		return m.OldScore(ctx)
+	case playermatchresult.FieldIsRetried:
+		return m.OldIsRetried(ctx)
+	case playermatchresult.FieldCreatedAt:
 		return m.OldCreatedAt(ctx)
 	}
-	return nil, fmt.Errorf("unknown MatchResult field %s", name)
+	return nil, fmt.Errorf("unknown PlayerMatchResult field %s", name)
 }
 
 // SetField sets the value of a field with the given name. It returns an error if
 // the field is not defined in the schema, or if the type mismatched the field
 // type.
-func (m *MatchResultMutation) SetField(name string, value ent.Value) error {
+func (m *PlayerMatchResultMutation) SetField(name string, value ent.Value) error {
 	switch name {
-	case matchresult.FieldMatchID:
+	case playermatchresult.FieldMatchID:
 		v, ok := value.(int)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetMatchID(v)
 		return nil
-	case matchresult.FieldPlayerID:
+	case playermatchresult.FieldPlayerID:
 		v, ok := value.(int)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetPlayerID(v)
 		return nil
-	case matchresult.FieldValue:
+	case playermatchresult.FieldScore:
 		v, ok := value.(int)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
-		m.SetValue(v)
+		m.SetScore(v)
 		return nil
-	case matchresult.FieldIsRetry:
+	case playermatchresult.FieldIsRetried:
 		v, ok := value.(bool)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
-		m.SetIsRetry(v)
+		m.SetIsRetried(v)
 		return nil
-	case matchresult.FieldCreatedAt:
+	case playermatchresult.FieldCreatedAt:
 		v, ok := value.(time.Time)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
@@ -3434,15 +3434,15 @@ func (m *MatchResultMutation) SetField(name string, value ent.Value) error {
 		m.SetCreatedAt(v)
 		return nil
 	}
-	return fmt.Errorf("unknown MatchResult field %s", name)
+	return fmt.Errorf("unknown PlayerMatchResult field %s", name)
 }
 
 // AddedFields returns all numeric fields that were incremented/decremented during
 // this mutation.
-func (m *MatchResultMutation) AddedFields() []string {
+func (m *PlayerMatchResultMutation) AddedFields() []string {
 	var fields []string
-	if m.addvalue != nil {
-		fields = append(fields, matchresult.FieldValue)
+	if m.addscore != nil {
+		fields = append(fields, playermatchresult.FieldScore)
 	}
 	return fields
 }
@@ -3450,10 +3450,10 @@ func (m *MatchResultMutation) AddedFields() []string {
 // AddedField returns the numeric value that was incremented/decremented on a field
 // with the given name. The second boolean return value indicates that this field
 // was not set, or was not defined in the schema.
-func (m *MatchResultMutation) AddedField(name string) (ent.Value, bool) {
+func (m *PlayerMatchResultMutation) AddedField(name string) (ent.Value, bool) {
 	switch name {
-	case matchresult.FieldValue:
-		return m.AddedValue()
+	case playermatchresult.FieldScore:
+		return m.AddedScore()
 	}
 	return nil, false
 }
@@ -3461,82 +3461,82 @@ func (m *MatchResultMutation) AddedField(name string) (ent.Value, bool) {
 // AddField adds the value to the field with the given name. It returns an error if
 // the field is not defined in the schema, or if the type mismatched the field
 // type.
-func (m *MatchResultMutation) AddField(name string, value ent.Value) error {
+func (m *PlayerMatchResultMutation) AddField(name string, value ent.Value) error {
 	switch name {
-	case matchresult.FieldValue:
+	case playermatchresult.FieldScore:
 		v, ok := value.(int)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
-		m.AddValue(v)
+		m.AddScore(v)
 		return nil
 	}
-	return fmt.Errorf("unknown MatchResult numeric field %s", name)
+	return fmt.Errorf("unknown PlayerMatchResult numeric field %s", name)
 }
 
 // ClearedFields returns all nullable fields that were cleared during this
 // mutation.
-func (m *MatchResultMutation) ClearedFields() []string {
+func (m *PlayerMatchResultMutation) ClearedFields() []string {
 	return nil
 }
 
 // FieldCleared returns a boolean indicating if a field with the given name was
 // cleared in this mutation.
-func (m *MatchResultMutation) FieldCleared(name string) bool {
+func (m *PlayerMatchResultMutation) FieldCleared(name string) bool {
 	_, ok := m.clearedFields[name]
 	return ok
 }
 
 // ClearField clears the value of the field with the given name. It returns an
 // error if the field is not defined in the schema.
-func (m *MatchResultMutation) ClearField(name string) error {
-	return fmt.Errorf("unknown MatchResult nullable field %s", name)
+func (m *PlayerMatchResultMutation) ClearField(name string) error {
+	return fmt.Errorf("unknown PlayerMatchResult nullable field %s", name)
 }
 
 // ResetField resets all changes in the mutation for the field with the given name.
 // It returns an error if the field is not defined in the schema.
-func (m *MatchResultMutation) ResetField(name string) error {
+func (m *PlayerMatchResultMutation) ResetField(name string) error {
 	switch name {
-	case matchresult.FieldMatchID:
+	case playermatchresult.FieldMatchID:
 		m.ResetMatchID()
 		return nil
-	case matchresult.FieldPlayerID:
+	case playermatchresult.FieldPlayerID:
 		m.ResetPlayerID()
 		return nil
-	case matchresult.FieldValue:
-		m.ResetValue()
+	case playermatchresult.FieldScore:
+		m.ResetScore()
 		return nil
-	case matchresult.FieldIsRetry:
-		m.ResetIsRetry()
+	case playermatchresult.FieldIsRetried:
+		m.ResetIsRetried()
 		return nil
-	case matchresult.FieldCreatedAt:
+	case playermatchresult.FieldCreatedAt:
 		m.ResetCreatedAt()
 		return nil
 	}
-	return fmt.Errorf("unknown MatchResult field %s", name)
+	return fmt.Errorf("unknown PlayerMatchResult field %s", name)
 }
 
 // AddedEdges returns all edge names that were set/added in this mutation.
-func (m *MatchResultMutation) AddedEdges() []string {
+func (m *PlayerMatchResultMutation) AddedEdges() []string {
 	edges := make([]string, 0, 2)
 	if m.match != nil {
-		edges = append(edges, matchresult.EdgeMatch)
+		edges = append(edges, playermatchresult.EdgeMatch)
 	}
 	if m.user != nil {
-		edges = append(edges, matchresult.EdgeUser)
+		edges = append(edges, playermatchresult.EdgeUser)
 	}
 	return edges
 }
 
 // AddedIDs returns all IDs (to other nodes) that were added for the given edge
 // name in this mutation.
-func (m *MatchResultMutation) AddedIDs(name string) []ent.Value {
+func (m *PlayerMatchResultMutation) AddedIDs(name string) []ent.Value {
 	switch name {
-	case matchresult.EdgeMatch:
+	case playermatchresult.EdgeMatch:
 		if id := m.match; id != nil {
 			return []ent.Value{*id}
 		}
-	case matchresult.EdgeUser:
+	case playermatchresult.EdgeUser:
 		if id := m.user; id != nil {
 			return []ent.Value{*id}
 		}
@@ -3545,36 +3545,36 @@ func (m *MatchResultMutation) AddedIDs(name string) []ent.Value {
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
-func (m *MatchResultMutation) RemovedEdges() []string {
+func (m *PlayerMatchResultMutation) RemovedEdges() []string {
 	edges := make([]string, 0, 2)
 	return edges
 }
 
 // RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
 // the given name in this mutation.
-func (m *MatchResultMutation) RemovedIDs(name string) []ent.Value {
+func (m *PlayerMatchResultMutation) RemovedIDs(name string) []ent.Value {
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
-func (m *MatchResultMutation) ClearedEdges() []string {
+func (m *PlayerMatchResultMutation) ClearedEdges() []string {
 	edges := make([]string, 0, 2)
 	if m.clearedmatch {
-		edges = append(edges, matchresult.EdgeMatch)
+		edges = append(edges, playermatchresult.EdgeMatch)
 	}
 	if m.cleareduser {
-		edges = append(edges, matchresult.EdgeUser)
+		edges = append(edges, playermatchresult.EdgeUser)
 	}
 	return edges
 }
 
 // EdgeCleared returns a boolean which indicates if the edge with the given name
 // was cleared in this mutation.
-func (m *MatchResultMutation) EdgeCleared(name string) bool {
+func (m *PlayerMatchResultMutation) EdgeCleared(name string) bool {
 	switch name {
-	case matchresult.EdgeMatch:
+	case playermatchresult.EdgeMatch:
 		return m.clearedmatch
-	case matchresult.EdgeUser:
+	case playermatchresult.EdgeUser:
 		return m.cleareduser
 	}
 	return false
@@ -3582,30 +3582,30 @@ func (m *MatchResultMutation) EdgeCleared(name string) bool {
 
 // ClearEdge clears the value of the edge with the given name. It returns an error
 // if that edge is not defined in the schema.
-func (m *MatchResultMutation) ClearEdge(name string) error {
+func (m *PlayerMatchResultMutation) ClearEdge(name string) error {
 	switch name {
-	case matchresult.EdgeMatch:
+	case playermatchresult.EdgeMatch:
 		m.ClearMatch()
 		return nil
-	case matchresult.EdgeUser:
+	case playermatchresult.EdgeUser:
 		m.ClearUser()
 		return nil
 	}
-	return fmt.Errorf("unknown MatchResult unique edge %s", name)
+	return fmt.Errorf("unknown PlayerMatchResult unique edge %s", name)
 }
 
 // ResetEdge resets all changes to the edge with the given name in this mutation.
 // It returns an error if the edge is not defined in the schema.
-func (m *MatchResultMutation) ResetEdge(name string) error {
+func (m *PlayerMatchResultMutation) ResetEdge(name string) error {
 	switch name {
-	case matchresult.EdgeMatch:
+	case playermatchresult.EdgeMatch:
 		m.ResetMatch()
 		return nil
-	case matchresult.EdgeUser:
+	case playermatchresult.EdgeUser:
 		m.ResetUser()
 		return nil
 	}
-	return fmt.Errorf("unknown MatchResult edge %s", name)
+	return fmt.Errorf("unknown PlayerMatchResult edge %s", name)
 }
 
 // StatisticMutation represents an operation that mutates the Statistic nodes in the graph.

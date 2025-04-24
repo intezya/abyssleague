@@ -17,20 +17,20 @@ type SuccessResponse struct {
 type CreateGameItemDTOSuccessResponse struct {
 	Message string          `json:"message" example:"success"`
 	Data    dto.GameItemDTO `json:"data"`
-	Code    int             `json:"code" example:"200"`
+	Code    int             `json:"code"    example:"200"`
 	Path    string          `json:"path"`
 }
 
 type FindGameItemDTOSuccessResponse struct {
 	Message string          `json:"message" example:"success"`
 	Data    dto.GameItemDTO `json:"data"`
-	Code    int             `json:"code" example:"200"`
+	Code    int             `json:"code"    example:"200"`
 	Path    string          `json:"path"`
 }
 
 type AuthenticationSuccessResponse struct {
 	Message string                             `json:"message" example:"success"`
 	Data    domainservice.AuthenticationResult `json:"data"`
-	Code    int                                `json:"code" example:"200"`
+	Code    int                                `json:"code"    example:"200"`
 	Path    string                             `json:"path"`
 }

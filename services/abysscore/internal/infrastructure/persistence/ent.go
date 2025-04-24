@@ -9,6 +9,11 @@ import (
 	"time"
 )
 
+const (
+	defaultEntReconnectMaxRetries = 5
+	defaultEntReconnectDelay      = 2 * time.Second
+)
+
 type EntConfig struct {
 	driverName string
 	source     string
@@ -31,8 +36,8 @@ func NewEntConfig(
 }
 
 func SetupEnt(config *EntConfig) *ent.Client {
-	maxRetries := gt0(config.maxRetries, 5)
-	retryDelay := gt0(config.retryDelay, 2*time.Second)
+	maxRetries := gt0(config.maxRetries, defaultEntReconnectMaxRetries)
+	retryDelay := gt0(config.retryDelay, defaultEntReconnectDelay)
 
 	var entClient *ent.Client
 

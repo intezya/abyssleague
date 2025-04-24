@@ -15,7 +15,7 @@ import (
 	"abysscore/internal/infrastructure/ent/gameitem"
 	"abysscore/internal/infrastructure/ent/inventoryitem"
 	"abysscore/internal/infrastructure/ent/match"
-	"abysscore/internal/infrastructure/ent/matchresult"
+	"abysscore/internal/infrastructure/ent/playermatchresult"
 	"abysscore/internal/infrastructure/ent/statistic"
 	"abysscore/internal/infrastructure/ent/user"
 	"abysscore/internal/infrastructure/ent/userbalance"
@@ -39,8 +39,8 @@ type Client struct {
 	InventoryItem *InventoryItemClient
 	// Match is the client for interacting with the Match builders.
 	Match *MatchClient
-	// MatchResult is the client for interacting with the MatchResult builders.
-	MatchResult *MatchResultClient
+	// PlayerMatchResult is the client for interacting with the PlayerMatchResult builders.
+	PlayerMatchResult *PlayerMatchResultClient
 	// Statistic is the client for interacting with the Statistic builders.
 	Statistic *StatisticClient
 	// User is the client for interacting with the User builders.
@@ -62,7 +62,7 @@ func (c *Client) init() {
 	c.GameItem = NewGameItemClient(c.config)
 	c.InventoryItem = NewInventoryItemClient(c.config)
 	c.Match = NewMatchClient(c.config)
-	c.MatchResult = NewMatchResultClient(c.config)
+	c.PlayerMatchResult = NewPlayerMatchResultClient(c.config)
 	c.Statistic = NewStatisticClient(c.config)
 	c.User = NewUserClient(c.config)
 	c.UserBalance = NewUserBalanceClient(c.config)
@@ -156,16 +156,16 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 	cfg := c.config
 	cfg.driver = tx
 	return &Tx{
-		ctx:           ctx,
-		config:        cfg,
-		FriendRequest: NewFriendRequestClient(cfg),
-		GameItem:      NewGameItemClient(cfg),
-		InventoryItem: NewInventoryItemClient(cfg),
-		Match:         NewMatchClient(cfg),
-		MatchResult:   NewMatchResultClient(cfg),
-		Statistic:     NewStatisticClient(cfg),
-		User:          NewUserClient(cfg),
-		UserBalance:   NewUserBalanceClient(cfg),
+		ctx:               ctx,
+		config:            cfg,
+		FriendRequest:     NewFriendRequestClient(cfg),
+		GameItem:          NewGameItemClient(cfg),
+		InventoryItem:     NewInventoryItemClient(cfg),
+		Match:             NewMatchClient(cfg),
+		PlayerMatchResult: NewPlayerMatchResultClient(cfg),
+		Statistic:         NewStatisticClient(cfg),
+		User:              NewUserClient(cfg),
+		UserBalance:       NewUserBalanceClient(cfg),
 	}, nil
 }
 
@@ -183,16 +183,16 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 	cfg := c.config
 	cfg.driver = &txDriver{tx: tx, drv: c.driver}
 	return &Tx{
-		ctx:           ctx,
-		config:        cfg,
-		FriendRequest: NewFriendRequestClient(cfg),
-		GameItem:      NewGameItemClient(cfg),
-		InventoryItem: NewInventoryItemClient(cfg),
-		Match:         NewMatchClient(cfg),
-		MatchResult:   NewMatchResultClient(cfg),
-		Statistic:     NewStatisticClient(cfg),
-		User:          NewUserClient(cfg),
-		UserBalance:   NewUserBalanceClient(cfg),
+		ctx:               ctx,
+		config:            cfg,
+		FriendRequest:     NewFriendRequestClient(cfg),
+		GameItem:          NewGameItemClient(cfg),
+		InventoryItem:     NewInventoryItemClient(cfg),
+		Match:             NewMatchClient(cfg),
+		PlayerMatchResult: NewPlayerMatchResultClient(cfg),
+		Statistic:         NewStatisticClient(cfg),
+		User:              NewUserClient(cfg),
+		UserBalance:       NewUserBalanceClient(cfg),
 	}, nil
 }
 
@@ -222,7 +222,7 @@ func (c *Client) Close() error {
 // In order to add hooks to a specific client, call: `client.Node.Use(...)`.
 func (c *Client) Use(hooks ...Hook) {
 	for _, n := range []interface{ Use(...Hook) }{
-		c.FriendRequest, c.GameItem, c.InventoryItem, c.Match, c.MatchResult,
+		c.FriendRequest, c.GameItem, c.InventoryItem, c.Match, c.PlayerMatchResult,
 		c.Statistic, c.User, c.UserBalance,
 	} {
 		n.Use(hooks...)
@@ -233,7 +233,7 @@ func (c *Client) Use(hooks ...Hook) {
 // In order to add interceptors to a specific client, call: `client.Node.Intercept(...)`.
 func (c *Client) Intercept(interceptors ...Interceptor) {
 	for _, n := range []interface{ Intercept(...Interceptor) }{
-		c.FriendRequest, c.GameItem, c.InventoryItem, c.Match, c.MatchResult,
+		c.FriendRequest, c.GameItem, c.InventoryItem, c.Match, c.PlayerMatchResult,
 		c.Statistic, c.User, c.UserBalance,
 	} {
 		n.Intercept(interceptors...)
@@ -251,8 +251,8 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.InventoryItem.mutate(ctx, m)
 	case *MatchMutation:
 		return c.Match.mutate(ctx, m)
-	case *MatchResultMutation:
-		return c.MatchResult.mutate(ctx, m)
+	case *PlayerMatchResultMutation:
+		return c.PlayerMatchResult.mutate(ctx, m)
 	case *StatisticMutation:
 		return c.Statistic.mutate(ctx, m)
 	case *UserMutation:
@@ -884,13 +884,13 @@ func (c *MatchClient) QueryPlayer2(m *Match) *UserQuery {
 }
 
 // QueryResults queries the results edge of a Match.
-func (c *MatchClient) QueryResults(m *Match) *MatchResultQuery {
-	query := (&MatchResultClient{config: c.config}).Query()
+func (c *MatchClient) QueryResults(m *Match) *PlayerMatchResultQuery {
+	query := (&PlayerMatchResultClient{config: c.config}).Query()
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
 		id := m.ID
 		step := sqlgraph.NewStep(
 			sqlgraph.From(match.Table, match.FieldID, id),
-			sqlgraph.To(matchresult.Table, matchresult.FieldID),
+			sqlgraph.To(playermatchresult.Table, playermatchresult.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, match.ResultsTable, match.ResultsColumn),
 		)
 		fromV = sqlgraph.Neighbors(m.driver.Dialect(), step)
@@ -924,107 +924,107 @@ func (c *MatchClient) mutate(ctx context.Context, m *MatchMutation) (Value, erro
 	}
 }
 
-// MatchResultClient is a client for the MatchResult schema.
-type MatchResultClient struct {
+// PlayerMatchResultClient is a client for the PlayerMatchResult schema.
+type PlayerMatchResultClient struct {
 	config
 }
 
-// NewMatchResultClient returns a client for the MatchResult from the given config.
-func NewMatchResultClient(c config) *MatchResultClient {
-	return &MatchResultClient{config: c}
+// NewPlayerMatchResultClient returns a client for the PlayerMatchResult from the given config.
+func NewPlayerMatchResultClient(c config) *PlayerMatchResultClient {
+	return &PlayerMatchResultClient{config: c}
 }
 
 // Use adds a list of mutation hooks to the hooks stack.
-// A call to `Use(f, g, h)` equals to `matchresult.Hooks(f(g(h())))`.
-func (c *MatchResultClient) Use(hooks ...Hook) {
-	c.hooks.MatchResult = append(c.hooks.MatchResult, hooks...)
+// A call to `Use(f, g, h)` equals to `playermatchresult.Hooks(f(g(h())))`.
+func (c *PlayerMatchResultClient) Use(hooks ...Hook) {
+	c.hooks.PlayerMatchResult = append(c.hooks.PlayerMatchResult, hooks...)
 }
 
 // Intercept adds a list of query interceptors to the interceptors stack.
-// A call to `Intercept(f, g, h)` equals to `matchresult.Intercept(f(g(h())))`.
-func (c *MatchResultClient) Intercept(interceptors ...Interceptor) {
-	c.inters.MatchResult = append(c.inters.MatchResult, interceptors...)
+// A call to `Intercept(f, g, h)` equals to `playermatchresult.Intercept(f(g(h())))`.
+func (c *PlayerMatchResultClient) Intercept(interceptors ...Interceptor) {
+	c.inters.PlayerMatchResult = append(c.inters.PlayerMatchResult, interceptors...)
 }
 
-// Create returns a builder for creating a MatchResult entity.
-func (c *MatchResultClient) Create() *MatchResultCreate {
-	mutation := newMatchResultMutation(c.config, OpCreate)
-	return &MatchResultCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+// Create returns a builder for creating a PlayerMatchResult entity.
+func (c *PlayerMatchResultClient) Create() *PlayerMatchResultCreate {
+	mutation := newPlayerMatchResultMutation(c.config, OpCreate)
+	return &PlayerMatchResultCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
-// CreateBulk returns a builder for creating a bulk of MatchResult entities.
-func (c *MatchResultClient) CreateBulk(builders ...*MatchResultCreate) *MatchResultCreateBulk {
-	return &MatchResultCreateBulk{config: c.config, builders: builders}
+// CreateBulk returns a builder for creating a bulk of PlayerMatchResult entities.
+func (c *PlayerMatchResultClient) CreateBulk(builders ...*PlayerMatchResultCreate) *PlayerMatchResultCreateBulk {
+	return &PlayerMatchResultCreateBulk{config: c.config, builders: builders}
 }
 
 // MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
 // a builder and applies setFunc on it.
-func (c *MatchResultClient) MapCreateBulk(slice any, setFunc func(*MatchResultCreate, int)) *MatchResultCreateBulk {
+func (c *PlayerMatchResultClient) MapCreateBulk(slice any, setFunc func(*PlayerMatchResultCreate, int)) *PlayerMatchResultCreateBulk {
 	rv := reflect.ValueOf(slice)
 	if rv.Kind() != reflect.Slice {
-		return &MatchResultCreateBulk{err: fmt.Errorf("calling to MatchResultClient.MapCreateBulk with wrong type %T, need slice", slice)}
+		return &PlayerMatchResultCreateBulk{err: fmt.Errorf("calling to PlayerMatchResultClient.MapCreateBulk with wrong type %T, need slice", slice)}
 	}
-	builders := make([]*MatchResultCreate, rv.Len())
+	builders := make([]*PlayerMatchResultCreate, rv.Len())
 	for i := 0; i < rv.Len(); i++ {
 		builders[i] = c.Create()
 		setFunc(builders[i], i)
 	}
-	return &MatchResultCreateBulk{config: c.config, builders: builders}
+	return &PlayerMatchResultCreateBulk{config: c.config, builders: builders}
 }
 
-// Update returns an update builder for MatchResult.
-func (c *MatchResultClient) Update() *MatchResultUpdate {
-	mutation := newMatchResultMutation(c.config, OpUpdate)
-	return &MatchResultUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+// Update returns an update builder for PlayerMatchResult.
+func (c *PlayerMatchResultClient) Update() *PlayerMatchResultUpdate {
+	mutation := newPlayerMatchResultMutation(c.config, OpUpdate)
+	return &PlayerMatchResultUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
 // UpdateOne returns an update builder for the given entity.
-func (c *MatchResultClient) UpdateOne(mr *MatchResult) *MatchResultUpdateOne {
-	mutation := newMatchResultMutation(c.config, OpUpdateOne, withMatchResult(mr))
-	return &MatchResultUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+func (c *PlayerMatchResultClient) UpdateOne(pmr *PlayerMatchResult) *PlayerMatchResultUpdateOne {
+	mutation := newPlayerMatchResultMutation(c.config, OpUpdateOne, withPlayerMatchResult(pmr))
+	return &PlayerMatchResultUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
 // UpdateOneID returns an update builder for the given id.
-func (c *MatchResultClient) UpdateOneID(id int) *MatchResultUpdateOne {
-	mutation := newMatchResultMutation(c.config, OpUpdateOne, withMatchResultID(id))
-	return &MatchResultUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+func (c *PlayerMatchResultClient) UpdateOneID(id int) *PlayerMatchResultUpdateOne {
+	mutation := newPlayerMatchResultMutation(c.config, OpUpdateOne, withPlayerMatchResultID(id))
+	return &PlayerMatchResultUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
-// Delete returns a delete builder for MatchResult.
-func (c *MatchResultClient) Delete() *MatchResultDelete {
-	mutation := newMatchResultMutation(c.config, OpDelete)
-	return &MatchResultDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+// Delete returns a delete builder for PlayerMatchResult.
+func (c *PlayerMatchResultClient) Delete() *PlayerMatchResultDelete {
+	mutation := newPlayerMatchResultMutation(c.config, OpDelete)
+	return &PlayerMatchResultDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
 // DeleteOne returns a builder for deleting the given entity.
-func (c *MatchResultClient) DeleteOne(mr *MatchResult) *MatchResultDeleteOne {
-	return c.DeleteOneID(mr.ID)
+func (c *PlayerMatchResultClient) DeleteOne(pmr *PlayerMatchResult) *PlayerMatchResultDeleteOne {
+	return c.DeleteOneID(pmr.ID)
 }
 
 // DeleteOneID returns a builder for deleting the given entity by its id.
-func (c *MatchResultClient) DeleteOneID(id int) *MatchResultDeleteOne {
-	builder := c.Delete().Where(matchresult.ID(id))
+func (c *PlayerMatchResultClient) DeleteOneID(id int) *PlayerMatchResultDeleteOne {
+	builder := c.Delete().Where(playermatchresult.ID(id))
 	builder.mutation.id = &id
 	builder.mutation.op = OpDeleteOne
-	return &MatchResultDeleteOne{builder}
+	return &PlayerMatchResultDeleteOne{builder}
 }
 
-// Query returns a query builder for MatchResult.
-func (c *MatchResultClient) Query() *MatchResultQuery {
-	return &MatchResultQuery{
+// Query returns a query builder for PlayerMatchResult.
+func (c *PlayerMatchResultClient) Query() *PlayerMatchResultQuery {
+	return &PlayerMatchResultQuery{
 		config: c.config,
-		ctx:    &QueryContext{Type: TypeMatchResult},
+		ctx:    &QueryContext{Type: TypePlayerMatchResult},
 		inters: c.Interceptors(),
 	}
 }
 
-// Get returns a MatchResult entity by its id.
-func (c *MatchResultClient) Get(ctx context.Context, id int) (*MatchResult, error) {
-	return c.Query().Where(matchresult.ID(id)).Only(ctx)
+// Get returns a PlayerMatchResult entity by its id.
+func (c *PlayerMatchResultClient) Get(ctx context.Context, id int) (*PlayerMatchResult, error) {
+	return c.Query().Where(playermatchresult.ID(id)).Only(ctx)
 }
 
 // GetX is like Get, but panics if an error occurs.
-func (c *MatchResultClient) GetX(ctx context.Context, id int) *MatchResult {
+func (c *PlayerMatchResultClient) GetX(ctx context.Context, id int) *PlayerMatchResult {
 	obj, err := c.Get(ctx, id)
 	if err != nil {
 		panic(err)
@@ -1032,60 +1032,60 @@ func (c *MatchResultClient) GetX(ctx context.Context, id int) *MatchResult {
 	return obj
 }
 
-// QueryMatch queries the match edge of a MatchResult.
-func (c *MatchResultClient) QueryMatch(mr *MatchResult) *MatchQuery {
+// QueryMatch queries the match edge of a PlayerMatchResult.
+func (c *PlayerMatchResultClient) QueryMatch(pmr *PlayerMatchResult) *MatchQuery {
 	query := (&MatchClient{config: c.config}).Query()
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := mr.ID
+		id := pmr.ID
 		step := sqlgraph.NewStep(
-			sqlgraph.From(matchresult.Table, matchresult.FieldID, id),
+			sqlgraph.From(playermatchresult.Table, playermatchresult.FieldID, id),
 			sqlgraph.To(match.Table, match.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, matchresult.MatchTable, matchresult.MatchColumn),
+			sqlgraph.Edge(sqlgraph.M2O, true, playermatchresult.MatchTable, playermatchresult.MatchColumn),
 		)
-		fromV = sqlgraph.Neighbors(mr.driver.Dialect(), step)
+		fromV = sqlgraph.Neighbors(pmr.driver.Dialect(), step)
 		return fromV, nil
 	}
 	return query
 }
 
-// QueryUser queries the user edge of a MatchResult.
-func (c *MatchResultClient) QueryUser(mr *MatchResult) *UserQuery {
+// QueryUser queries the user edge of a PlayerMatchResult.
+func (c *PlayerMatchResultClient) QueryUser(pmr *PlayerMatchResult) *UserQuery {
 	query := (&UserClient{config: c.config}).Query()
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := mr.ID
+		id := pmr.ID
 		step := sqlgraph.NewStep(
-			sqlgraph.From(matchresult.Table, matchresult.FieldID, id),
+			sqlgraph.From(playermatchresult.Table, playermatchresult.FieldID, id),
 			sqlgraph.To(user.Table, user.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, matchresult.UserTable, matchresult.UserColumn),
+			sqlgraph.Edge(sqlgraph.M2O, false, playermatchresult.UserTable, playermatchresult.UserColumn),
 		)
-		fromV = sqlgraph.Neighbors(mr.driver.Dialect(), step)
+		fromV = sqlgraph.Neighbors(pmr.driver.Dialect(), step)
 		return fromV, nil
 	}
 	return query
 }
 
 // Hooks returns the client hooks.
-func (c *MatchResultClient) Hooks() []Hook {
-	return c.hooks.MatchResult
+func (c *PlayerMatchResultClient) Hooks() []Hook {
+	return c.hooks.PlayerMatchResult
 }
 
 // Interceptors returns the client interceptors.
-func (c *MatchResultClient) Interceptors() []Interceptor {
-	return c.inters.MatchResult
+func (c *PlayerMatchResultClient) Interceptors() []Interceptor {
+	return c.inters.PlayerMatchResult
 }
 
-func (c *MatchResultClient) mutate(ctx context.Context, m *MatchResultMutation) (Value, error) {
+func (c *PlayerMatchResultClient) mutate(ctx context.Context, m *PlayerMatchResultMutation) (Value, error) {
 	switch m.Op() {
 	case OpCreate:
-		return (&MatchResultCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+		return (&PlayerMatchResultCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
 	case OpUpdate:
-		return (&MatchResultUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+		return (&PlayerMatchResultUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
 	case OpUpdateOne:
-		return (&MatchResultUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+		return (&PlayerMatchResultUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
 	case OpDelete, OpDeleteOne:
-		return (&MatchResultDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+		return (&PlayerMatchResultDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
 	default:
-		return nil, fmt.Errorf("ent: unknown MatchResult mutation op: %q", m.Op())
+		return nil, fmt.Errorf("ent: unknown PlayerMatchResult mutation op: %q", m.Op())
 	}
 }
 
@@ -1651,11 +1651,11 @@ func (c *UserBalanceClient) mutate(ctx context.Context, m *UserBalanceMutation) 
 // hooks and interceptors per client, for fast access.
 type (
 	hooks struct {
-		FriendRequest, GameItem, InventoryItem, Match, MatchResult, Statistic, User,
-		UserBalance []ent.Hook
+		FriendRequest, GameItem, InventoryItem, Match, PlayerMatchResult, Statistic,
+		User, UserBalance []ent.Hook
 	}
 	inters struct {
-		FriendRequest, GameItem, InventoryItem, Match, MatchResult, Statistic, User,
-		UserBalance []ent.Interceptor
+		FriendRequest, GameItem, InventoryItem, Match, PlayerMatchResult, Statistic,
+		User, UserBalance []ent.Interceptor
 	}
 )

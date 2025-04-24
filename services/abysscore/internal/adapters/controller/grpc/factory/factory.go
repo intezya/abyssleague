@@ -18,6 +18,17 @@ type GRPCConfig struct {
 const mainWebsocketServerIdx = 0
 const draftWebsocketServerIdx = 1
 
+const (
+	gRPCMaxRetries     = 10
+	gRPCReconnectDelay = 5 * time.Second
+
+	gRPCMaxCallRecvMsgSize = 10 * 1024 * 1024
+	gRPCMaxCallSendMsgSize = 10 * 1024 * 1024
+
+	gRPCKeepAliveTime    = 20 * time.Second // ???
+	gRPCKeepAliveTimeout = 5 * time.Second
+)
+
 func (g *GRPCConfig) MainWebsocketServerAddress() string {
 	if len(g.WebsocketApiGatewayHost) == mainWebsocketServerIdx {
 		return ""
@@ -66,27 +77,24 @@ func (f *GrpcClientFactory) GetAndSetWebsocketApiGatewayClient(
 		return client.(websocketpb.WebsocketServiceClient)
 	}
 
-	maxRetries := 1
-	retryInterval := 1 * time.Second
-
 	var conn *grpc.ClientConn
 
 	var err error
 
-	for attempt := 1; attempt <= maxRetries; attempt++ {
-		logger.Log.Infof("Connection attempt to %s (%d of %d)", address, attempt, maxRetries)
+	for attempt := 1; attempt <= gRPCMaxRetries; attempt++ {
+		logger.Log.Infof("Connection attempt to %s (%d of %d)", address, attempt, gRPCMaxRetries)
 
 		conn, err = grpc.NewClient(
 			address,
 			grpc.WithTransportCredentials(insecure.NewCredentials()),
 			grpc.WithDefaultCallOptions(
-				grpc.MaxCallRecvMsgSize(10*1024*1024),
-				grpc.MaxCallSendMsgSize(10*1024*1024),
+				grpc.MaxCallRecvMsgSize(gRPCMaxCallRecvMsgSize),
+				grpc.MaxCallSendMsgSize(gRPCMaxCallSendMsgSize),
 			),
 			grpc.WithKeepaliveParams(
 				keepalive.ClientParameters{
-					Time:                20 * time.Second,
-					Timeout:             time.Second,
+					Time:                gRPCKeepAliveTime,
+					Timeout:             gRPCKeepAliveTimeout,
 					PermitWithoutStream: true,
 				},
 			),
@@ -98,10 +106,10 @@ func (f *GrpcClientFactory) GetAndSetWebsocketApiGatewayClient(
 			break
 		}
 
-		logger.Log.Infof("Connection to %s failed: %v , retrying in %v seconds...", address, err, retryInterval)
+		logger.Log.Infof("Connection to %s failed: %v , retrying in %v seconds...", address, err, gRPCReconnectDelay)
 
-		if attempt < maxRetries {
-			time.Sleep(retryInterval)
+		if attempt < gRPCMaxRetries {
+			time.Sleep(gRPCReconnectDelay)
 		}
 	}
 

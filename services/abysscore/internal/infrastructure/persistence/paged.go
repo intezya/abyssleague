@@ -1,8 +1,13 @@
 package persistence
 
+const (
+	defaultPage     = 1
+	defaultPageSize = 10
+)
+
 func getValidPage(page int) int {
 	if page < 1 {
-		return 1
+		return defaultPage
 	}
 
 	return page
@@ -10,7 +15,7 @@ func getValidPage(page int) int {
 
 func getValidSize(size int) int {
 	if size < 1 {
-		return 10
+		return defaultPageSize
 	}
 
 	return size

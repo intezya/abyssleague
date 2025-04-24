@@ -31,13 +31,15 @@ func main() {
 	entClient := persistence.SetupEnt(appConfig.EntConfig)
 	redisClient := rediswrapper.NewClientWrapper(appConfig.RedisConfig)
 	grpcFactory := factory.NewGrpcClientFactory()
+
 	logger.Log.Debug("grpcFactory has been initialized")
 
 	defer func() {
 		tracerCleanup()
-		_ = entClient.Close()
 		redisClient.Close()
 		grpcFactory.CloseAll()
+
+		_ = entClient.Close()
 	}()
 
 	gRPCDependencies := wrapper.NewDependencyProvider(appConfig.GRPCConfig, grpcFactory)

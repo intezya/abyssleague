@@ -47,7 +47,7 @@ type MatchEdges struct {
 	// Player2 holds the value of the player2 edge.
 	Player2 *User `json:"player2,omitempty"`
 	// Results holds the value of the results edge.
-	Results []*MatchResult `json:"results,omitempty"`
+	Results []*PlayerMatchResult `json:"results,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
 	loadedTypes [3]bool
@@ -77,7 +77,7 @@ func (e MatchEdges) Player2OrErr() (*User, error) {
 
 // ResultsOrErr returns the Results value or an error if the edge
 // was not loaded in eager-loading.
-func (e MatchEdges) ResultsOrErr() ([]*MatchResult, error) {
+func (e MatchEdges) ResultsOrErr() ([]*PlayerMatchResult, error) {
 	if e.loadedTypes[2] {
 		return e.Results, nil
 	}
@@ -189,7 +189,7 @@ func (m *Match) QueryPlayer2() *UserQuery {
 }
 
 // QueryResults queries the "results" edge of the Match entity.
-func (m *Match) QueryResults() *MatchResultQuery {
+func (m *Match) QueryResults() *PlayerMatchResultQuery {
 	return NewMatchClient(m.config).QueryResults(m)
 }
 

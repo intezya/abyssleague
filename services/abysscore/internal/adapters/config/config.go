@@ -7,17 +7,38 @@ import (
 	"abysscore/internal/infrastructure/persistence"
 	"abysscore/internal/pkg/auth"
 	"fmt"
+	"github.com/gofiber/fiber/v2/middleware/healthcheck"
+	"github.com/gofiber/fiber/v2/middleware/requestid"
 	"github.com/intezya/pkglib/itertools"
 	"github.com/intezya/pkglib/logger"
-	"github.com/joho/godotenv"
 	"github.com/redis/go-redis/v9"
 	"os"
 	"strconv"
 	"strings"
-	"time"
 
-	"github.com/gofiber/fiber/v2/middleware/healthcheck"
-	"github.com/gofiber/fiber/v2/middleware/requestid"
+	// ...
+	"github.com/joho/godotenv"
+	"time"
+)
+
+const (
+	defaultServerPort             = 8080
+	defaultJWTExpiration          = 24 * time.Hour
+	defaultRedisRetryDelay        = 2 * time.Second
+	defaultDBMaxRetries           = 5
+	defaultDBRetryDelay           = 2 * time.Second
+	defaultLokiBatchSize          = 100
+	defaultLokiMaxWait            = 5 * time.Second
+	defaultLokiTimeout            = 10 * time.Second
+	defaultLokiRetryCount         = 3
+	defaultLokiRetryWait          = 1 * time.Second
+	defaultRateLimitLoginTime     = 10 * time.Second
+	defaultRateLimitLoginRequests = 3
+	defaultRateLimitDefaultTime   = 1 * time.Second
+	defaultRateLimitDefaultReqs   = 4
+	defaultMetricsPort            = 2112
+	splitPairParts                = 2
+	defaultSlowRequestThresholdMs = 300
 )
 
 type Config struct {
@@ -52,13 +73,13 @@ func LoadConfig() *Config {
 	config := &Config{
 		IsDebug:    getEnvBool("DEBUG", false),
 		EnvType:    getEnvString("ENV_TYPE", "prod"),
-		ServerPort: getEnvInt("SERVER_PORT", 8080),
+		ServerPort: getEnvInt("SERVER_PORT", defaultServerPort),
 	}
 
 	config.JWTConfiguration = auth.NewJWTConfiguration(
 		getEnvString("JWT_SECRET", "default-secret-key"),
 		getEnvString("JWT_ISSUER", "com.intezya.abyssleague.auth"),
-		getEnvDuration("JWT_EXPIRATION_TIME", 24*time.Hour),
+		getEnvDuration("JWT_EXPIRATION_TIME", defaultJWTExpiration),
 	)
 
 	config.RedisConfig = &rediswrapper.Config{
@@ -67,27 +88,26 @@ func LoadConfig() *Config {
 			Password: getEnvString("REDIS_PASSWORD", ""),
 			DB:       getEnvInt("REDIS_DB", 0),
 		},
-		RetryDelay: getEnvDuration("REDIS_RETRY_DELAY", 2*time.Second),
+		RetryDelay: getEnvDuration("REDIS_RETRY_DELAY", defaultRedisRetryDelay),
 	}
 
 	config.EntConfig = persistence.NewEntConfig(
 		getEnvString("DB_DRIVER", "postgres"),
 		buildDBConnectionString(),
-		getEnvInt("DB_MAX_RETRIES", 5),
-		getEnvDuration("DB_RETRY_DELAY", 2*time.Second),
+		getEnvInt("DB_MAX_RETRIES", defaultDBMaxRetries),
+		getEnvDuration("DB_RETRY_DELAY", defaultDBRetryDelay),
 	)
 
-	// Setup Logger Configuration
 	config.LoggerConfig = &LoggerConfig{
 		lokiConfig: &logger.LokiConfig{
 			URL:                  getEnvString("LOKI_ENDPOINT_URL", "localhost:3100"),
 			Labels:               parseLokiLabels(getEnvString("LOKI_LABELS", "")),
-			BatchSize:            getEnvInt("LOKI_BATCH_SIZE", 100),
-			MaxWait:              getEnvDuration("LOKI_MAX_WAIT", 5*time.Second),
-			Timeout:              getEnvDuration("LOKI_TIMEOUT", 10*time.Second),
+			BatchSize:            getEnvInt("LOKI_BATCH_SIZE", defaultLokiBatchSize),
+			MaxWait:              getEnvDuration("LOKI_MAX_WAIT", defaultLokiMaxWait),
+			Timeout:              getEnvDuration("LOKI_TIMEOUT", defaultLokiTimeout),
 			Compression:          getEnvBool("LOKI_COMPRESSION", true),
-			RetryCount:           getEnvInt("LOKI_RETRY_COUNT", 3),
-			RetryWait:            getEnvDuration("LOKI_RETRY_WAIT", 1*time.Second),
+			RetryCount:           getEnvInt("LOKI_RETRY_COUNT", defaultLokiRetryCount),
+			RetryWait:            getEnvDuration("LOKI_RETRY_WAIT", defaultLokiRetryWait),
 			SuppressSinkWarnings: getEnvBool("LOKI_SUPPRESS_WARNINGS", false),
 		},
 	}
@@ -105,11 +125,11 @@ func LoadConfig() *Config {
 
 	config.RateLimitConfig = &RateLimitConfig{
 		LoginRateLimitKey:    getEnvString("RATE_LIMIT_LOGIN_KEY", "login_attempts_rate_limit:"),
-		LoginRateLimitTime:   getEnvDuration("RATE_LIMIT_LOGIN_TIME", 10*time.Second),
-		LoginRateLimit:       getEnvInt("RATE_LIMIT_LOGIN_MAX_REQUESTS", 3),
+		LoginRateLimitTime:   getEnvDuration("RATE_LIMIT_LOGIN_TIME", defaultRateLimitLoginTime),
+		LoginRateLimit:       getEnvInt("RATE_LIMIT_LOGIN_MAX_REQUESTS", defaultRateLimitLoginRequests),
 		DefaultRateLimitKey:  getEnvString("RATE_LIMIT_DEFAULT_KEY", "rate_limit:"),
-		DefaultRateLimitTime: getEnvDuration("RATE_LIMIT_DEFAULT_TIME", 1*time.Second),
-		DefaultRateLimit:     getEnvInt("RATE_LIMIT_DEFAULT_MAX_REQUESTS", 4),
+		DefaultRateLimitTime: getEnvDuration("RATE_LIMIT_DEFAULT_TIME", defaultRateLimitDefaultTime),
+		DefaultRateLimit:     getEnvInt("RATE_LIMIT_DEFAULT_MAX_REQUESTS", defaultRateLimitDefaultReqs),
 	}
 
 	config.GRPCConfig = &factory.GRPCConfig{
@@ -117,9 +137,9 @@ func LoadConfig() *Config {
 		WebsocketApiGatewayPorts: getAndParseGrpcPorts(),
 	}
 
-	config.MetricsPort = getEnvInt("METRICS_PORT", 2112)
+	config.MetricsPort = getEnvInt("METRICS_PORT", defaultMetricsPort)
 
-	config.SlowRequestThresholdMs = 300
+	config.SlowRequestThresholdMs = defaultSlowRequestThresholdMs
 
 	config.TracerConfig = &tracer.Config{
 		Endpoint:           getEnvString("TRACER_ENDPOINT", "localhost:4317"),
@@ -129,44 +149,6 @@ func LoadConfig() *Config {
 	}
 
 	return config
-}
-
-func getEnvString(key, fallback string) string {
-	if value, exists := os.LookupEnv(key); exists {
-		return value
-	}
-
-	return fallback
-}
-
-func getEnvInt(key string, fallback int) int {
-	if value, exists := os.LookupEnv(key); exists {
-		if intVal, err := strconv.Atoi(value); err == nil {
-			return intVal
-		}
-	}
-
-	return fallback
-}
-
-func getEnvBool(key string, fallback bool) bool {
-	if value, exists := os.LookupEnv(key); exists {
-		if boolVal, err := strconv.ParseBool(value); err == nil {
-			return boolVal
-		}
-	}
-
-	return fallback
-}
-
-func getEnvDuration(key string, fallback time.Duration) time.Duration {
-	if value, exists := os.LookupEnv(key); exists {
-		if duration, err := time.ParseDuration(value); err == nil {
-			return duration
-		}
-	}
-
-	return fallback
 }
 
 func buildDBConnectionString() string {
@@ -195,8 +177,8 @@ func parseLokiLabels(labelsStr string) map[string]string {
 
 	pairs := strings.Split(labelsStr, ",")
 	for _, pair := range pairs {
-		parts := strings.SplitN(pair, "=", 2)
-		if len(parts) == 2 {
+		parts := strings.SplitN(pair, "=", splitPairParts)
+		if len(parts) == splitPairParts {
 			key := strings.TrimSpace(parts[0])
 			value := strings.TrimSpace(parts[1])
 			labels[key] = value

@@ -86,7 +86,11 @@ func (a *AuthenticationService) Authenticate(ctx context.Context, credentials *d
 		},
 	)
 	if err != nil {
-		logger.Log.Warnw("Failed to retrieve full user data", "error", err, "userID", authentication.UserID())
+		logger.Log.Warnw(
+			"Failed to retrieve full user data",
+			"error", err,
+			"userID", authentication.UserID(),
+		)
 
 		return nil, err
 	}
@@ -220,7 +224,9 @@ func (a *AuthenticationService) verifyAndUpdateHWID(
 ) error {
 	// Проверка HWID
 	hwidOk, needsUpdate := tracer.Trace2(
-		ctx, "authentication.CompareHardwareID", func(ctx context.Context) (bool, bool) {
+		ctx,
+		"authentication.CompareHardwareID",
+		func(ctx context.Context) (bool, bool) {
 			return auth.CompareHardwareID(hwid, a.credentialsHelper.VerifyHardwareID)
 		},
 	)
@@ -244,7 +250,9 @@ func (a *AuthenticationService) updateHwid(ctx context.Context, auth *entity.Aut
 	auth.SetHWID(newHwid)
 
 	return tracer.Trace1(
-		ctx, "userRepository.UpdateHWIDByID", func(ctx context.Context) error {
+		ctx,
+		"userRepository.UpdateHWIDByID",
+		func(ctx context.Context) error {
 			return a.userRepository.UpdateHWIDByID(ctx, auth.UserID(), newHwid)
 		},
 	)
@@ -253,7 +261,9 @@ func (a *AuthenticationService) updateHwid(ctx context.Context, auth *entity.Aut
 // encodePassword encodes a raw password.
 func (a *AuthenticationService) encodePassword(ctx context.Context, rawPassword string) string {
 	return tracer.Trace1(
-		ctx, "credentialsHelper.EncodePassword", func(ctx context.Context) string {
+		ctx,
+		"credentialsHelper.EncodePassword",
+		func(ctx context.Context) string {
 			return a.credentialsHelper.EncodePassword(rawPassword)
 		},
 	)
@@ -262,7 +272,9 @@ func (a *AuthenticationService) encodePassword(ctx context.Context, rawPassword 
 // encodeHWID encodes a raw hardware ID.
 func (a *AuthenticationService) encodeHWID(ctx context.Context, rawHwid string) string {
 	return tracer.Trace1(
-		ctx, "credentialsHelper.EncodeHardwareID", func(ctx context.Context) string {
+		ctx,
+		"credentialsHelper.EncodeHardwareID",
+		func(ctx context.Context) string {
 			return a.credentialsHelper.EncodeHardwareID(rawHwid)
 		},
 	)
@@ -300,7 +312,9 @@ func (a *AuthenticationService) processLoginStreakAndRewards(ctx context.Context
 	// TODO: Implement logic to add bonuses for user based on login streak
 
 	err := tracer.Trace1(
-		ctx, "userRepository.UpdateLoginStreakLoginAtByID", func(ctx context.Context) error {
+		ctx,
+		"userRepository.UpdateLoginStreakLoginAtByID",
+		func(ctx context.Context) error {
 			return a.userRepository.UpdateLoginStreakLoginAtByID(ctx, user.ID, user.LoginStreak, user.LoginAt)
 		},
 	)
@@ -312,7 +326,8 @@ func (a *AuthenticationService) processLoginStreakAndRewards(ctx context.Context
 
 // processBanDecrementAfterLogin decrements ban levels if needed.
 func (a *AuthenticationService) processBanDecrementAfterLogin(ctx context.Context, user *dto.UserDTO) {
-	if user.AccountBlockedUntil != nil && user.AccountBlockedUntil.Add(userentity.AccountBlockDecrementTime).Before(time.Now()) {
+	if user.AccountBlockedUntil != nil &&
+		user.AccountBlockedUntil.Add(userentity.AccountBlockDecrementTime).Before(time.Now()) {
 		if user.AccountBlockedLevel > 0 {
 			user.AccountBlockedLevel--
 		}
@@ -321,7 +336,8 @@ func (a *AuthenticationService) processBanDecrementAfterLogin(ctx context.Contex
 		user.AccountBlockReason = nil
 	}
 
-	if user.SearchBlockedUntil != nil && user.SearchBlockedUntil.Add(userentity.SearchBlockDecrementTime).Before(time.Now()) {
+	if user.SearchBlockedUntil != nil &&
+		user.SearchBlockedUntil.Add(userentity.SearchBlockDecrementTime).Before(time.Now()) {
 		if user.SearchBlockedLevel > 0 {
 			user.SearchBlockedLevel--
 		}
@@ -330,9 +346,13 @@ func (a *AuthenticationService) processBanDecrementAfterLogin(ctx context.Contex
 		user.SearchBlockReason = nil
 	}
 
-	err := tracer.TraceFn(ctx, "userRepository.SetBlockUntilAndLevelAndReasonFromUser", func(ctx context.Context) error {
-		return a.userRepository.SetBlockUntilAndLevelAndReasonFromUser(ctx, user)
-	})
+	err := tracer.TraceFn(
+		ctx,
+		"userRepository.SetBlockUntilAndLevelAndReasonFromUser",
+		func(ctx context.Context) error {
+			return a.userRepository.SetBlockUntilAndLevelAndReasonFromUser(ctx, user)
+		},
+	)
 
 	if err != nil {
 		logger.Log.Errorw("Failed to update block until, level, user", "error", err, "userID", user.ID)
@@ -342,7 +362,9 @@ func (a *AuthenticationService) processBanDecrementAfterLogin(ctx context.Contex
 // generateToken creates an authentication token.
 func (a *AuthenticationService) generateToken(ctx context.Context, tokenData *entity.TokenData) string {
 	return tracer.Trace1(
-		ctx, "tokenHelper.TokenGenerator", func(ctx context.Context) string {
+		ctx,
+		"tokenHelper.TokenGenerator",
+		func(ctx context.Context) string {
 			return a.tokenHelper.TokenGenerator(tokenData)
 		},
 	)
@@ -351,7 +373,9 @@ func (a *AuthenticationService) generateToken(ctx context.Context, tokenData *en
 // getOnlineCount retrieves the number of online users.
 func (a *AuthenticationService) getOnlineCount(ctx context.Context) int {
 	return tracer.Trace1(
-		ctx, "mainWebsocketService.GetOnlineSoft", func(ctx context.Context) int {
+		ctx,
+		"mainWebsocketService.GetOnlineSoft",
+		func(ctx context.Context) int {
 			res, err := a.mainWebsocketService.GetOnline(ctx)
 
 			if err != nil {

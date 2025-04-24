@@ -393,7 +393,7 @@ func HasResults() predicate.Match {
 }
 
 // HasResultsWith applies the HasEdge predicate on the "results" edge with a given conditions (other predicates).
-func HasResultsWith(preds ...predicate.MatchResult) predicate.Match {
+func HasResultsWith(preds ...predicate.PlayerMatchResult) predicate.Match {
 	return predicate.Match(func(s *sql.Selector) {
 		step := newResultsStep()
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {

@@ -41,10 +41,13 @@ var textContentTypes = []string{
 	"application/xhtml+xml",
 }
 
+const defaultSlowRequestThreshold = 500 * time.Millisecond
+const defaultSamplingRate = 100
+
 func NewLoggingMiddleware(config *config.Config) *LoggingMiddleware {
 	metrics := initPrometheusMetrics()
 
-	slowRequestThreshold := 500 * time.Millisecond
+	slowRequestThreshold := defaultSlowRequestThreshold
 	if config.SlowRequestThresholdMs > 0 {
 		slowRequestThreshold = time.Duration(config.SlowRequestThresholdMs) * time.Millisecond
 	}
@@ -52,7 +55,7 @@ func NewLoggingMiddleware(config *config.Config) *LoggingMiddleware {
 	return &LoggingMiddleware{
 		config:               config,
 		metrics:              metrics,
-		resourceSampler:      newResourceSampler(100),
+		resourceSampler:      newResourceSampler(defaultSamplingRate),
 		slowRequestThreshold: slowRequestThreshold,
 	}
 }
@@ -65,6 +68,12 @@ func newResourceSampler(samplingRate int) *resourceSampler {
 }
 
 func initPrometheusMetrics() *prometheusMetrics {
+	const (
+		bucketStart  = 100
+		bucketFactor = 10
+		bucketCount  = 8
+	)
+
 	metrics := &prometheusMetrics{
 		requestDuration: prometheus.NewHistogramVec(
 			prometheus.HistogramOpts{
@@ -78,7 +87,7 @@ func initPrometheusMetrics() *prometheusMetrics {
 			prometheus.HistogramOpts{
 				Name:    "http_request_size_bytes",
 				Help:    "Size of HTTP requests in bytes",
-				Buckets: prometheus.ExponentialBuckets(100, 10, 8),
+				Buckets: prometheus.ExponentialBuckets(bucketStart, bucketFactor, bucketCount),
 			},
 			[]string{"method", "path"},
 		),
@@ -86,7 +95,7 @@ func initPrometheusMetrics() *prometheusMetrics {
 			prometheus.HistogramOpts{
 				Name:    "http_response_size_bytes",
 				Help:    "Size of HTTP responses in bytes",
-				Buckets: prometheus.ExponentialBuckets(100, 10, 8),
+				Buckets: prometheus.ExponentialBuckets(bucketStart, bucketFactor, bucketCount),
 			},
 			[]string{"method", "path", "status"},
 		),
@@ -143,6 +152,8 @@ func setSpanAttributes(span trace.Span, c *fiber.Ctx, requestID interface{}) {
 }
 
 func extractResponseBody(c *fiber.Ctx) string {
+	const Large = 2048
+
 	responseBody := c.Response().Body()
 	if len(responseBody) == 0 {
 		return ""
@@ -151,7 +162,7 @@ func extractResponseBody(c *fiber.Ctx) string {
 	contentType := c.Response().Header.ContentType()
 
 	if isTextContent(string(contentType)) {
-		if len(responseBody) >= 2048 {
+		if len(responseBody) >= Large {
 			return string(responseBody[:2048]) + "... (truncated)"
 		}
 
@@ -221,8 +232,8 @@ func logRequest(
 	duration time.Duration,
 	slowThreshold time.Duration,
 ) {
-	isError := statusCode >= 500
-	isWarning := statusCode >= 400 && statusCode < 500
+	isError := statusCode >= fiber.StatusInternalServerError
+	isWarning := statusCode >= fiber.StatusBadRequest && statusCode < fiber.StatusInternalServerError
 	isSlow := duration > slowThreshold
 
 	switch {
@@ -262,11 +273,13 @@ func getSafeRoutePath(c *fiber.Ctx) string {
 }
 
 func maskAuthorizationHeader(authHeader string) string {
+	const Long = 15
+
 	if authHeader == "" {
 		return ""
 	}
 
-	if len(authHeader) > 15 {
+	if len(authHeader) > Long {
 		return authHeader[:15] + "..."
 	}
 

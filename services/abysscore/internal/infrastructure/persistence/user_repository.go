@@ -25,7 +25,10 @@ func NewUserRepository(client *ent.Client) *UserRepository {
 }
 
 // Create adds a new user to the database.
-func (r *UserRepository) Create(ctx context.Context, credentials *dto.CredentialsDTO) (*entity.AuthenticationData, error) {
+func (r *UserRepository) Create(
+	ctx context.Context,
+	credentials *dto.CredentialsDTO,
+) (*entity.AuthenticationData, error) {
 	user, err := r.client.User.
 		Create().
 		SetUsername(credentials.Username).

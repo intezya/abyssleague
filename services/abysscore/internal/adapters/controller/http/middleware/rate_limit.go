@@ -20,13 +20,15 @@ type RateLimitMiddleware struct {
 	rateLimitCounter     *prometheus.CounterVec
 }
 
+const rateLimitStateReadTimeout = 2 * time.Second
+
 func NewRateLimitMiddleware(
 	redisClient *rediswrapper.ClientWrapper,
 	cfg *config.Config,
 ) *RateLimitMiddleware {
 	loginAttemptsCounter := prometheus.NewCounterVec(
 		prometheus.CounterOpts{
-			Name: "login_rate_limit_attempts",
+			Name: "login_rate_limit_attempts_total",
 			Help: "Count of login attempts hitting rate limits",
 		},
 		[]string{"username", "status"},
@@ -34,7 +36,7 @@ func NewRateLimitMiddleware(
 
 	rateLimitCounter := prometheus.NewCounterVec(
 		prometheus.CounterOpts{
-			Name: "api_rate_limit_hits",
+			Name: "api_rate_limit_hits_total",
 			Help: "Count of requests hitting general API rate limits",
 		},
 		[]string{"ip", "path", "status"},
@@ -82,7 +84,7 @@ func (r *RateLimitMiddleware) HandleForAuth() fiber.Handler {
 
 		key := r.config.RateLimitConfig.LoginRateLimitKey + username
 
-		ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+		ctx, cancel := context.WithTimeout(context.Background(), rateLimitStateReadTimeout)
 		defer cancel()
 
 		attempts, err := r.redisClient.Client.Get(ctx, key).Int()
@@ -173,7 +175,7 @@ func (r *RateLimitMiddleware) HandleDefault() fiber.Handler {
 
 		key := r.config.RateLimitConfig.DefaultRateLimitKey + ipAddr
 
-		ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+		ctx, cancel := context.WithTimeout(context.Background(), rateLimitStateReadTimeout)
 		defer cancel()
 
 		count, err := r.redisClient.Client.Get(ctx, key).Int()

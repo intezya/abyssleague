@@ -7,7 +7,7 @@ import (
 	"abysscore/internal/infrastructure/ent/gameitem"
 	"abysscore/internal/infrastructure/ent/inventoryitem"
 	"abysscore/internal/infrastructure/ent/match"
-	"abysscore/internal/infrastructure/ent/matchresult"
+	"abysscore/internal/infrastructure/ent/playermatchresult"
 	"abysscore/internal/infrastructure/ent/statistic"
 	"abysscore/internal/infrastructure/ent/user"
 	"abysscore/internal/infrastructure/ent/userbalance"
@@ -80,14 +80,14 @@ var (
 func checkColumn(table, column string) error {
 	initCheck.Do(func() {
 		columnCheck = sql.NewColumnCheck(map[string]func(string) bool{
-			friendrequest.Table: friendrequest.ValidColumn,
-			gameitem.Table:      gameitem.ValidColumn,
-			inventoryitem.Table: inventoryitem.ValidColumn,
-			match.Table:         match.ValidColumn,
-			matchresult.Table:   matchresult.ValidColumn,
-			statistic.Table:     statistic.ValidColumn,
-			user.Table:          user.ValidColumn,
-			userbalance.Table:   userbalance.ValidColumn,
+			friendrequest.Table:     friendrequest.ValidColumn,
+			gameitem.Table:          gameitem.ValidColumn,
+			inventoryitem.Table:     inventoryitem.ValidColumn,
+			match.Table:             match.ValidColumn,
+			playermatchresult.Table: playermatchresult.ValidColumn,
+			statistic.Table:         statistic.ValidColumn,
+			user.Table:              user.ValidColumn,
+			userbalance.Table:       userbalance.ValidColumn,
 		})
 	})
 	return columnCheck(table, column)

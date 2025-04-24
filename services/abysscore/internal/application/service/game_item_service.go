@@ -23,9 +23,13 @@ func (g *GameItemService) Create(
 	performer *dto.UserDTO,
 ) (*dto.GameItemDTO, error) {
 	// TODO: log performer action
-	result, err := tracer.TraceFnWithResult(ctx, "gameItemRepository.Create", func(ctx context.Context) (*dto.GameItemDTO, error) {
-		return g.gameItemRepository.Create(ctx, request.ToDTO())
-	})
+	result, err := tracer.TraceFnWithResult(
+		ctx,
+		"gameItemRepository.Create",
+		func(ctx context.Context) (*dto.GameItemDTO, error) {
+			return g.gameItemRepository.Create(ctx, request.ToDTO())
+		},
+	)
 
 	if err != nil {
 		return nil, err // ???
@@ -35,9 +39,13 @@ func (g *GameItemService) Create(
 }
 
 func (g *GameItemService) FindByID(ctx context.Context, id int) (*dto.GameItemDTO, error) {
-	result, err := tracer.TraceFnWithResult(ctx, "gameItemRepository.FindByID", func(ctx context.Context) (*dto.GameItemDTO, error) {
-		return g.gameItemRepository.FindByID(ctx, id)
-	})
+	result, err := tracer.TraceFnWithResult(
+		ctx,
+		"gameItemRepository.FindByID",
+		func(ctx context.Context) (*dto.GameItemDTO, error) {
+			return g.gameItemRepository.FindByID(ctx, id)
+		},
+	)
 
 	if err != nil {
 		return nil, err // not found
@@ -50,9 +58,13 @@ func (g *GameItemService) FindAllPaged(
 	ctx context.Context,
 	query *request.PaginationQuery[gameitementity.OrderBy],
 ) (*dto.PaginatedResult[*dto.GameItemDTO], error) {
-	result, err := tracer.TraceFnWithResult(ctx, "gameItemRepository.FindAllPaged", func(ctx context.Context) (*dto.PaginatedResult[*dto.GameItemDTO], error) {
-		return g.gameItemRepository.FindAllPaged(ctx, query.Page, query.Size, query.OrderBy, query.OrderType)
-	})
+	result, err := tracer.TraceFnWithResult(
+		ctx,
+		"gameItemRepository.FindAllPaged",
+		func(ctx context.Context) (*dto.PaginatedResult[*dto.GameItemDTO], error) {
+			return g.gameItemRepository.FindAllPaged(ctx, query.Page, query.Size, query.OrderBy, query.OrderType)
+		},
+	)
 
 	if err != nil {
 		return nil, err // ???

@@ -7,26 +7,33 @@ import (
 	"time"
 )
 
-type MatchResult struct {
+type PlayerMatchResult struct {
 	ent.Schema
 }
 
-func (MatchResult) Fields() []ent.Field {
+const (
+	MatchResultMinScore = 0
+	MatchResultMaxScore = 600
+)
+
+func (PlayerMatchResult) Fields() []ent.Field {
 	return []ent.Field{
 		field.Int("id").Unique().Immutable(),
 
 		field.Int("match_id").Immutable().Positive(),
 		field.Int("player_id").Immutable().Positive(),
 
-		field.Int("value").Range(0, 600),
+		field.Int("score").
+			Range(MatchResultMinScore, MatchResultMaxScore).
+			Comment("lower is better: 0 is best, 600 is worst"),
 
-		field.Bool("is_retry").Default(false),
+		field.Bool("is_retried").Default(false),
 
 		field.Time("created_at").Default(time.Now).Immutable(),
 	}
 }
 
-func (MatchResult) Edges() []ent.Edge {
+func (PlayerMatchResult) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.From("match", Match.Type).
 			Ref("results").

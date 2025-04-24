@@ -5,19 +5,16 @@ import (
 	"github.com/intezya/pkglib/logger"
 )
 
+const (
+	defaultSaltLength = 32
+)
+
 type HashHelper struct {
 	config *crypto.ArgonConfig
 }
 
 func NewHashHelper() *HashHelper {
-	return &HashHelper{
-		config: &crypto.ArgonConfig{
-			TimeCost:    1,
-			MemoryCost:  64 * 1024,
-			Parallelism: 2,
-			KeyLength:   32,
-		},
-	}
+	return &HashHelper{}
 }
 
 func (h *HashHelper) preHash(raw string) (prehash string) {
@@ -25,13 +22,13 @@ func (h *HashHelper) preHash(raw string) (prehash string) {
 }
 
 func (h *HashHelper) EncodePassword(raw string) (hash string) {
-	salt, err := crypto.Salt(32)
+	salt, err := crypto.Salt(defaultSaltLength)
 
 	if err != nil {
 		logger.Log.Errorf("Unexpected error while generating salt: %h", err)
 
 		for {
-			salt, err = crypto.Salt(32)
+			salt, err = crypto.Salt(defaultSaltLength)
 			if err == nil {
 				break
 			}

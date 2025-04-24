@@ -4,7 +4,7 @@ package ent
 
 import (
 	"abysscore/internal/infrastructure/ent/match"
-	"abysscore/internal/infrastructure/ent/matchresult"
+	"abysscore/internal/infrastructure/ent/playermatchresult"
 	"abysscore/internal/infrastructure/ent/predicate"
 	"abysscore/internal/infrastructure/ent/user"
 	"context"
@@ -27,7 +27,7 @@ type MatchQuery struct {
 	predicates  []predicate.Match
 	withPlayer1 *UserQuery
 	withPlayer2 *UserQuery
-	withResults *MatchResultQuery
+	withResults *PlayerMatchResultQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -109,8 +109,8 @@ func (mq *MatchQuery) QueryPlayer2() *UserQuery {
 }
 
 // QueryResults chains the current query on the "results" edge.
-func (mq *MatchQuery) QueryResults() *MatchResultQuery {
-	query := (&MatchResultClient{config: mq.config}).Query()
+func (mq *MatchQuery) QueryResults() *PlayerMatchResultQuery {
+	query := (&PlayerMatchResultClient{config: mq.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := mq.prepareQuery(ctx); err != nil {
 			return nil, err
@@ -121,7 +121,7 @@ func (mq *MatchQuery) QueryResults() *MatchResultQuery {
 		}
 		step := sqlgraph.NewStep(
 			sqlgraph.From(match.Table, match.FieldID, selector),
-			sqlgraph.To(matchresult.Table, matchresult.FieldID),
+			sqlgraph.To(playermatchresult.Table, playermatchresult.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, match.ResultsTable, match.ResultsColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(mq.driver.Dialect(), step)
@@ -355,8 +355,8 @@ func (mq *MatchQuery) WithPlayer2(opts ...func(*UserQuery)) *MatchQuery {
 
 // WithResults tells the query-builder to eager-load the nodes that are connected to
 // the "results" edge. The optional arguments are used to configure the query builder of the edge.
-func (mq *MatchQuery) WithResults(opts ...func(*MatchResultQuery)) *MatchQuery {
-	query := (&MatchResultClient{config: mq.config}).Query()
+func (mq *MatchQuery) WithResults(opts ...func(*PlayerMatchResultQuery)) *MatchQuery {
+	query := (&PlayerMatchResultClient{config: mq.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
@@ -480,8 +480,8 @@ func (mq *MatchQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Match,
 	}
 	if query := mq.withResults; query != nil {
 		if err := mq.loadResults(ctx, query, nodes,
-			func(n *Match) { n.Edges.Results = []*MatchResult{} },
-			func(n *Match, e *MatchResult) { n.Edges.Results = append(n.Edges.Results, e) }); err != nil {
+			func(n *Match) { n.Edges.Results = []*PlayerMatchResult{} },
+			func(n *Match, e *PlayerMatchResult) { n.Edges.Results = append(n.Edges.Results, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -546,7 +546,7 @@ func (mq *MatchQuery) loadPlayer2(ctx context.Context, query *UserQuery, nodes [
 	}
 	return nil
 }
-func (mq *MatchQuery) loadResults(ctx context.Context, query *MatchResultQuery, nodes []*Match, init func(*Match), assign func(*Match, *MatchResult)) error {
+func (mq *MatchQuery) loadResults(ctx context.Context, query *PlayerMatchResultQuery, nodes []*Match, init func(*Match), assign func(*Match, *PlayerMatchResult)) error {
 	fks := make([]driver.Value, 0, len(nodes))
 	nodeids := make(map[int]*Match)
 	for i := range nodes {
@@ -557,9 +557,9 @@ func (mq *MatchQuery) loadResults(ctx context.Context, query *MatchResultQuery, 
 		}
 	}
 	if len(query.ctx.Fields) > 0 {
-		query.ctx.AppendFieldOnce(matchresult.FieldMatchID)
+		query.ctx.AppendFieldOnce(playermatchresult.FieldMatchID)
 	}
-	query.Where(predicate.MatchResult(func(s *sql.Selector) {
+	query.Where(predicate.PlayerMatchResult(func(s *sql.Selector) {
 		s.Where(sql.InValues(s.C(match.ResultsColumn), fks...))
 	}))
 	neighbors, err := query.All(ctx)

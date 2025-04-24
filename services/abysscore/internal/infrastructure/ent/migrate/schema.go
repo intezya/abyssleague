@@ -122,30 +122,30 @@ var (
 			},
 		},
 	}
-	// MatchResultsColumns holds the columns for the "match_results" table.
-	MatchResultsColumns = []*schema.Column{
+	// PlayerMatchResultsColumns holds the columns for the "player_match_results" table.
+	PlayerMatchResultsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
-		{Name: "value", Type: field.TypeInt},
-		{Name: "is_retry", Type: field.TypeBool, Default: false},
+		{Name: "score", Type: field.TypeInt},
+		{Name: "is_retried", Type: field.TypeBool, Default: false},
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "match_id", Type: field.TypeInt},
 		{Name: "player_id", Type: field.TypeInt},
 	}
-	// MatchResultsTable holds the schema information for the "match_results" table.
-	MatchResultsTable = &schema.Table{
-		Name:       "match_results",
-		Columns:    MatchResultsColumns,
-		PrimaryKey: []*schema.Column{MatchResultsColumns[0]},
+	// PlayerMatchResultsTable holds the schema information for the "player_match_results" table.
+	PlayerMatchResultsTable = &schema.Table{
+		Name:       "player_match_results",
+		Columns:    PlayerMatchResultsColumns,
+		PrimaryKey: []*schema.Column{PlayerMatchResultsColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:     "match_results_matches_results",
-				Columns:    []*schema.Column{MatchResultsColumns[4]},
+				Symbol:     "player_match_results_matches_results",
+				Columns:    []*schema.Column{PlayerMatchResultsColumns[4]},
 				RefColumns: []*schema.Column{MatchesColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 			{
-				Symbol:     "match_results_users_user",
-				Columns:    []*schema.Column{MatchResultsColumns[5]},
+				Symbol:     "player_match_results_users_user",
+				Columns:    []*schema.Column{PlayerMatchResultsColumns[5]},
 				RefColumns: []*schema.Column{UsersColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
@@ -296,7 +296,7 @@ var (
 		GameItemsTable,
 		InventoryItemsTable,
 		MatchesTable,
-		MatchResultsTable,
+		PlayerMatchResultsTable,
 		StatisticsTable,
 		UsersTable,
 		UserBalancesTable,
@@ -311,8 +311,8 @@ func init() {
 	InventoryItemsTable.ForeignKeys[1].RefTable = UsersTable
 	MatchesTable.ForeignKeys[0].RefTable = UsersTable
 	MatchesTable.ForeignKeys[1].RefTable = UsersTable
-	MatchResultsTable.ForeignKeys[0].RefTable = MatchesTable
-	MatchResultsTable.ForeignKeys[1].RefTable = UsersTable
+	PlayerMatchResultsTable.ForeignKeys[0].RefTable = MatchesTable
+	PlayerMatchResultsTable.ForeignKeys[1].RefTable = UsersTable
 	StatisticsTable.ForeignKeys[0].RefTable = UsersTable
 	UsersTable.ForeignKeys[0].RefTable = InventoryItemsTable
 	UsersTable.ForeignKeys[1].RefTable = MatchesTable

@@ -21,6 +21,13 @@ import (
 	"time"
 )
 
+const (
+	bodyLimit                = 10 * 1024 * 1024 // 10 mb
+	maxConcurrentConnections = 100
+	writeTimeout             = 5 * time.Second
+	readTimeout              = 5 * time.Second
+)
+
 // setupMetricsServer creates a separate HTTP server for Prometheus metrics.
 func setupMetricsServer(port int) {
 	go func() {
@@ -36,10 +43,10 @@ func createFiberApp(config *config.Config) *fiber.App {
 			Prefork:                      false,
 			StrictRouting:                true,
 			CaseSensitive:                true,
-			BodyLimit:                    10 * 1024 * 1024, // 10 MB
-			Concurrency:                  100,              // max concurrent connections
-			ReadTimeout:                  5 * time.Second,
-			WriteTimeout:                 5 * time.Second,
+			BodyLimit:                    bodyLimit,
+			Concurrency:                  maxConcurrentConnections,
+			ReadTimeout:                  readTimeout,
+			WriteTimeout:                 writeTimeout,
 			DisableKeepalive:             false,
 			DisableDefaultContentType:    false,
 			DisablePreParseMultipartForm: true,

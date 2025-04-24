@@ -4,7 +4,7 @@ package ent
 
 import (
 	"abysscore/internal/infrastructure/ent/match"
-	"abysscore/internal/infrastructure/ent/matchresult"
+	"abysscore/internal/infrastructure/ent/playermatchresult"
 	"abysscore/internal/infrastructure/ent/user"
 	"fmt"
 	"strings"
@@ -14,8 +14,8 @@ import (
 	"entgo.io/ent/dialect/sql"
 )
 
-// MatchResult is the model entity for the MatchResult schema.
-type MatchResult struct {
+// PlayerMatchResult is the model entity for the PlayerMatchResult schema.
+type PlayerMatchResult struct {
 	config `json:"-"`
 	// ID of the ent.
 	ID int `json:"id,omitempty"`
@@ -23,20 +23,20 @@ type MatchResult struct {
 	MatchID int `json:"match_id,omitempty"`
 	// PlayerID holds the value of the "player_id" field.
 	PlayerID int `json:"player_id,omitempty"`
-	// Value holds the value of the "value" field.
-	Value int `json:"value,omitempty"`
-	// IsRetry holds the value of the "is_retry" field.
-	IsRetry bool `json:"is_retry,omitempty"`
+	// lower is better: 0 is best, 600 is worst
+	Score int `json:"score,omitempty"`
+	// IsRetried holds the value of the "is_retried" field.
+	IsRetried bool `json:"is_retried,omitempty"`
 	// CreatedAt holds the value of the "created_at" field.
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
-	// The values are being populated by the MatchResultQuery when eager-loading is set.
-	Edges        MatchResultEdges `json:"edges"`
+	// The values are being populated by the PlayerMatchResultQuery when eager-loading is set.
+	Edges        PlayerMatchResultEdges `json:"edges"`
 	selectValues sql.SelectValues
 }
 
-// MatchResultEdges holds the relations/edges for other nodes in the graph.
-type MatchResultEdges struct {
+// PlayerMatchResultEdges holds the relations/edges for other nodes in the graph.
+type PlayerMatchResultEdges struct {
 	// Match holds the value of the match edge.
 	Match *Match `json:"match,omitempty"`
 	// User holds the value of the user edge.
@@ -48,7 +48,7 @@ type MatchResultEdges struct {
 
 // MatchOrErr returns the Match value or an error if the edge
 // was not loaded in eager-loading, or loaded but was not found.
-func (e MatchResultEdges) MatchOrErr() (*Match, error) {
+func (e PlayerMatchResultEdges) MatchOrErr() (*Match, error) {
 	if e.Match != nil {
 		return e.Match, nil
 	} else if e.loadedTypes[0] {
@@ -59,7 +59,7 @@ func (e MatchResultEdges) MatchOrErr() (*Match, error) {
 
 // UserOrErr returns the User value or an error if the edge
 // was not loaded in eager-loading, or loaded but was not found.
-func (e MatchResultEdges) UserOrErr() (*User, error) {
+func (e PlayerMatchResultEdges) UserOrErr() (*User, error) {
 	if e.User != nil {
 		return e.User, nil
 	} else if e.loadedTypes[1] {
@@ -69,15 +69,15 @@ func (e MatchResultEdges) UserOrErr() (*User, error) {
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
-func (*MatchResult) scanValues(columns []string) ([]any, error) {
+func (*PlayerMatchResult) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case matchresult.FieldIsRetry:
+		case playermatchresult.FieldIsRetried:
 			values[i] = new(sql.NullBool)
-		case matchresult.FieldID, matchresult.FieldMatchID, matchresult.FieldPlayerID, matchresult.FieldValue:
+		case playermatchresult.FieldID, playermatchresult.FieldMatchID, playermatchresult.FieldPlayerID, playermatchresult.FieldScore:
 			values[i] = new(sql.NullInt64)
-		case matchresult.FieldCreatedAt:
+		case playermatchresult.FieldCreatedAt:
 			values[i] = new(sql.NullTime)
 		default:
 			values[i] = new(sql.UnknownType)
@@ -87,112 +87,112 @@ func (*MatchResult) scanValues(columns []string) ([]any, error) {
 }
 
 // assignValues assigns the values that were returned from sql.Rows (after scanning)
-// to the MatchResult fields.
-func (mr *MatchResult) assignValues(columns []string, values []any) error {
+// to the PlayerMatchResult fields.
+func (pmr *PlayerMatchResult) assignValues(columns []string, values []any) error {
 	if m, n := len(values), len(columns); m < n {
 		return fmt.Errorf("mismatch number of scan values: %d != %d", m, n)
 	}
 	for i := range columns {
 		switch columns[i] {
-		case matchresult.FieldID:
+		case playermatchresult.FieldID:
 			value, ok := values[i].(*sql.NullInt64)
 			if !ok {
 				return fmt.Errorf("unexpected type %T for field id", value)
 			}
-			mr.ID = int(value.Int64)
-		case matchresult.FieldMatchID:
+			pmr.ID = int(value.Int64)
+		case playermatchresult.FieldMatchID:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for field match_id", values[i])
 			} else if value.Valid {
-				mr.MatchID = int(value.Int64)
+				pmr.MatchID = int(value.Int64)
 			}
-		case matchresult.FieldPlayerID:
+		case playermatchresult.FieldPlayerID:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for field player_id", values[i])
 			} else if value.Valid {
-				mr.PlayerID = int(value.Int64)
+				pmr.PlayerID = int(value.Int64)
 			}
-		case matchresult.FieldValue:
+		case playermatchresult.FieldScore:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
-				return fmt.Errorf("unexpected type %T for field value", values[i])
+				return fmt.Errorf("unexpected type %T for field score", values[i])
 			} else if value.Valid {
-				mr.Value = int(value.Int64)
+				pmr.Score = int(value.Int64)
 			}
-		case matchresult.FieldIsRetry:
+		case playermatchresult.FieldIsRetried:
 			if value, ok := values[i].(*sql.NullBool); !ok {
-				return fmt.Errorf("unexpected type %T for field is_retry", values[i])
+				return fmt.Errorf("unexpected type %T for field is_retried", values[i])
 			} else if value.Valid {
-				mr.IsRetry = value.Bool
+				pmr.IsRetried = value.Bool
 			}
-		case matchresult.FieldCreatedAt:
+		case playermatchresult.FieldCreatedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field created_at", values[i])
 			} else if value.Valid {
-				mr.CreatedAt = value.Time
+				pmr.CreatedAt = value.Time
 			}
 		default:
-			mr.selectValues.Set(columns[i], values[i])
+			pmr.selectValues.Set(columns[i], values[i])
 		}
 	}
 	return nil
 }
 
-// GetValue returns the ent.Value that was dynamically selected and assigned to the MatchResult.
+// Value returns the ent.Value that was dynamically selected and assigned to the PlayerMatchResult.
 // This includes values selected through modifiers, order, etc.
-func (mr *MatchResult) GetValue(name string) (ent.Value, error) {
-	return mr.selectValues.Get(name)
+func (pmr *PlayerMatchResult) Value(name string) (ent.Value, error) {
+	return pmr.selectValues.Get(name)
 }
 
-// QueryMatch queries the "match" edge of the MatchResult entity.
-func (mr *MatchResult) QueryMatch() *MatchQuery {
-	return NewMatchResultClient(mr.config).QueryMatch(mr)
+// QueryMatch queries the "match" edge of the PlayerMatchResult entity.
+func (pmr *PlayerMatchResult) QueryMatch() *MatchQuery {
+	return NewPlayerMatchResultClient(pmr.config).QueryMatch(pmr)
 }
 
-// QueryUser queries the "user" edge of the MatchResult entity.
-func (mr *MatchResult) QueryUser() *UserQuery {
-	return NewMatchResultClient(mr.config).QueryUser(mr)
+// QueryUser queries the "user" edge of the PlayerMatchResult entity.
+func (pmr *PlayerMatchResult) QueryUser() *UserQuery {
+	return NewPlayerMatchResultClient(pmr.config).QueryUser(pmr)
 }
 
-// Update returns a builder for updating this MatchResult.
-// Note that you need to call MatchResult.Unwrap() before calling this method if this MatchResult
+// Update returns a builder for updating this PlayerMatchResult.
+// Note that you need to call PlayerMatchResult.Unwrap() before calling this method if this PlayerMatchResult
 // was returned from a transaction, and the transaction was committed or rolled back.
-func (mr *MatchResult) Update() *MatchResultUpdateOne {
-	return NewMatchResultClient(mr.config).UpdateOne(mr)
+func (pmr *PlayerMatchResult) Update() *PlayerMatchResultUpdateOne {
+	return NewPlayerMatchResultClient(pmr.config).UpdateOne(pmr)
 }
 
-// Unwrap unwraps the MatchResult entity that was returned from a transaction after it was closed,
+// Unwrap unwraps the PlayerMatchResult entity that was returned from a transaction after it was closed,
 // so that all future queries will be executed through the driver which created the transaction.
-func (mr *MatchResult) Unwrap() *MatchResult {
-	_tx, ok := mr.config.driver.(*txDriver)
+func (pmr *PlayerMatchResult) Unwrap() *PlayerMatchResult {
+	_tx, ok := pmr.config.driver.(*txDriver)
 	if !ok {
-		panic("ent: MatchResult is not a transactional entity")
+		panic("ent: PlayerMatchResult is not a transactional entity")
 	}
-	mr.config.driver = _tx.drv
-	return mr
+	pmr.config.driver = _tx.drv
+	return pmr
 }
 
 // String implements the fmt.Stringer.
-func (mr *MatchResult) String() string {
+func (pmr *PlayerMatchResult) String() string {
 	var builder strings.Builder
-	builder.WriteString("MatchResult(")
-	builder.WriteString(fmt.Sprintf("id=%v, ", mr.ID))
+	builder.WriteString("PlayerMatchResult(")
+	builder.WriteString(fmt.Sprintf("id=%v, ", pmr.ID))
 	builder.WriteString("match_id=")
-	builder.WriteString(fmt.Sprintf("%v", mr.MatchID))
+	builder.WriteString(fmt.Sprintf("%v", pmr.MatchID))
 	builder.WriteString(", ")
 	builder.WriteString("player_id=")
-	builder.WriteString(fmt.Sprintf("%v", mr.PlayerID))
+	builder.WriteString(fmt.Sprintf("%v", pmr.PlayerID))
 	builder.WriteString(", ")
-	builder.WriteString("value=")
-	builder.WriteString(fmt.Sprintf("%v", mr.Value))
+	builder.WriteString("score=")
+	builder.WriteString(fmt.Sprintf("%v", pmr.Score))
 	builder.WriteString(", ")
-	builder.WriteString("is_retry=")
-	builder.WriteString(fmt.Sprintf("%v", mr.IsRetry))
+	builder.WriteString("is_retried=")
+	builder.WriteString(fmt.Sprintf("%v", pmr.IsRetried))
 	builder.WriteString(", ")
 	builder.WriteString("created_at=")
-	builder.WriteString(mr.CreatedAt.Format(time.ANSIC))
+	builder.WriteString(pmr.CreatedAt.Format(time.ANSIC))
 	builder.WriteByte(')')
 	return builder.String()
 }
 
-// MatchResults is a parsable slice of MatchResult.
-type MatchResults []*MatchResult
+// PlayerMatchResults is a parsable slice of PlayerMatchResult.
+type PlayerMatchResults []*PlayerMatchResult

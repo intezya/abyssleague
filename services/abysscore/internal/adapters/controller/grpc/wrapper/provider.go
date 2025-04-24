@@ -2,6 +2,11 @@ package wrapper
 
 import (
 	"abysscore/internal/adapters/controller/grpc/factory"
+	"time"
+)
+
+const (
+	defaultGRPCTimeout = 500 * time.Millisecond
 )
 
 type DependencyProvider struct {

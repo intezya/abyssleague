@@ -18,8 +18,8 @@ type InventoryItem func(*sql.Selector)
 // Match is the predicate function for match builders.
 type Match func(*sql.Selector)
 
-// MatchResult is the predicate function for matchresult builders.
-type MatchResult func(*sql.Selector)
+// PlayerMatchResult is the predicate function for playermatchresult builders.
+type PlayerMatchResult func(*sql.Selector)
 
 // Statistic is the predicate function for statistic builders.
 type Statistic func(*sql.Selector)

@@ -7,7 +7,7 @@ import (
 	"abysscore/internal/infrastructure/ent/gameitem"
 	"abysscore/internal/infrastructure/ent/inventoryitem"
 	"abysscore/internal/infrastructure/ent/match"
-	"abysscore/internal/infrastructure/ent/matchresult"
+	"abysscore/internal/infrastructure/ent/playermatchresult"
 	"abysscore/internal/infrastructure/ent/schema"
 	"abysscore/internal/infrastructure/ent/schema/access_level"
 	"abysscore/internal/infrastructure/ent/statistic"
@@ -82,28 +82,28 @@ func init() {
 	matchDescChangedToCurrentStatusAt := matchFields[8].Descriptor()
 	// match.DefaultChangedToCurrentStatusAt holds the default value on creation for the changed_to_current_status_at field.
 	match.DefaultChangedToCurrentStatusAt = matchDescChangedToCurrentStatusAt.Default.(func() time.Time)
-	matchresultFields := schema.MatchResult{}.Fields()
-	_ = matchresultFields
-	// matchresultDescMatchID is the schema descriptor for match_id field.
-	matchresultDescMatchID := matchresultFields[1].Descriptor()
-	// matchresult.MatchIDValidator is a validator for the "match_id" field. It is called by the builders before save.
-	matchresult.MatchIDValidator = matchresultDescMatchID.Validators[0].(func(int) error)
-	// matchresultDescPlayerID is the schema descriptor for player_id field.
-	matchresultDescPlayerID := matchresultFields[2].Descriptor()
-	// matchresult.PlayerIDValidator is a validator for the "player_id" field. It is called by the builders before save.
-	matchresult.PlayerIDValidator = matchresultDescPlayerID.Validators[0].(func(int) error)
-	// matchresultDescValue is the schema descriptor for value field.
-	matchresultDescValue := matchresultFields[3].Descriptor()
-	// matchresult.ValueValidator is a validator for the "value" field. It is called by the builders before save.
-	matchresult.ValueValidator = matchresultDescValue.Validators[0].(func(int) error)
-	// matchresultDescIsRetry is the schema descriptor for is_retry field.
-	matchresultDescIsRetry := matchresultFields[4].Descriptor()
-	// matchresult.DefaultIsRetry holds the default value on creation for the is_retry field.
-	matchresult.DefaultIsRetry = matchresultDescIsRetry.Default.(bool)
-	// matchresultDescCreatedAt is the schema descriptor for created_at field.
-	matchresultDescCreatedAt := matchresultFields[5].Descriptor()
-	// matchresult.DefaultCreatedAt holds the default value on creation for the created_at field.
-	matchresult.DefaultCreatedAt = matchresultDescCreatedAt.Default.(func() time.Time)
+	playermatchresultFields := schema.PlayerMatchResult{}.Fields()
+	_ = playermatchresultFields
+	// playermatchresultDescMatchID is the schema descriptor for match_id field.
+	playermatchresultDescMatchID := playermatchresultFields[1].Descriptor()
+	// playermatchresult.MatchIDValidator is a validator for the "match_id" field. It is called by the builders before save.
+	playermatchresult.MatchIDValidator = playermatchresultDescMatchID.Validators[0].(func(int) error)
+	// playermatchresultDescPlayerID is the schema descriptor for player_id field.
+	playermatchresultDescPlayerID := playermatchresultFields[2].Descriptor()
+	// playermatchresult.PlayerIDValidator is a validator for the "player_id" field. It is called by the builders before save.
+	playermatchresult.PlayerIDValidator = playermatchresultDescPlayerID.Validators[0].(func(int) error)
+	// playermatchresultDescScore is the schema descriptor for score field.
+	playermatchresultDescScore := playermatchresultFields[3].Descriptor()
+	// playermatchresult.ScoreValidator is a validator for the "score" field. It is called by the builders before save.
+	playermatchresult.ScoreValidator = playermatchresultDescScore.Validators[0].(func(int) error)
+	// playermatchresultDescIsRetried is the schema descriptor for is_retried field.
+	playermatchresultDescIsRetried := playermatchresultFields[4].Descriptor()
+	// playermatchresult.DefaultIsRetried holds the default value on creation for the is_retried field.
+	playermatchresult.DefaultIsRetried = playermatchresultDescIsRetried.Default.(bool)
+	// playermatchresultDescCreatedAt is the schema descriptor for created_at field.
+	playermatchresultDescCreatedAt := playermatchresultFields[5].Descriptor()
+	// playermatchresult.DefaultCreatedAt holds the default value on creation for the created_at field.
+	playermatchresult.DefaultCreatedAt = playermatchresultDescCreatedAt.Default.(func() time.Time)
 	statisticFields := schema.Statistic{}.Fields()
 	_ = statisticFields
 	// statisticDescPeriod is the schema descriptor for period field.

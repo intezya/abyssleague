@@ -20,8 +20,8 @@ type Tx struct {
 	InventoryItem *InventoryItemClient
 	// Match is the client for interacting with the Match builders.
 	Match *MatchClient
-	// MatchResult is the client for interacting with the MatchResult builders.
-	MatchResult *MatchResultClient
+	// PlayerMatchResult is the client for interacting with the PlayerMatchResult builders.
+	PlayerMatchResult *PlayerMatchResultClient
 	// Statistic is the client for interacting with the Statistic builders.
 	Statistic *StatisticClient
 	// User is the client for interacting with the User builders.
@@ -163,7 +163,7 @@ func (tx *Tx) init() {
 	tx.GameItem = NewGameItemClient(tx.config)
 	tx.InventoryItem = NewInventoryItemClient(tx.config)
 	tx.Match = NewMatchClient(tx.config)
-	tx.MatchResult = NewMatchResultClient(tx.config)
+	tx.PlayerMatchResult = NewPlayerMatchResultClient(tx.config)
 	tx.Statistic = NewStatisticClient(tx.config)
 	tx.User = NewUserClient(tx.config)
 	tx.UserBalance = NewUserBalanceClient(tx.config)

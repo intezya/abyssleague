@@ -54,6 +54,6 @@ func (Match) Edges() []ent.Edge {
 			Required().
 			Immutable(),
 
-		edge.To("results", MatchResult.Type),
+		edge.To("results", PlayerMatchResult.Type),
 	}
 }

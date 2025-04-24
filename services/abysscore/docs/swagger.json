@@ -1,950 +1,950 @@
 {
-  "schemes": [
-    "http",
-    "https"
-  ],
-  "swagger": "2.0",
-  "info": {
-    "description": "API of AbyssCore server",
-    "title": "AbyssCore API",
-    "contact": {},
-    "version": "1.0"
-  },
-  "host": "localhost:8080",
-  "basePath": "/",
-  "paths": {
-    "/api/auth/change_password": {
-      "post": {
-        "description": "Changes the password for an existing user",
-        "consumes": [
-          "application/json"
-        ],
-        "produces": [
-          "application/json"
-        ],
-        "tags": [
-          "Authentication"
-        ],
-        "summary": "Change user password",
-        "parameters": [
-          {
-            "description": "Password change details",
-            "name": "request",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/request.PasswordChangeRequest"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Password successfully changed",
-            "schema": {
-              "$ref": "#/definitions/examples.AuthenticationSuccessResponse"
-            }
-          },
-          "400": {
-            "description": "Bad request - missed request fields",
-            "schema": {
-              "$ref": "#/definitions/examples.BadRequestResponse"
-            }
-          },
-          "401": {
-            "description": "Unauthorized - wrong password",
-            "schema": {
-              "$ref": "#/definitions/examples.UserWrongPasswordResponse"
-            }
-          },
-          "404": {
-            "description": "Not found - user with this username not found",
-            "schema": {
-              "$ref": "#/definitions/examples.UserNotFoundResponse"
-            }
-          },
-          "422": {
-            "description": "Unprocessable entity - invalid request types",
-            "schema": {
-              "$ref": "#/definitions/examples.UnprocessableEntityResponse"
-            }
-          },
-          "429": {
-            "description": "Too many requests - received too many auth requests",
-            "schema": {
-              "$ref": "#/definitions/examples.TooManyRequestsResponse"
-            }
-          }
-        }
-      }
+    "schemes": [
+        "http",
+        "https"
+    ],
+    "swagger": "2.0",
+    "info": {
+        "description": "API of AbyssCore server",
+        "title": "AbyssCore API",
+        "contact": {},
+        "version": "1.0"
     },
-    "/api/auth/login": {
-      "post": {
-        "description": "Authenticates a user with username and password",
-        "consumes": [
-          "application/json"
-        ],
-        "produces": [
-          "application/json"
-        ],
-        "tags": [
-          "Authentication"
-        ],
-        "summary": "Authenticate user",
-        "parameters": [
-          {
-            "description": "User login credentials",
-            "name": "request",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/request.AuthenticationRequest"
+    "host": "localhost:8080",
+    "basePath": "/",
+    "paths": {
+        "/api/auth/change_password": {
+            "post": {
+                "description": "Changes the password for an existing user",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Authentication"
+                ],
+                "summary": "Change user password",
+                "parameters": [
+                    {
+                        "description": "Password change details",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.PasswordChangeRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Password successfully changed",
+                        "schema": {
+                            "$ref": "#/definitions/examples.AuthenticationSuccessResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request - missed request fields",
+                        "schema": {
+                            "$ref": "#/definitions/examples.BadRequestResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized - wrong password",
+                        "schema": {
+                            "$ref": "#/definitions/examples.UserWrongPasswordResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not found - user with this username not found",
+                        "schema": {
+                            "$ref": "#/definitions/examples.UserNotFoundResponse"
+                        }
+                    },
+                    "422": {
+                        "description": "Unprocessable entity - invalid request types",
+                        "schema": {
+                            "$ref": "#/definitions/examples.UnprocessableEntityResponse"
+                        }
+                    },
+                    "429": {
+                        "description": "Too many requests - received too many auth requests",
+                        "schema": {
+                            "$ref": "#/definitions/examples.TooManyRequestsResponse"
+                        }
+                    }
+                }
             }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successfully authenticated",
-            "schema": {
-              "$ref": "#/definitions/examples.AuthenticationSuccessResponse"
+        },
+        "/api/auth/login": {
+            "post": {
+                "description": "Authenticates a user with username and password",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Authentication"
+                ],
+                "summary": "Authenticate user",
+                "parameters": [
+                    {
+                        "description": "User login credentials",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.AuthenticationRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successfully authenticated",
+                        "schema": {
+                            "$ref": "#/definitions/examples.AuthenticationSuccessResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request - missed request fields",
+                        "schema": {
+                            "$ref": "#/definitions/examples.BadRequestResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized - wrong hardware id",
+                        "schema": {
+                            "$ref": "#/definitions/examples.UserWrongHardwareIDResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not found - user with this username not found",
+                        "schema": {
+                            "$ref": "#/definitions/examples.UserNotFoundResponse"
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict - only one account per device allowed",
+                        "schema": {
+                            "$ref": "#/definitions/examples.HardwareIDConflictResponse"
+                        }
+                    },
+                    "422": {
+                        "description": "Unprocessable entity - invalid request types",
+                        "schema": {
+                            "$ref": "#/definitions/examples.UnprocessableEntityResponse"
+                        }
+                    },
+                    "429": {
+                        "description": "Too many requests - received too many auth requests",
+                        "schema": {
+                            "$ref": "#/definitions/examples.TooManyRequestsResponse"
+                        }
+                    }
+                }
             }
-          },
-          "400": {
-            "description": "Bad request - missed request fields",
-            "schema": {
-              "$ref": "#/definitions/examples.BadRequestResponse"
+        },
+        "/api/auth/register": {
+            "post": {
+                "description": "Creates a new user account with the provided credentials",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Authentication"
+                ],
+                "summary": "Register a new user",
+                "parameters": [
+                    {
+                        "description": "User registration details",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.AuthenticationRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "User successfully registered",
+                        "schema": {
+                            "$ref": "#/definitions/examples.AuthenticationSuccessResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request - missed request fields",
+                        "schema": {
+                            "$ref": "#/definitions/examples.BadRequestResponse"
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict - only one account per device allowed",
+                        "schema": {
+                            "$ref": "#/definitions/examples.HardwareIDConflictResponse"
+                        }
+                    },
+                    "422": {
+                        "description": "Unprocessable entity - invalid request types",
+                        "schema": {
+                            "$ref": "#/definitions/examples.UnprocessableEntityResponse"
+                        }
+                    },
+                    "429": {
+                        "description": "Too many requests - received too many auth requests",
+                        "schema": {
+                            "$ref": "#/definitions/examples.TooManyRequestsResponse"
+                        }
+                    }
+                }
             }
-          },
-          "401": {
-            "description": "Unauthorized - wrong hardware id",
-            "schema": {
-              "$ref": "#/definitions/examples.UserWrongHardwareIDResponse"
+        },
+        "/api/items": {
+            "get": {
+                "description": "Returns a paginated list of game items with sorting",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Game Items"
+                ],
+                "summary": "List game items",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Page number (default: 1)",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Page size (default: 10)",
+                        "name": "size",
+                        "in": "query"
+                    },
+                    {
+                        "enum": [
+                            "created_at",
+                            "name",
+                            "collection",
+                            "type",
+                            "rarity"
+                        ],
+                        "type": "string",
+                        "description": "Field to sort by",
+                        "name": "order_by",
+                        "in": "query"
+                    },
+                    {
+                        "enum": [
+                            "asc",
+                            "desc"
+                        ],
+                        "type": "string",
+                        "description": "Sort order",
+                        "name": "order_type",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Paginated list of game items",
+                        "schema": {
+                            "$ref": "#/definitions/examples.PaginatedGameItemsDTOResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request - invalid query params",
+                        "schema": {
+                            "$ref": "#/definitions/examples.BadRequestResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Admin creates a new game item",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Game Items"
+                ],
+                "summary": "Create game item",
+                "parameters": [
+                    {
+                        "description": "Game item data",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.CreateUpdateGameItem"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Created game item",
+                        "schema": {
+                            "$ref": "#/definitions/examples.CreateGameItemDTOSuccessResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request - missed request fields",
+                        "schema": {
+                            "$ref": "#/definitions/examples.BadRequestResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden - not enough rights",
+                        "schema": {
+                            "$ref": "#/definitions/examples.ForbiddenByAccessLevelResponse"
+                        }
+                    },
+                    "422": {
+                        "description": "Unprocessable entity - invalid request types",
+                        "schema": {
+                            "$ref": "#/definitions/examples.UnprocessableEntityResponse"
+                        }
+                    }
+                }
             }
-          },
-          "404": {
-            "description": "Not found - user with this username not found",
-            "schema": {
-              "$ref": "#/definitions/examples.UserNotFoundResponse"
+        },
+        "/api/items/{id}": {
+            "get": {
+                "description": "Returns game item by its ID",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Game Items"
+                ],
+                "summary": "Get game item by ID",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Game item ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Game item",
+                        "schema": {
+                            "$ref": "#/definitions/examples.FindGameItemDTOSuccessResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request - invalid ID",
+                        "schema": {
+                            "$ref": "#/definitions/examples.BadRequestResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not found - no such game item",
+                        "schema": {
+                            "$ref": "#/definitions/examples.GameItemNotFound"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "description": "Admin updates a game item by ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Game Items"
+                ],
+                "summary": "Update game item",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Game item ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Updated game item data",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.CreateUpdateGameItem"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Game item updated"
+                    },
+                    "400": {
+                        "description": "Bad request - missed request fields",
+                        "schema": {
+                            "$ref": "#/definitions/examples.BadRequestResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden - not enough rights",
+                        "schema": {
+                            "$ref": "#/definitions/examples.ForbiddenByAccessLevelResponse"
+                        }
+                    },
+                    "422": {
+                        "description": "Unprocessable entity - invalid request types",
+                        "schema": {
+                            "$ref": "#/definitions/examples.UnprocessableEntityResponse"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "Admin deletes a game item by ID",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Game Items"
+                ],
+                "summary": "Delete game item",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Game item ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Game item deleted"
+                    },
+                    "400": {
+                        "description": "Bad request - invalid ID",
+                        "schema": {
+                            "$ref": "#/definitions/examples.BadRequestResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden - not enough rights",
+                        "schema": {
+                            "$ref": "#/definitions/examples.ForbiddenByAccessLevelResponse"
+                        }
+                    },
+                    "422": {
+                        "description": "Unprocessable entity - invalid request types",
+                        "schema": {
+                            "$ref": "#/definitions/examples.UnprocessableEntityResponse"
+                        }
+                    }
+                }
             }
-          },
-          "409": {
-            "description": "Conflict - only one account per device allowed",
-            "schema": {
-              "$ref": "#/definitions/examples.HardwareIDConflictResponse"
-            }
-          },
-          "422": {
-            "description": "Unprocessable entity - invalid request types",
-            "schema": {
-              "$ref": "#/definitions/examples.UnprocessableEntityResponse"
-            }
-          },
-          "429": {
-            "description": "Too many requests - received too many auth requests",
-            "schema": {
-              "$ref": "#/definitions/examples.TooManyRequestsResponse"
-            }
-          }
         }
-      }
     },
-    "/api/auth/register": {
-      "post": {
-        "description": "Creates a new user account with the provided credentials",
-        "consumes": [
-          "application/json"
-        ],
-        "produces": [
-          "application/json"
-        ],
-        "tags": [
-          "Authentication"
-        ],
-        "summary": "Register a new user",
-        "parameters": [
-          {
-            "description": "User registration details",
-            "name": "request",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/request.AuthenticationRequest"
+    "definitions": {
+        "domainservice.AuthenticationResult": {
+            "type": "object",
+            "properties": {
+                "online_count": {
+                    "type": "integer"
+                },
+                "token": {
+                    "type": "string",
+                    "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+                },
+                "user": {
+                    "$ref": "#/definitions/dto.UserFullDTO"
+                }
             }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "User successfully registered",
-            "schema": {
-              "$ref": "#/definitions/examples.AuthenticationSuccessResponse"
+        },
+        "dto.GameItemDTO": {
+            "type": "object",
+            "properties": {
+                "collection": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "rarity": {
+                    "type": "integer"
+                },
+                "type": {
+                    "type": "integer"
+                }
             }
-          },
-          "400": {
-            "description": "Bad request - missed request fields",
-            "schema": {
-              "$ref": "#/definitions/examples.BadRequestResponse"
+        },
+        "dto.InventoryItemDTO": {
+            "type": "object",
+            "properties": {
+                "collection": {
+                    "type": "string"
+                },
+                "game_item_id": {
+                    "description": "Edges",
+                    "type": "integer"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "obtained_at": {
+                    "type": "string"
+                },
+                "rarity": {
+                    "type": "integer"
+                },
+                "type": {
+                    "type": "integer"
+                }
             }
-          },
-          "409": {
-            "description": "Conflict - only one account per device allowed",
-            "schema": {
-              "$ref": "#/definitions/examples.HardwareIDConflictResponse"
+        },
+        "dto.UserDTO": {
+            "type": "object",
+            "properties": {
+                "avatar_url": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "genshin_uid": {
+                    "type": "string"
+                },
+                "hoyolab_login": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "invites_enabled": {
+                    "type": "boolean"
+                },
+                "login_streak": {
+                    "type": "integer"
+                },
+                "username": {
+                    "type": "string"
+                }
             }
-          },
-          "422": {
-            "description": "Unprocessable entity - invalid request types",
-            "schema": {
-              "$ref": "#/definitions/examples.UnprocessableEntityResponse"
+        },
+        "dto.UserFullDTO": {
+            "type": "object",
+            "properties": {
+                "avatar_url": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "current_item": {
+                    "$ref": "#/definitions/dto.InventoryItemDTO"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "friends": {
+                    "description": "Statistics []*Statistic `json:\"statistics\"`",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dto.UserDTO"
+                    }
+                },
+                "genshin_uid": {
+                    "type": "string"
+                },
+                "hoyolab_login": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "invites_enabled": {
+                    "type": "boolean"
+                },
+                "items": {
+                    "description": "SentFriendRequests []*FriendRequest `json:\"sent_friend_requests\"`\nReceivedFriendRequests []*FriendRequest `json:\"received_friend_requests\"`",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dto.InventoryItemDTO"
+                    }
+                },
+                "login_streak": {
+                    "type": "integer"
+                },
+                "username": {
+                    "type": "string"
+                }
             }
-          },
-          "429": {
-            "description": "Too many requests - received too many auth requests",
-            "schema": {
-              "$ref": "#/definitions/examples.TooManyRequestsResponse"
+        },
+        "examples.AuthenticationSuccessResponse": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "integer",
+                    "example": 200
+                },
+                "data": {
+                    "$ref": "#/definitions/domainservice.AuthenticationResult"
+                },
+                "message": {
+                    "type": "string",
+                    "example": "success"
+                },
+                "path": {
+                    "type": "string"
+                }
             }
-          }
-        }
-      }
-    },
-    "/api/items": {
-      "get": {
-        "description": "Returns a paginated list of game items with sorting",
-        "produces": [
-          "application/json"
-        ],
-        "tags": [
-          "Game Items"
-        ],
-        "summary": "List game items",
-        "parameters": [
-          {
-            "type": "integer",
-            "description": "Page number (default: 1)",
-            "name": "page",
-            "in": "query"
-          },
-          {
-            "type": "integer",
-            "description": "Page size (default: 10)",
-            "name": "size",
-            "in": "query"
-          },
-          {
-            "enum": [
-              "created_at",
-              "name",
-              "collection",
-              "type",
-              "rarity"
+        },
+        "examples.BadRequestResponse": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "integer",
+                    "example": 400
+                },
+                "detail": {
+                    "type": "string"
+                },
+                "errors": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "message": {
+                    "type": "string",
+                    "example": "bad request"
+                },
+                "path": {
+                    "type": "string"
+                }
+            }
+        },
+        "examples.CreateGameItemDTOSuccessResponse": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "integer",
+                    "example": 200
+                },
+                "data": {
+                    "$ref": "#/definitions/dto.GameItemDTO"
+                },
+                "message": {
+                    "type": "string",
+                    "example": "success"
+                },
+                "path": {
+                    "type": "string"
+                }
+            }
+        },
+        "examples.FindGameItemDTOSuccessResponse": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "integer",
+                    "example": 200
+                },
+                "data": {
+                    "$ref": "#/definitions/dto.GameItemDTO"
+                },
+                "message": {
+                    "type": "string",
+                    "example": "success"
+                },
+                "path": {
+                    "type": "string"
+                }
+            }
+        },
+        "examples.ForbiddenByAccessLevelResponse": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "integer",
+                    "example": 403
+                },
+                "detail": {
+                    "type": "string"
+                },
+                "message": {
+                    "type": "string",
+                    "example": "insufficient access level"
+                },
+                "path": {
+                    "type": "string"
+                }
+            }
+        },
+        "examples.GameItemNotFound": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "integer",
+                    "example": 404
+                },
+                "detail": {
+                    "type": "string"
+                },
+                "message": {
+                    "type": "string",
+                    "example": "game item not found"
+                },
+                "path": {
+                    "type": "string"
+                }
+            }
+        },
+        "examples.HardwareIDConflictResponse": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "integer",
+                    "example": 409
+                },
+                "detail": {
+                    "type": "string"
+                },
+                "message": {
+                    "type": "string",
+                    "example": "user hardware id conflict"
+                },
+                "path": {
+                    "type": "string"
+                }
+            }
+        },
+        "examples.PaginatedGameItemsDTOResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dto.GameItemDTO"
+                    }
+                },
+                "page": {
+                    "type": "integer"
+                },
+                "size": {
+                    "type": "integer"
+                },
+                "total_items": {
+                    "type": "integer"
+                },
+                "total_pages": {
+                    "type": "integer"
+                }
+            }
+        },
+        "examples.TooManyRequestsResponse": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "integer",
+                    "example": 429
+                },
+                "detail": {
+                    "type": "string"
+                },
+                "message": {
+                    "type": "string",
+                    "example": "too many requests"
+                },
+                "path": {
+                    "type": "string"
+                }
+            }
+        },
+        "examples.UnprocessableEntityResponse": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "integer",
+                    "example": 422
+                },
+                "detail": {
+                    "type": "string"
+                },
+                "message": {
+                    "type": "string",
+                    "example": "unprocessable entity"
+                },
+                "path": {
+                    "type": "string"
+                }
+            }
+        },
+        "examples.UserNotFoundResponse": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "integer",
+                    "example": 404
+                },
+                "detail": {
+                    "type": "string"
+                },
+                "message": {
+                    "type": "string",
+                    "example": "user not found"
+                },
+                "path": {
+                    "type": "string"
+                }
+            }
+        },
+        "examples.UserWrongHardwareIDResponse": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "integer",
+                    "example": 401
+                },
+                "detail": {
+                    "type": "string"
+                },
+                "message": {
+                    "type": "string",
+                    "example": "wrong hardware id"
+                },
+                "path": {
+                    "type": "string"
+                }
+            }
+        },
+        "examples.UserWrongPasswordResponse": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "integer",
+                    "example": 401
+                },
+                "detail": {
+                    "type": "string"
+                },
+                "message": {
+                    "type": "string",
+                    "example": "wrong password"
+                },
+                "path": {
+                    "type": "string"
+                }
+            }
+        },
+        "examples.UsernameConflictResponse": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "integer",
+                    "example": 409
+                },
+                "detail": {
+                    "type": "string"
+                },
+                "message": {
+                    "type": "string",
+                    "example": "user already exists"
+                },
+                "path": {
+                    "type": "string"
+                }
+            }
+        },
+        "request.AuthenticationRequest": {
+            "type": "object",
+            "required": [
+                "hardware_id",
+                "password",
+                "username"
             ],
-            "type": "string",
-            "description": "Field to sort by",
-            "name": "order_by",
-            "in": "query"
-          },
-          {
-            "enum": [
-              "asc",
-              "desc"
+            "properties": {
+                "hardware_id": {
+                    "type": "string",
+                    "example": "QXV0aGVudGljQU1ENjA3NDA0"
+                },
+                "password": {
+                    "type": "string",
+                    "example": "STr0ngP@55w0rD!_"
+                },
+                "username": {
+                    "type": "string",
+                    "example": "my_legendary_username"
+                }
+            }
+        },
+        "request.CreateUpdateGameItem": {
+            "type": "object",
+            "required": [
+                "collection",
+                "name",
+                "rarity",
+                "type"
             ],
-            "type": "string",
-            "description": "Sort order",
-            "name": "order_type",
-            "in": "query"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Paginated list of game items",
-            "schema": {
-              "$ref": "#/definitions/examples.PaginatedGameItemsDTOResponse"
+            "properties": {
+                "collection": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "rarity": {
+                    "type": "integer"
+                },
+                "type": {
+                    "type": "integer"
+                }
             }
-          },
-          "400": {
-            "description": "Bad request - invalid query params",
-            "schema": {
-              "$ref": "#/definitions/examples.BadRequestResponse"
+        },
+        "request.PasswordChangeRequest": {
+            "type": "object",
+            "required": [
+                "new_password",
+                "old_password",
+                "username"
+            ],
+            "properties": {
+                "new_password": {
+                    "type": "string",
+                    "example": "QXV0aGVudGljQU1ENjA3NDA0"
+                },
+                "old_password": {
+                    "type": "string",
+                    "example": "STr0ngP@55w0rD!_"
+                },
+                "username": {
+                    "type": "string",
+                    "example": "my_legendary_username"
+                }
             }
-          }
         }
-      },
-      "post": {
-        "description": "Admin creates a new game item",
-        "consumes": [
-          "application/json"
-        ],
-        "produces": [
-          "application/json"
-        ],
-        "tags": [
-          "Game Items"
-        ],
-        "summary": "Create game item",
-        "parameters": [
-          {
-            "description": "Game item data",
-            "name": "request",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/request.CreateUpdateGameItem"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Created game item",
-            "schema": {
-              "$ref": "#/definitions/examples.CreateGameItemDTOSuccessResponse"
-            }
-          },
-          "400": {
-            "description": "Bad request - missed request fields",
-            "schema": {
-              "$ref": "#/definitions/examples.BadRequestResponse"
-            }
-          },
-          "403": {
-            "description": "Forbidden - not enough rights",
-            "schema": {
-              "$ref": "#/definitions/examples.ForbiddenByAccessLevelResponse"
-            }
-          },
-          "422": {
-            "description": "Unprocessable entity - invalid request types",
-            "schema": {
-              "$ref": "#/definitions/examples.UnprocessableEntityResponse"
-            }
-          }
-        }
-      }
-    },
-    "/api/items/{id}": {
-      "get": {
-        "description": "Returns game item by its ID",
-        "produces": [
-          "application/json"
-        ],
-        "tags": [
-          "Game Items"
-        ],
-        "summary": "Get game item by ID",
-        "parameters": [
-          {
-            "type": "integer",
-            "description": "Game item ID",
-            "name": "id",
-            "in": "path",
-            "required": true
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Game item",
-            "schema": {
-              "$ref": "#/definitions/examples.FindGameItemDTOSuccessResponse"
-            }
-          },
-          "400": {
-            "description": "Bad request - invalid ID",
-            "schema": {
-              "$ref": "#/definitions/examples.BadRequestResponse"
-            }
-          },
-          "404": {
-            "description": "Not found - no such game item",
-            "schema": {
-              "$ref": "#/definitions/examples.GameItemNotFound"
-            }
-          }
-        }
-      },
-      "put": {
-        "description": "Admin updates a game item by ID",
-        "consumes": [
-          "application/json"
-        ],
-        "produces": [
-          "application/json"
-        ],
-        "tags": [
-          "Game Items"
-        ],
-        "summary": "Update game item",
-        "parameters": [
-          {
-            "type": "integer",
-            "description": "Game item ID",
-            "name": "id",
-            "in": "path",
-            "required": true
-          },
-          {
-            "description": "Updated game item data",
-            "name": "request",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/request.CreateUpdateGameItem"
-            }
-          }
-        ],
-        "responses": {
-          "204": {
-            "description": "Game item updated"
-          },
-          "400": {
-            "description": "Bad request - missed request fields",
-            "schema": {
-              "$ref": "#/definitions/examples.BadRequestResponse"
-            }
-          },
-          "403": {
-            "description": "Forbidden - not enough rights",
-            "schema": {
-              "$ref": "#/definitions/examples.ForbiddenByAccessLevelResponse"
-            }
-          },
-          "422": {
-            "description": "Unprocessable entity - invalid request types",
-            "schema": {
-              "$ref": "#/definitions/examples.UnprocessableEntityResponse"
-            }
-          }
-        }
-      },
-      "delete": {
-        "description": "Admin deletes a game item by ID",
-        "produces": [
-          "application/json"
-        ],
-        "tags": [
-          "Game Items"
-        ],
-        "summary": "Delete game item",
-        "parameters": [
-          {
-            "type": "integer",
-            "description": "Game item ID",
-            "name": "id",
-            "in": "path",
-            "required": true
-          }
-        ],
-        "responses": {
-          "204": {
-            "description": "Game item deleted"
-          },
-          "400": {
-            "description": "Bad request - invalid ID",
-            "schema": {
-              "$ref": "#/definitions/examples.BadRequestResponse"
-            }
-          },
-          "403": {
-            "description": "Forbidden - not enough rights",
-            "schema": {
-              "$ref": "#/definitions/examples.ForbiddenByAccessLevelResponse"
-            }
-          },
-          "422": {
-            "description": "Unprocessable entity - invalid request types",
-            "schema": {
-              "$ref": "#/definitions/examples.UnprocessableEntityResponse"
-            }
-          }
-        }
-      }
     }
-  },
-  "definitions": {
-    "domainservice.AuthenticationResult": {
-      "type": "object",
-      "properties": {
-        "online_count": {
-          "type": "integer"
-        },
-        "token": {
-          "type": "string",
-          "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
-        },
-        "user": {
-          "$ref": "#/definitions/dto.UserFullDTO"
-        }
-      }
-    },
-    "dto.GameItemDTO": {
-      "type": "object",
-      "properties": {
-        "collection": {
-          "type": "string"
-        },
-        "created_at": {
-          "type": "string"
-        },
-        "id": {
-          "type": "integer"
-        },
-        "name": {
-          "type": "string"
-        },
-        "rarity": {
-          "type": "integer"
-        },
-        "type": {
-          "type": "integer"
-        }
-      }
-    },
-    "dto.InventoryItemDTO": {
-      "type": "object",
-      "properties": {
-        "collection": {
-          "type": "string"
-        },
-        "game_item_id": {
-          "description": "Edges",
-          "type": "integer"
-        },
-        "id": {
-          "type": "integer"
-        },
-        "name": {
-          "type": "string"
-        },
-        "obtained_at": {
-          "type": "string"
-        },
-        "rarity": {
-          "type": "integer"
-        },
-        "type": {
-          "type": "integer"
-        }
-      }
-    },
-    "dto.UserDTO": {
-      "type": "object",
-      "properties": {
-        "avatar_url": {
-          "type": "string"
-        },
-        "created_at": {
-          "type": "string"
-        },
-        "email": {
-          "type": "string"
-        },
-        "genshin_uid": {
-          "type": "string"
-        },
-        "hoyolab_login": {
-          "type": "string"
-        },
-        "id": {
-          "type": "integer"
-        },
-        "invites_enabled": {
-          "type": "boolean"
-        },
-        "login_streak": {
-          "type": "integer"
-        },
-        "username": {
-          "type": "string"
-        }
-      }
-    },
-    "dto.UserFullDTO": {
-      "type": "object",
-      "properties": {
-        "avatar_url": {
-          "type": "string"
-        },
-        "created_at": {
-          "type": "string"
-        },
-        "current_item": {
-          "$ref": "#/definitions/dto.InventoryItemDTO"
-        },
-        "email": {
-          "type": "string"
-        },
-        "friends": {
-          "description": "Statistics []*Statistic `json:\"statistics\"`",
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/dto.UserDTO"
-          }
-        },
-        "genshin_uid": {
-          "type": "string"
-        },
-        "hoyolab_login": {
-          "type": "string"
-        },
-        "id": {
-          "type": "integer"
-        },
-        "invites_enabled": {
-          "type": "boolean"
-        },
-        "items": {
-          "description": "SentFriendRequests []*FriendRequest `json:\"sent_friend_requests\"`\nReceivedFriendRequests []*FriendRequest `json:\"received_friend_requests\"`",
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/dto.InventoryItemDTO"
-          }
-        },
-        "login_streak": {
-          "type": "integer"
-        },
-        "username": {
-          "type": "string"
-        }
-      }
-    },
-    "examples.AuthenticationSuccessResponse": {
-      "type": "object",
-      "properties": {
-        "code": {
-          "type": "integer",
-          "example": 200
-        },
-        "data": {
-          "$ref": "#/definitions/domainservice.AuthenticationResult"
-        },
-        "message": {
-          "type": "string",
-          "example": "success"
-        },
-        "path": {
-          "type": "string"
-        }
-      }
-    },
-    "examples.BadRequestResponse": {
-      "type": "object",
-      "properties": {
-        "code": {
-          "type": "integer",
-          "example": 400
-        },
-        "detail": {
-          "type": "string"
-        },
-        "errors": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
-        },
-        "message": {
-          "type": "string",
-          "example": "bad request"
-        },
-        "path": {
-          "type": "string"
-        }
-      }
-    },
-    "examples.CreateGameItemDTOSuccessResponse": {
-      "type": "object",
-      "properties": {
-        "code": {
-          "type": "integer",
-          "example": 200
-        },
-        "data": {
-          "$ref": "#/definitions/dto.GameItemDTO"
-        },
-        "message": {
-          "type": "string",
-          "example": "success"
-        },
-        "path": {
-          "type": "string"
-        }
-      }
-    },
-    "examples.FindGameItemDTOSuccessResponse": {
-      "type": "object",
-      "properties": {
-        "code": {
-          "type": "integer",
-          "example": 200
-        },
-        "data": {
-          "$ref": "#/definitions/dto.GameItemDTO"
-        },
-        "message": {
-          "type": "string",
-          "example": "success"
-        },
-        "path": {
-          "type": "string"
-        }
-      }
-    },
-    "examples.ForbiddenByAccessLevelResponse": {
-      "type": "object",
-      "properties": {
-        "code": {
-          "type": "integer",
-          "example": 403
-        },
-        "detail": {
-          "type": "string"
-        },
-        "message": {
-          "type": "string",
-          "example": "insufficient access level"
-        },
-        "path": {
-          "type": "string"
-        }
-      }
-    },
-    "examples.GameItemNotFound": {
-      "type": "object",
-      "properties": {
-        "code": {
-          "type": "integer",
-          "example": 404
-        },
-        "detail": {
-          "type": "string"
-        },
-        "message": {
-          "type": "string",
-          "example": "game item not found"
-        },
-        "path": {
-          "type": "string"
-        }
-      }
-    },
-    "examples.HardwareIDConflictResponse": {
-      "type": "object",
-      "properties": {
-        "code": {
-          "type": "integer",
-          "example": 409
-        },
-        "detail": {
-          "type": "string"
-        },
-        "message": {
-          "type": "string",
-          "example": "user hardware id conflict"
-        },
-        "path": {
-          "type": "string"
-        }
-      }
-    },
-    "examples.PaginatedGameItemsDTOResponse": {
-      "type": "object",
-      "properties": {
-        "data": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/dto.GameItemDTO"
-          }
-        },
-        "page": {
-          "type": "integer"
-        },
-        "size": {
-          "type": "integer"
-        },
-        "total_items": {
-          "type": "integer"
-        },
-        "total_pages": {
-          "type": "integer"
-        }
-      }
-    },
-    "examples.TooManyRequestsResponse": {
-      "type": "object",
-      "properties": {
-        "code": {
-          "type": "integer",
-          "example": 429
-        },
-        "detail": {
-          "type": "string"
-        },
-        "message": {
-          "type": "string",
-          "example": "too many requests"
-        },
-        "path": {
-          "type": "string"
-        }
-      }
-    },
-    "examples.UnprocessableEntityResponse": {
-      "type": "object",
-      "properties": {
-        "code": {
-          "type": "integer",
-          "example": 422
-        },
-        "detail": {
-          "type": "string"
-        },
-        "message": {
-          "type": "string",
-          "example": "unprocessable entity"
-        },
-        "path": {
-          "type": "string"
-        }
-      }
-    },
-    "examples.UserNotFoundResponse": {
-      "type": "object",
-      "properties": {
-        "code": {
-          "type": "integer",
-          "example": 404
-        },
-        "detail": {
-          "type": "string"
-        },
-        "message": {
-          "type": "string",
-          "example": "user not found"
-        },
-        "path": {
-          "type": "string"
-        }
-      }
-    },
-    "examples.UserWrongHardwareIDResponse": {
-      "type": "object",
-      "properties": {
-        "code": {
-          "type": "integer",
-          "example": 401
-        },
-        "detail": {
-          "type": "string"
-        },
-        "message": {
-          "type": "string",
-          "example": "wrong hardware id"
-        },
-        "path": {
-          "type": "string"
-        }
-      }
-    },
-    "examples.UserWrongPasswordResponse": {
-      "type": "object",
-      "properties": {
-        "code": {
-          "type": "integer",
-          "example": 401
-        },
-        "detail": {
-          "type": "string"
-        },
-        "message": {
-          "type": "string",
-          "example": "wrong password"
-        },
-        "path": {
-          "type": "string"
-        }
-      }
-    },
-    "examples.UsernameConflictResponse": {
-      "type": "object",
-      "properties": {
-        "code": {
-          "type": "integer",
-          "example": 409
-        },
-        "detail": {
-          "type": "string"
-        },
-        "message": {
-          "type": "string",
-          "example": "user already exists"
-        },
-        "path": {
-          "type": "string"
-        }
-      }
-    },
-    "request.AuthenticationRequest": {
-      "type": "object",
-      "required": [
-        "hardware_id",
-        "password",
-        "username"
-      ],
-      "properties": {
-        "hardware_id": {
-          "type": "string",
-          "example": "QXV0aGVudGljQU1ENjA3NDA0"
-        },
-        "password": {
-          "type": "string",
-          "example": "STr0ngP@55w0rD!_"
-        },
-        "username": {
-          "type": "string",
-          "example": "my_legendary_username"
-        }
-      }
-    },
-    "request.CreateUpdateGameItem": {
-      "type": "object",
-      "required": [
-        "collection",
-        "name",
-        "rarity",
-        "type"
-      ],
-      "properties": {
-        "collection": {
-          "type": "string"
-        },
-        "name": {
-          "type": "string"
-        },
-        "rarity": {
-          "type": "integer"
-        },
-        "type": {
-          "type": "integer"
-        }
-      }
-    },
-    "request.PasswordChangeRequest": {
-      "type": "object",
-      "required": [
-        "new_password",
-        "old_password",
-        "username"
-      ],
-      "properties": {
-        "new_password": {
-          "type": "string",
-          "example": "QXV0aGVudGljQU1ENjA3NDA0"
-        },
-        "old_password": {
-          "type": "string",
-          "example": "STr0ngP@55w0rD!_"
-        },
-        "username": {
-          "type": "string",
-          "example": "my_legendary_username"
-        }
-      }
-    }
-  }
 }

@@ -28,6 +28,8 @@ const authorizationHeaderKey = "Authorization"
 
 const UserCtxKey CtxKey = "user"
 
+const TokenCacheTime = 10 * time.Second
+
 type AuthenticationMiddleware struct {
 	authenticationService domainservice.AuthenticationService
 	redisClient           *rediswrapper.ClientWrapper
@@ -57,7 +59,7 @@ func (a *AuthenticationMiddleware) Handle() fiber.Handler {
 
 		user, err := a.checkTokenCache(authorizationHeaderValue)
 
-		if err != nil || user == nil {
+		if err != nil {
 			logger.Log.Debug("Error checking token in cache: ", err)
 			user, err = a.authenticationService.ValidateToken(c.UserContext(), authorizationHeaderValue)
 
@@ -79,11 +81,13 @@ func (a *AuthenticationMiddleware) Handle() fiber.Handler {
 
 func (a *AuthenticationMiddleware) checkTokenCache(token string) (*dto.UserDTO, error) {
 	val, ok := a.localCache.Load(token)
+
 	if !ok {
-		return nil, nil
+		return nil, errors.New("token not found in cache")
 	}
 
 	user, ok := val.(*dto.UserDTO)
+
 	if !ok {
 		return nil, errors.New("invalid cache type")
 	}
@@ -95,7 +99,7 @@ func (a *AuthenticationMiddleware) cacheToken(token string, user *dto.UserDTO) {
 	a.localCache.Store(token, user)
 
 	go func() {
-		time.Sleep(10 * time.Second)
+		time.Sleep(TokenCacheTime)
 		a.localCache.Delete(token)
 	}()
 }
