@@ -9,6 +9,7 @@ import (
 
 func ParseErrorOrInternalResponse(err error, c *fiber.Ctx) error {
 	var custom *Error
+
 	var customValidation *ValidationError
 
 	if !errors.As(err, &custom) && !errors.As(err, &customValidation) {
@@ -30,6 +31,7 @@ func ParseErrorOrInternalResponse(err error, c *fiber.Ctx) error {
 	if custom != nil {
 		return custom.ToErrorResponse(c)
 	}
+
 	if customValidation != nil {
 		return customValidation.ToErrorResponse(c)
 	}

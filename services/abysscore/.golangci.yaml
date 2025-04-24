@@ -1,0 +1,19 @@
+version: "2"
+
+linters:
+  default: all
+
+  disable:
+    - wrapcheck
+
+  settings:
+    varnamelen:
+      ignore-names:
+        - c  # Canonical naming (fiber context)
+        - id  # Canonical naming (any identification)
+        - ok # Canonical naming (boolean value)
+
+formatters:
+  exclusions:
+    paths:
+      - docs/

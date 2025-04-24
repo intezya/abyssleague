@@ -50,7 +50,6 @@ func NoContent(c *fiber.Ctx) error {
 
 func SuccessPagination[T any](data *dto.PaginatedResult[T], c *fiber.Ctx) error {
 	// TODO: maybe set X-Total-Count
-
 	return c.Status(fiber.StatusOK).JSON(
 		PaginationResponse{
 			Message: successMessage,

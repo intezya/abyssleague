@@ -6,7 +6,6 @@ import (
 	"go.opentelemetry.io/otel/trace"
 	"go.uber.org/zap"
 	"strconv"
-	"sync"
 	"time"
 
 	"github.com/gofiber/fiber/v2"
@@ -32,7 +31,6 @@ type prometheusMetrics struct {
 type resourceSampler struct {
 	requestCounter int
 	samplingRate   int
-	mutex          sync.Mutex
 }
 
 var textContentTypes = []string{
@@ -156,6 +154,7 @@ func extractResponseBody(c *fiber.Ctx) string {
 		if len(responseBody) >= 2048 {
 			return string(responseBody[:2048]) + "... (truncated)"
 		}
+
 		return string(responseBody)
 	}
 
@@ -234,7 +233,7 @@ func logRequest(
 	case isSlow:
 		log.With("slow_request", true).Warn("slow http request")
 	// TODO:
-	//case cfg.PathForLevelInfo(path):
+	// case cfg.PathForLevelInfo(path):
 	//	log.Info("http request")
 	default:
 		log.Debug("http request")
@@ -258,6 +257,7 @@ func getSafeRoutePath(c *fiber.Ctx) string {
 	if route == nil || route.Path == "" {
 		return c.Path()
 	}
+
 	return route.Path
 }
 
@@ -265,9 +265,11 @@ func maskAuthorizationHeader(authHeader string) string {
 	if authHeader == "" {
 		return ""
 	}
+
 	if len(authHeader) > 15 {
 		return authHeader[:15] + "..."
 	}
+
 	return "****"
 }
 
@@ -277,5 +279,6 @@ func isTextContent(contentType string) bool {
 			return true
 		}
 	}
+
 	return false
 }

@@ -28,19 +28,20 @@ func main() {
 	config.SetupLogger(appConfig.IsDebug, appConfig.EnvType, appConfig.LoggerConfig)
 
 	tracerCleanup := tracer.Init(appConfig.TracerConfig)
-	defer tracerCleanup()
-
 	entClient := persistence.SetupEnt(appConfig.EntConfig)
-	defer entClient.Close()
-
 	redisClient := rediswrapper.NewClientWrapper(appConfig.RedisConfig)
-	defer redisClient.Close()
-
 	grpcFactory := factory.NewGrpcClientFactory()
-	defer grpcFactory.CloseAll()
 	logger.Log.Debug("grpcFactory has been initialized")
 
+	defer func() {
+		tracerCleanup()
+		_ = entClient.Close()
+		redisClient.Close()
+		grpcFactory.CloseAll()
+	}()
+
 	gRPCDependencies := wrapper.NewDependencyProvider(appConfig.GRPCConfig, grpcFactory)
+
 	logger.Log.Debug("grpcDependencies has been initialized")
 
 	repositoryDependencies := persistence.NewDependencyProvider(entClient)

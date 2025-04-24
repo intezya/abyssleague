@@ -8,9 +8,15 @@ import (
 	"go.opentelemetry.io/otel/trace"
 )
 
+/*
+	For some cases varnamelen linter is disabled because it is infra code.
+*/
+
+// nolint:varnamelen
 // TraceFn wraps a function with a span and handles error recording.
 func TraceFn(ctx context.Context, spanName string, fn func(context.Context) error) error {
 	tracer := otel.Tracer("application")
+
 	ctx, span := tracer.Start(ctx, spanName)
 	defer span.End()
 
@@ -24,9 +30,11 @@ func TraceFn(ctx context.Context, spanName string, fn func(context.Context) erro
 	return err
 }
 
+// nolint:varnamelen
 // TraceFnWithResult wraps a function with a span, returns a result and records errors.
 func TraceFnWithResult[T any](ctx context.Context, spanName string, fn func(context.Context) (T, error)) (T, error) {
 	tracer := otel.Tracer("application")
+
 	ctx, span := tracer.Start(ctx, spanName)
 	defer span.End()
 
@@ -47,37 +55,43 @@ func AddAttribute(ctx context.Context, key string, value interface{}) {
 		return
 	}
 
-	switch v := value.(type) {
+	switch typedValue := value.(type) {
 	case string:
-		span.SetAttributes(attribute.String(key, v))
+		span.SetAttributes(attribute.String(key, typedValue))
 	case int:
-		span.SetAttributes(attribute.Int(key, v))
+		span.SetAttributes(attribute.Int(key, typedValue))
 	case bool:
-		span.SetAttributes(attribute.Bool(key, v))
+		span.SetAttributes(attribute.Bool(key, typedValue))
 	}
 }
 
+// nolint:varnamelen
 // Trace0 runs a function within a span, ignoring errors.
 func Trace0(ctx context.Context, spanName string, fn func(context.Context)) {
 	tracer := otel.Tracer("application")
+
 	ctx, span := tracer.Start(ctx, spanName)
 	defer span.End()
 
 	fn(ctx)
 }
 
+// nolint:varnamelen
 // Trace1 runs a function within a span and returns a result, ignoring errors.
 func Trace1[T any](ctx context.Context, spanName string, fn func(context.Context) T) T {
 	tracer := otel.Tracer("application")
+
 	ctx, span := tracer.Start(ctx, spanName)
 	defer span.End()
 
 	return fn(ctx)
 }
 
+// nolint:varnamelen
 // Trace2 runs a function within a span and returns a result, ignoring errors.
 func Trace2[R1, R2 any](ctx context.Context, spanName string, fn func(context.Context) (R1, R2)) (R1, R2) {
 	tracer := otel.Tracer("application")
+
 	ctx, span := tracer.Start(ctx, spanName)
 	defer span.End()
 

@@ -22,6 +22,7 @@ func (g *GRPCConfig) MainWebsocketServerAddress() string {
 	if len(g.WebsocketApiGatewayHost) == mainWebsocketServerIdx {
 		return ""
 	}
+
 	return fmt.Sprintf("%s:%d", g.WebsocketApiGatewayHost, g.WebsocketApiGatewayPorts[mainWebsocketServerIdx])
 }
 
@@ -29,6 +30,7 @@ func (g *GRPCConfig) DraftWebsocketServerAddress() string {
 	if len(g.WebsocketApiGatewayHost) <= draftWebsocketServerIdx {
 		return ""
 	}
+
 	return fmt.Sprintf("%s:%d", g.WebsocketApiGatewayHost, g.WebsocketApiGatewayPorts[draftWebsocketServerIdx])
 }
 
@@ -56,21 +58,25 @@ func (f *GrpcClientFactory) GetAndSetWebsocketApiGatewayClient(
 
 	if client, exists := f.clients[key]; exists {
 		logger.Log.Info("Using existing connection: ", address)
+
 		if receiver != nil {
 			receiver.SetClient(client)
 		}
+
 		return client.(websocketpb.WebsocketServiceClient)
 	}
 
 	maxRetries := 1
 	retryInterval := 1 * time.Second
+
 	var conn *grpc.ClientConn
+
 	var err error
 
 	for attempt := 1; attempt <= maxRetries; attempt++ {
 		logger.Log.Infof("Connection attempt to %s (%d of %d)", address, attempt, maxRetries)
 
-		conn, err = grpc.Dial(
+		conn, err = grpc.NewClient(
 			address,
 			grpc.WithTransportCredentials(insecure.NewCredentials()),
 			grpc.WithDefaultCallOptions(
@@ -88,6 +94,7 @@ func (f *GrpcClientFactory) GetAndSetWebsocketApiGatewayClient(
 
 		if err == nil {
 			logger.Log.Infof("Successfully connected to %s (%d attempmt)", address, attempt)
+
 			break
 		}
 
@@ -100,6 +107,7 @@ func (f *GrpcClientFactory) GetAndSetWebsocketApiGatewayClient(
 
 	if err != nil {
 		logger.Log.Warn("Failed to connect to Websocket service: ", err)
+
 		return nil
 	}
 
@@ -110,6 +118,7 @@ func (f *GrpcClientFactory) GetAndSetWebsocketApiGatewayClient(
 	if receiver != nil {
 		receiver.SetClient(client)
 	}
+
 	return client
 }
 

@@ -12,6 +12,6 @@ func ParseOrderType(input string) (types.OrderType, error) {
 	case "desc":
 		return types.OrderDesc, nil
 	default:
-		return "", orderTypeParseError
+		return "", errOrderTypeParseError
 	}
 }

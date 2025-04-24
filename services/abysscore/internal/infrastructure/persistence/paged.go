@@ -4,6 +4,7 @@ func getValidPage(page int) int {
 	if page < 1 {
 		return 1
 	}
+
 	return page
 }
 
@@ -11,6 +12,7 @@ func getValidSize(size int) int {
 	if size < 1 {
 		return 10
 	}
+
 	return size
 }
 

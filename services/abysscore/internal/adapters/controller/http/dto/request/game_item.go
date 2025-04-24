@@ -6,10 +6,10 @@ import (
 )
 
 type CreateUpdateGameItem struct {
-	Name       string `json:"name" validate:"required"`
+	Name       string `json:"name"       validate:"required"`
 	Collection string `json:"collection" validate:"required"`
-	Type       int    `json:"type" validate:"required"`
-	Rarity     int    `json:"rarity" validate:"required"`
+	Type       int    `json:"type"       validate:"required"`
+	Rarity     int    `json:"rarity"     validate:"required"`
 }
 
 func (c *CreateUpdateGameItem) ToDTO() *dto.GameItemDTO { // TODO: repository should accept CreateUpdateGameItemDTO from domain

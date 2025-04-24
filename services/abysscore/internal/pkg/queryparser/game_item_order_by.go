@@ -17,6 +17,6 @@ func ParseGameEntityOrderBy(s string) (gameitementity.OrderBy, error) {
 	case "rarity":
 		return gameitementity.OrderByRarity, nil
 	default:
-		return "", orderByParseError
+		return "", errOrderByParseError
 	}
 }

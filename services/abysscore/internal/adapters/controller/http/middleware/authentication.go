@@ -6,7 +6,7 @@ import (
 	"abysscore/internal/domain/service"
 	rediswrapper "abysscore/internal/infrastructure/cache/redis"
 	"context"
-	"fmt"
+	"errors"
 	"github.com/gofiber/fiber/v2"
 	"github.com/intezya/pkglib/logger"
 	"strings"
@@ -63,6 +63,7 @@ func (a *AuthenticationMiddleware) Handle() fiber.Handler {
 
 			if err != nil {
 				logger.Log.Debug("Error validating token: ", err)
+
 				return adaptererror.Unauthorized(err).ToErrorResponse(c)
 			}
 
@@ -84,7 +85,7 @@ func (a *AuthenticationMiddleware) checkTokenCache(token string) (*dto.UserDTO, 
 
 	user, ok := val.(*dto.UserDTO)
 	if !ok {
-		return nil, fmt.Errorf("invalid cache type")
+		return nil, errors.New("invalid cache type")
 	}
 
 	return user, nil

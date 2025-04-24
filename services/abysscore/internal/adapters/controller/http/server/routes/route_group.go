@@ -4,20 +4,20 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-// RouteGroup represents a group of routes with a common path prefix
+// RouteGroup represents a group of routes with a common path prefix.
 type RouteGroup struct {
 	Prefix     string
 	Routes     []*RouteEntry
 	middleware []fiber.Handler
 }
 
-// RouteEntry represents a single route within a group
+// RouteEntry represents a single route within a group.
 type RouteEntry struct {
 	Path  string
 	Route *Route
 }
 
-// NewRouteGroup creates a new route group with the given prefix
+// NewRouteGroup creates a new route group with the given prefix.
 func NewRouteGroup(prefix string) *RouteGroup {
 	return &RouteGroup{
 		Prefix:     prefix,
@@ -26,7 +26,7 @@ func NewRouteGroup(prefix string) *RouteGroup {
 	}
 }
 
-// Add adds a new route to the group
+// Add adds a new route to the group.
 func (rg *RouteGroup) Add(relativePath string, route *Route) *RouteGroup {
 	rg.Routes = append(
 		rg.Routes, &RouteEntry{
@@ -34,16 +34,18 @@ func (rg *RouteGroup) Add(relativePath string, route *Route) *RouteGroup {
 			Route: route,
 		},
 	)
+
 	return rg
 }
 
-// Use adds middleware to the group
+// Use adds middleware to the group.
 func (rg *RouteGroup) Use(middleware ...fiber.Handler) *RouteGroup {
 	rg.middleware = append(rg.middleware, middleware...)
+
 	return rg
 }
 
-// Register registers all routes in the group with the fiber app
+// Register registers all routes in the group with the fiber app.
 func (rg *RouteGroup) Register(app *fiber.App, middlewareLinker *MiddlewareLinker) {
 	group := app.Group(rg.Prefix)
 

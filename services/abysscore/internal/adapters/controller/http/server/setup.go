@@ -21,7 +21,7 @@ import (
 	"time"
 )
 
-// setupMetricsServer creates a separate HTTP server for Prometheus metrics
+// setupMetricsServer creates a separate HTTP server for Prometheus metrics.
 func setupMetricsServer(port int) {
 	go func() {
 		http.Handle("/metrics", promhttp.Handler())
@@ -29,7 +29,7 @@ func setupMetricsServer(port int) {
 	}()
 }
 
-// createFiberApp creates and configures a new Fiber application
+// createFiberApp creates and configures a new Fiber application.
 func createFiberApp(config *config.Config) *fiber.App {
 	return fiber.New(
 		fiber.Config{
@@ -52,11 +52,10 @@ func createFiberApp(config *config.Config) *fiber.App {
 	)
 }
 
-// setupCoreMiddleware sets up the common middleware for all routes
+// setupCoreMiddleware sets up the common middleware for all routes.
 func setupCoreMiddleware(app *fiber.App, config *config.Config) {
 	if config.IsDebug {
 		// TODO: add debug logging middleware
-
 		logger.Log.Debug("Setting up pprof middleware")
 		app.Use(pprof.New())
 		logger.Log.Debugw("Setting up swagger middleware")
@@ -67,7 +66,7 @@ func setupCoreMiddleware(app *fiber.App, config *config.Config) {
 	app.Use(healthcheck.New(config.FiberHealthCheckConfig))
 }
 
-// createMiddlewareLinker creates all application middleware and links them
+// createMiddlewareLinker creates all application middleware and links them.
 func createMiddlewareLinker(dependencies *routes.DependencyProvider, config *config.Config) *routes.MiddlewareLinker {
 	loggingMiddleware := middleware.NewLoggingMiddleware(config)
 	recoverMiddleware := middleware.NewRecoverMiddleware(config.FiberRequestIDConfig)
@@ -111,7 +110,7 @@ func Setup(dependencies *routes.DependencyProvider) *fiber.App {
 	return server
 }
 
-// Run starts the server with graceful shutdown support
+// Run starts the server with graceful shutdown support.
 func Run(server *fiber.App, config *config.Config) {
 	// Setup graceful shutdown
 	c := make(chan os.Signal, 1)
@@ -120,6 +119,7 @@ func Run(server *fiber.App, config *config.Config) {
 	go func() {
 		<-c
 		logger.Log.Info("Gracefully shutting down...")
+
 		_ = server.Shutdown()
 	}()
 

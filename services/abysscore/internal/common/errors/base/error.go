@@ -33,9 +33,11 @@ func (e *Error) Message() string {
 	if e.Custom != nil {
 		return e.Custom.Error()
 	}
+
 	if e.Wrapped != nil {
 		return e.Wrapped.Error()
 	}
+
 	return ""
 }
 
@@ -43,9 +45,11 @@ func (e *Error) Detail() string {
 	if e.Wrapped != nil {
 		return e.Wrapped.Error()
 	}
+
 	if e.Custom != nil {
 		return e.Custom.Error()
 	}
+
 	return ""
 }
 

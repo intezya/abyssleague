@@ -24,11 +24,13 @@ func NewClientWrapper(config *Config) *ClientWrapper {
 		closeConnectingCh: make(chan struct{}),
 	}
 	go wrapper.runConnecting(context.Background())
+
 	return wrapper
 }
 
 func (w *ClientWrapper) runConnecting(ctx context.Context) {
 	attempt := 1
+
 	for {
 		select {
 		case <-w.closeConnectingCh:
@@ -45,10 +47,12 @@ func (w *ClientWrapper) runConnecting(ctx context.Context) {
 			_, err := w.Client.Ping(ctx).Result()
 			if err == nil {
 				logger.Log.Info("Redis connected successfully!")
+
 				return
 			}
 
 			logger.Log.Warnf("Attempt %d: Failed to connect to Redis: %v", attempt, err)
+
 			attempt++
 		}
 	}
@@ -56,6 +60,7 @@ func (w *ClientWrapper) runConnecting(ctx context.Context) {
 
 func (w *ClientWrapper) Close() {
 	close(w.closeConnectingCh)
+
 	if w.Client != nil {
 		_ = w.Client.Close()
 	}

@@ -5,7 +5,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-var badRequestError = errors.New("bad request")
+var errBadRequestError = errors.New("bad request")
 
 type ValidationError struct {
 	Custom  error
@@ -24,7 +24,7 @@ type ValidationErrorResponse struct {
 
 func NewValidationError(wrapped error, errors []string) error {
 	return &ValidationError{
-		Custom:  badRequestError,
+		Custom:  errBadRequestError,
 		Wrapped: wrapped,
 		errors:  errors,
 		code:    fiber.StatusBadRequest,
@@ -43,9 +43,11 @@ func (e *ValidationError) Message() string {
 	if e.Custom != nil {
 		return e.Custom.Error()
 	}
+
 	if e.Wrapped != nil {
 		return e.Wrapped.Error()
 	}
+
 	return ""
 }
 
@@ -53,9 +55,11 @@ func (e *ValidationError) Detail() string {
 	if e.Wrapped != nil {
 		return e.Wrapped.Error()
 	}
+
 	if e.Custom != nil {
 		return e.Custom.Error()
 	}
+
 	return ""
 }
 

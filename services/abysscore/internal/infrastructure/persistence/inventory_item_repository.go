@@ -22,7 +22,7 @@ func (r *InventoryItemRepository) Create(
 	ctx context.Context,
 	inventoryItem *dto.CreateInventoryItemDTO,
 ) (*dto.InventoryItemDTO, error) {
-	item, err := r.client.InventoryItem.
+	result, err := r.client.InventoryItem.
 		Create().
 		SetItemID(inventoryItem.ItemID).
 		SetUserID(inventoryItem.UserID).
@@ -33,11 +33,11 @@ func (r *InventoryItemRepository) Create(
 		return nil, r.handleQueryError(err)
 	}
 
-	return mapper.ToInventoryItemDTOFromEnt(item), nil
+	return mapper.ToInventoryItemDTOFromEnt(result), nil
 }
 
 func (r *InventoryItemRepository) FindByUserID(ctx context.Context, userID int) ([]*dto.InventoryItemDTO, error) {
-	result, err := r.client.InventoryItem.
+	inventoryItems, err := r.client.InventoryItem.
 		Query().
 		Where(inventoryitem.UserIDEQ(userID)).
 		WithItem().
@@ -47,7 +47,7 @@ func (r *InventoryItemRepository) FindByUserID(ctx context.Context, userID int) 
 		return nil, r.handleQueryError(err)
 	}
 
-	mapped := itertools.Map(result, func(v *ent.InventoryItem) *dto.InventoryItemDTO {
+	mapped := itertools.Map(inventoryItems, func(v *ent.InventoryItem) *dto.InventoryItemDTO {
 		return mapper.ToInventoryItemDTOFromEnt(v)
 	})
 
@@ -58,7 +58,7 @@ func (r *InventoryItemRepository) FindByUserIDAndID(
 	ctx context.Context,
 	userID, id int,
 ) (*dto.InventoryItemDTO, error) {
-	item, err := r.client.InventoryItem.
+	inventoryItem, err := r.client.InventoryItem.
 		Query().
 		Where(
 			inventoryitem.IDEQ(id),
@@ -70,7 +70,7 @@ func (r *InventoryItemRepository) FindByUserIDAndID(
 		return nil, r.handleQueryError(err)
 	}
 
-	return mapper.ToInventoryItemDTOFromEnt(item), nil
+	return mapper.ToInventoryItemDTOFromEnt(inventoryItem), nil
 }
 
 func (r *InventoryItemRepository) Delete(ctx context.Context, inventoryItemID int) error {
@@ -85,7 +85,7 @@ func (r *InventoryItemRepository) Delete(ctx context.Context, inventoryItemID in
 	return nil
 }
 
-// handleQueryError transforms Ent query errors into domain-specific errors
+// handleQueryError transforms Ent query errors into domain-specific errors.
 func (r *InventoryItemRepository) handleQueryError(err error) error {
 	if err == nil {
 		return nil

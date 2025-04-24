@@ -6,51 +6,51 @@ import (
 	"github.com/intezya/pkglib/itertools"
 )
 
-func ToUserDTOFromEnt(u *ent.User) *dto.UserDTO {
+func ToUserDTOFromEnt(user *ent.User) *dto.UserDTO {
 	return &dto.UserDTO{
-		ID:                     u.ID,
-		Username:               u.Username,
-		LowerUsername:          u.LowerUsername,
-		Email:                  u.Email,
-		AccessLevel:            u.AccessLevel,
-		GenshinUID:             u.GenshinUID,
-		HoyolabLogin:           u.HoyolabLogin,
-		CurrentMatchID:         u.CurrentMatchID,
-		CurrentItemInProfileID: u.CurrentItemInProfileID,
-		AvatarURL:              u.AvatarURL,
-		InvitesEnabled:         u.InvitesEnabled,
-		LoginAt:                u.LoginAt,
-		LoginStreak:            u.LoginStreak,
-		CreatedAt:              u.CreatedAt,
-		SearchBlockedUntil:     u.SearchBlockedUntil,
-		SearchBlockReason:      u.SearchBlockReason,
-		SearchBlockedLevel:     u.SearchBlockedLevel,
-		AccountBlockedUntil:    u.AccountBlockedUntil,
-		AccountBlockReason:     u.AccountBlockReason,
-		AccountBlockedLevel:    u.AccountBlockedLevel,
+		ID:                     user.ID,
+		Username:               user.Username,
+		LowerUsername:          user.LowerUsername,
+		Email:                  user.Email,
+		AccessLevel:            user.AccessLevel,
+		GenshinUID:             user.GenshinUID,
+		HoyolabLogin:           user.HoyolabLogin,
+		CurrentMatchID:         user.CurrentMatchID,
+		CurrentItemInProfileID: user.CurrentItemInProfileID,
+		AvatarURL:              user.AvatarURL,
+		InvitesEnabled:         user.InvitesEnabled,
+		LoginAt:                user.LoginAt,
+		LoginStreak:            user.LoginStreak,
+		CreatedAt:              user.CreatedAt,
+		SearchBlockedUntil:     user.SearchBlockedUntil,
+		SearchBlockReason:      user.SearchBlockReason,
+		SearchBlockedLevel:     user.SearchBlockedLevel,
+		AccountBlockedUntil:    user.AccountBlockedUntil,
+		AccountBlockReason:     user.AccountBlockReason,
+		AccountBlockedLevel:    user.AccountBlockedLevel,
 	}
 }
 
-func ToUserFullDTOFromEnt(u *ent.User) *dto.UserFullDTO {
+func ToUserFullDTOFromEnt(user *ent.User) *dto.UserFullDTO {
 	mappedFriends := itertools.Map(
-		u.Edges.Friends,
-		func(v *ent.User) *dto.UserDTO {
-			return ToUserDTOFromEnt(u)
+		user.Edges.Friends,
+		func(friend *ent.User) *dto.UserDTO {
+			return ToUserDTOFromEnt(user)
 		},
 	)
 
 	mappedItems := itertools.Map(
-		u.Edges.Items,
-		func(v *ent.InventoryItem) *dto.InventoryItemDTO {
-			return ToInventoryItemDTOFromEnt(v)
+		user.Edges.Items,
+		func(inventoryItem *ent.InventoryItem) *dto.InventoryItemDTO {
+			return ToInventoryItemDTOFromEnt(inventoryItem)
 		},
 	)
 
 	return &dto.UserFullDTO{
-		UserDTO: ToUserDTOFromEnt(u),
+		UserDTO: ToUserDTOFromEnt(user),
 		// Edges
 		Friends:     mappedFriends,
 		Items:       mappedItems,
-		CurrentItem: ToInventoryItemDTOFromEnt(u.Edges.CurrentItem),
+		CurrentItem: ToInventoryItemDTOFromEnt(user.Edges.CurrentItem),
 	}
 }

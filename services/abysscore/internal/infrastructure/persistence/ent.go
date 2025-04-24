@@ -3,6 +3,7 @@ package persistence
 import (
 	"abysscore/internal/infrastructure/ent"
 	"context"
+	"errors"
 	"fmt"
 	"github.com/intezya/pkglib/logger"
 	"time"
@@ -34,6 +35,7 @@ func SetupEnt(config *EntConfig) *ent.Client {
 	retryDelay := gt0(config.retryDelay, 2*time.Second)
 
 	var entClient *ent.Client
+
 	var err error
 
 	// Retry connecting to the database if it fails
@@ -42,6 +44,7 @@ func SetupEnt(config *EntConfig) *ent.Client {
 
 		if err == nil {
 			logger.Log.Infof("Database connection succeeded on attempt %d", attempt)
+
 			break
 		}
 
@@ -53,13 +56,13 @@ func SetupEnt(config *EntConfig) *ent.Client {
 	}
 
 	if entClient == nil {
-		panic(fmt.Errorf("all attempts to connect to database failed"))
+		panic(errors.New("all attempts to connect to database failed"))
 	}
 
 	err = entClient.Schema.Create(context.Background())
 
 	if err != nil {
-		panic(fmt.Errorf("failed to create schema: %v", err))
+		panic(fmt.Errorf("failed to create schema: %w", err))
 	}
 
 	return entClient
@@ -69,5 +72,6 @@ func gt0[T int | time.Duration](value T, fallback T) T {
 	if value <= 0 {
 		return fallback
 	}
+
 	return value
 }

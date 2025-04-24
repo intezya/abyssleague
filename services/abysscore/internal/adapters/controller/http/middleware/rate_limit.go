@@ -54,6 +54,7 @@ func (r *RateLimitMiddleware) HandleForAuth() fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		if r.redisClient == nil {
 			logger.Log.Warn("Redis client is not available in RateLimitMiddleware")
+
 			return c.Next()
 		}
 
@@ -67,6 +68,7 @@ func (r *RateLimitMiddleware) HandleForAuth() fiber.Handler {
 			if err := c.BodyParser(&req); err != nil || req.Username == "" {
 				return c.Next() // will be handled as bad request
 			}
+
 			username = req.Username
 		}
 
@@ -79,6 +81,7 @@ func (r *RateLimitMiddleware) HandleForAuth() fiber.Handler {
 		).Debug("Checking login rate limit")
 
 		key := r.config.RateLimitConfig.LoginRateLimitKey + username
+
 		ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
 		defer cancel()
 
@@ -88,6 +91,7 @@ func (r *RateLimitMiddleware) HandleForAuth() fiber.Handler {
 			err = r.redisClient.Client.SetEx(ctx, key, 1, r.config.RateLimitConfig.LoginRateLimitTime).Err()
 			if err != nil {
 				logger.Log.With("error", err).Warn("Failed to set rate limit counter")
+
 				return c.Next()
 			}
 
@@ -105,6 +109,7 @@ func (r *RateLimitMiddleware) HandleForAuth() fiber.Handler {
 
 		if err != nil {
 			logger.Log.With("error", err).Warn("Redis error in rate limit middleware")
+
 			return c.Next()
 		}
 
@@ -125,12 +130,14 @@ func (r *RateLimitMiddleware) HandleForAuth() fiber.Handler {
 			ctx, func(pipe redis.Pipeliner) error {
 				pipe.Incr(ctx, key)
 				pipe.Expire(ctx, key, r.config.RateLimitConfig.LoginRateLimitTime)
+
 				return nil
 			},
 		)
 
 		if err != nil {
 			logger.Log.With("error", err).Warn("Failed to increment rate limit counter")
+
 			return c.Next()
 		}
 
@@ -147,23 +154,25 @@ func (r *RateLimitMiddleware) HandleForAuth() fiber.Handler {
 	}
 }
 
-// HandleDefault
+// HandleDefault.
 func (r *RateLimitMiddleware) HandleDefault() fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		if r.redisClient == nil || r.redisClient.Client == nil {
 			logger.Log.Warn("Redis client is not available in RateLimitMiddleware")
+
 			return c.Next()
 		}
 
-		ip := c.IP()
-		if ip == "" {
-			ip = "unknown"
+		ipAddr := c.IP()
+		if ipAddr == "" {
+			ipAddr = "unknown"
 		}
 
 		path := c.Path()
 		requestID := c.Locals(r.config.FiberRequestIDConfig.ContextKey)
 
-		key := r.config.RateLimitConfig.DefaultRateLimitKey + ip
+		key := r.config.RateLimitConfig.DefaultRateLimitKey + ipAddr
+
 		ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
 		defer cancel()
 
@@ -171,14 +180,15 @@ func (r *RateLimitMiddleware) HandleDefault() fiber.Handler {
 
 		if err != nil && !errors.Is(err, redis.Nil) {
 			logger.Log.With("error", err).Warn("Redis error in general rate limit middleware")
+
 			return c.Next()
 		}
 
 		if count >= r.config.RateLimitConfig.DefaultRateLimit {
-			r.rateLimitCounter.WithLabelValues(ip, path, "blocked").Inc()
+			r.rateLimitCounter.WithLabelValues(ipAddr, path, "blocked").Inc()
 
 			logger.Log.With(
-				"ip", ip,
+				"ip", ipAddr,
 				"path", path,
 				"count", count,
 				"limit", r.config.RateLimitConfig.DefaultRateLimit,
@@ -202,13 +212,14 @@ func (r *RateLimitMiddleware) HandleDefault() fiber.Handler {
 
 		if err != nil {
 			logger.Log.With("error", err).Warn("Failed to increment general rate limit counter")
+
 			return c.Next()
 		}
 
-		r.rateLimitCounter.WithLabelValues(ip, path, "allowed").Inc()
+		r.rateLimitCounter.WithLabelValues(ipAddr, path, "allowed").Inc()
 
 		logger.Log.With(
-			"ip", ip,
+			"ipAddr", ipAddr,
 			"path", path,
 			"count", count+1,
 			"limit", r.config.RateLimitConfig.DefaultRateLimit,

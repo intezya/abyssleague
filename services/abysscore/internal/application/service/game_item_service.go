@@ -23,7 +23,6 @@ func (g *GameItemService) Create(
 	performer *dto.UserDTO,
 ) (*dto.GameItemDTO, error) {
 	// TODO: log performer action
-
 	result, err := tracer.TraceFnWithResult(ctx, "gameItemRepository.Create", func(ctx context.Context) (*dto.GameItemDTO, error) {
 		return g.gameItemRepository.Create(ctx, request.ToDTO())
 	})
@@ -69,7 +68,6 @@ func (g *GameItemService) Update(
 	performer *dto.UserDTO,
 ) error {
 	// TODO: log performer action
-
 	err := tracer.TraceFn(ctx, "gameItemRepository.UpdateByID", func(ctx context.Context) error {
 		return g.gameItemRepository.UpdateByID(ctx, id, request.ToDTO())
 	})
@@ -87,7 +85,6 @@ func (g *GameItemService) Delete(
 	performer *dto.UserDTO,
 ) error {
 	// TODO: log performer action
-
 	err := tracer.TraceFn(ctx, "gameItemRepository.DeleteByID", func(ctx context.Context) error {
 		return g.gameItemRepository.DeleteByID(ctx, id)
 	})

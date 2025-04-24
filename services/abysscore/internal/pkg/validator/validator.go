@@ -18,7 +18,7 @@ func NewValidator() *Validator {
 	}
 }
 
-var v = NewValidator()
+var v = NewValidator() // nolint:varnamelen // disabled because it is pkg (truth-source) code
 
 func (v *Validator) ValidateStruct(s interface{}) error {
 	return v.validator.Struct(s)
@@ -37,7 +37,7 @@ func ValidateJSON(dto interface{}) error {
 
 			logger.Log.Debugw("many validation errors", "errors", errorMessages, "err", err)
 
-			return base.NewValidationError(nil, errorMessages)
+			return base.NewValidationError(err, errorMessages)
 		}
 
 		logger.Log.Debugw("validation error", "err", err)

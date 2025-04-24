@@ -13,7 +13,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-// GameItemHandler handles HTTP requests for game items
+// GameItemHandler handles HTTP requests for game items.
 type GameItemHandler struct {
 	BaseHandler
 
@@ -22,7 +22,7 @@ type GameItemHandler struct {
 	paginationQueryFactory func(c *fiber.Ctx) (*request.PaginationQuery[gameitementity.OrderBy], error)
 }
 
-// NewGameItemHandler creates a new game item handler
+// NewGameItemHandler creates a new game item handler.
 func NewGameItemHandler(gameItemService domainservice.GameItemService) *GameItemHandler {
 	return &GameItemHandler{
 		gameItemService: gameItemService,
@@ -36,7 +36,7 @@ func NewGameItemHandler(gameItemService domainservice.GameItemService) *GameItem
 	}
 }
 
-// getPaginationQuery gets pagination query parameters from the request
+// getPaginationQuery gets pagination query parameters from the request.
 func (g *GameItemHandler) getPaginationQuery(c *fiber.Ctx) (*request.PaginationQuery[gameitementity.OrderBy], error) {
 	paginationQuery, err := request.NewPaginationQuery[gameitementity.OrderBy](c, queryparser.ParseGameEntityOrderBy)
 

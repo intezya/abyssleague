@@ -135,6 +135,7 @@ func getEnvString(key, fallback string) string {
 	if value, exists := os.LookupEnv(key); exists {
 		return value
 	}
+
 	return fallback
 }
 
@@ -144,6 +145,7 @@ func getEnvInt(key string, fallback int) int {
 			return intVal
 		}
 	}
+
 	return fallback
 }
 
@@ -153,6 +155,7 @@ func getEnvBool(key string, fallback bool) bool {
 			return boolVal
 		}
 	}
+
 	return fallback
 }
 
@@ -162,6 +165,7 @@ func getEnvDuration(key string, fallback time.Duration) time.Duration {
 			return duration
 		}
 	}
+
 	return fallback
 }
 
@@ -198,6 +202,7 @@ func parseLokiLabels(labelsStr string) map[string]string {
 			labels[key] = value
 		}
 	}
+
 	return labels
 }
 
@@ -205,13 +210,13 @@ func getAndParseGrpcPorts() []int {
 	return itertools.Map(
 		strings.Split(getEnvString("WEBSOCKET_API_GATEWAY_PORTS", ""), ","),
 		func(s string) int {
-			i, err := strconv.Atoi(s)
+			serverPort, err := strconv.Atoi(s)
 
 			if err != nil {
 				panic(fmt.Sprintf("Error parsing GRPC_SERVER_PORTS: %s", err))
 			}
 
-			return i
+			return serverPort
 		},
 	)
 }

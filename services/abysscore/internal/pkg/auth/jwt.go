@@ -2,7 +2,7 @@ package auth
 
 import (
 	"abysscore/internal/domain/entity"
-	"fmt"
+	"errors"
 	"github.com/golang-jwt/jwt/v5"
 	"time"
 )
@@ -67,7 +67,7 @@ func (j *JWTHelper) ValidateToken(tokenString string) (*entity.TokenData, error)
 
 	claims, ok := token.Claims.(*Claim)
 	if !ok || !token.Valid {
-		return nil, fmt.Errorf("invalid token")
+		return nil, errors.New("invalid token")
 	}
 
 	return claims.AuthenticationData, nil

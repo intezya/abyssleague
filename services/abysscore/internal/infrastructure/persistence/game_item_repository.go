@@ -19,8 +19,8 @@ func NewGameItemRepository(client *ent.Client) *GameItemRepository {
 	return &GameItemRepository{client: client}
 }
 
-func (g *GameItemRepository) Create(ctx context.Context, gameItem *dto.GameItemDTO) (*dto.GameItemDTO, error) {
-	result, err := g.client.GameItem.
+func (r *GameItemRepository) Create(ctx context.Context, gameItem *dto.GameItemDTO) (*dto.GameItemDTO, error) {
+	result, err := r.client.GameItem.
 		Create().
 		SetName(gameItem.Name).
 		SetCollection(gameItem.Collection).
@@ -35,8 +35,8 @@ func (g *GameItemRepository) Create(ctx context.Context, gameItem *dto.GameItemD
 	return mapper.ToGameItemDTOFromEnt(result), nil
 }
 
-func (g *GameItemRepository) UpdateByID(ctx context.Context, id int, gameItem *dto.GameItemDTO) error {
-	_, err := g.client.GameItem.
+func (r *GameItemRepository) UpdateByID(ctx context.Context, id int, gameItem *dto.GameItemDTO) error {
+	_, err := r.client.GameItem.
 		UpdateOneID(id).
 		SetName(gameItem.Name).
 		SetCollection(gameItem.Collection).
@@ -51,8 +51,8 @@ func (g *GameItemRepository) UpdateByID(ctx context.Context, id int, gameItem *d
 	return nil
 }
 
-func (g *GameItemRepository) DeleteByID(ctx context.Context, id int) error {
-	err := g.client.GameItem.
+func (r *GameItemRepository) DeleteByID(ctx context.Context, id int) error {
+	err := r.client.GameItem.
 		DeleteOneID(id).
 		Exec(ctx)
 
@@ -60,13 +60,14 @@ func (g *GameItemRepository) DeleteByID(ctx context.Context, id int) error {
 		if ent.IsNotFound(err) {
 			return repositoryerrors.WrapGameItemNotFound(err)
 		}
+
 		return repositoryerrors.WrapUnexpectedError(err)
 	}
 
 	return nil
 }
 
-func (g *GameItemRepository) FindAllPaged(
+func (r *GameItemRepository) FindAllPaged(
 	ctx context.Context,
 	page, size int,
 	orderBy gameitementity.OrderBy,
@@ -76,7 +77,7 @@ func (g *GameItemRepository) FindAllPaged(
 	size = getValidSize(size)
 	offset := countOffset(page, size)
 
-	total, err := g.client.GameItem.
+	total, err := r.client.GameItem.
 		Query().
 		Count(ctx)
 
@@ -86,7 +87,7 @@ func (g *GameItemRepository) FindAllPaged(
 
 	totalPages := getTotalPages(total, size)
 
-	items, err := g.client.GameItem.
+	gameItems, err := r.client.GameItem.
 		Query().
 		Limit(size).
 		Offset(offset).
@@ -97,7 +98,7 @@ func (g *GameItemRepository) FindAllPaged(
 		return nil, repositoryerrors.WrapUnexpectedError(err)
 	}
 
-	mappedItems := itertools.Map(items, func(item *ent.GameItem) *dto.GameItemDTO {
+	mappedItems := itertools.Map(gameItems, func(item *ent.GameItem) *dto.GameItemDTO {
 		return mapper.ToGameItemDTOFromEnt(item)
 	})
 
@@ -110,14 +111,15 @@ func (g *GameItemRepository) FindAllPaged(
 	}, nil
 }
 
-func (g *GameItemRepository) FindByID(ctx context.Context, id int) (*dto.GameItemDTO, error) {
-	result, err := g.client.GameItem.
+func (r *GameItemRepository) FindByID(ctx context.Context, id int) (*dto.GameItemDTO, error) {
+	result, err := r.client.GameItem.
 		Get(ctx, id)
 
 	if err != nil {
 		if ent.IsNotFound(err) {
 			return nil, repositoryerrors.WrapGameItemNotFound(err)
 		}
+
 		return nil, repositoryerrors.WrapUnexpectedError(err)
 	}
 

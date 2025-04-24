@@ -39,14 +39,17 @@ func (w *WebsocketServiceWrapper) ensureClient() bool {
 	}
 
 	logger.Log.Info("WebsocketService client is nil, attempting to reconnect...")
+
 	w.client = w.factory.GetAndSetWebsocketApiGatewayClient(w.serviceAddr, nil)
 
 	if w.client == nil {
 		logger.Log.Warn("Failed to reconnect to WebsocketService")
+
 		return false
 	}
 
 	logger.Log.Info("Successfully reconnected to WebsocketService")
+
 	return true
 }
 
@@ -56,12 +59,14 @@ func (w *WebsocketServiceWrapper) GetOnline(ctx context.Context) (*websocketpb.G
 
 	if !w.ensureClient() {
 		logger.Log.Warn("Using default value for GetOnline due to missing client")
+
 		return &websocketpb.GetOnlineResponse{Online: 0}, nil
 	}
 
 	response, err := w.client.GetOnline(ctx, &emptypb.Empty{})
 	if err != nil {
 		logger.Log.Warnf("GetOnline request failed: %v", err)
+
 		return &websocketpb.GetOnlineResponse{Online: 0}, err
 	}
 
@@ -74,12 +79,14 @@ func (w *WebsocketServiceWrapper) GetOnlineUsers(ctx context.Context) (*websocke
 
 	if !w.ensureClient() {
 		logger.Log.Warn("Using default value for GetOnlineUsers due to missing client")
+
 		return &websocketpb.GetOnlineUsersResponse{Users: []*websocketpb.OnlineUser{}}, nil
 	}
 
 	response, err := w.client.GetOnlineUsers(ctx, &emptypb.Empty{})
 	if err != nil {
 		logger.Log.Warnf("GetOnlineUsers request failed: %v", err)
+
 		return &websocketpb.GetOnlineUsersResponse{Users: []*websocketpb.OnlineUser{}}, err
 	}
 
@@ -92,12 +99,14 @@ func (w *WebsocketServiceWrapper) SendMessage(ctx context.Context, request *webs
 
 	if !w.ensureClient() {
 		logger.Log.Warn("Failed to send message due to missing client")
+
 		return nil
 	}
 
 	_, err := w.client.SendMessage(ctx, request)
 	if err != nil {
 		logger.Log.Warnf("SendMessage request failed: %v", err)
+
 		return err
 	}
 
@@ -110,12 +119,14 @@ func (w *WebsocketServiceWrapper) Broadcast(ctx context.Context, request *websoc
 
 	if !w.ensureClient() {
 		logger.Log.Warn("Failed to broadcast message due to missing client")
+
 		return nil
 	}
 
 	_, err := w.client.Broadcast(ctx, request)
 	if err != nil {
 		logger.Log.Warnf("Broadcast request failed: %v", err)
+
 		return err
 	}
 

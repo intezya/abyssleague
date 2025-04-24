@@ -6,12 +6,12 @@ import (
 
 type passwordComparator func(raw, hash string) bool
 
-// AuthenticationData represents user authentication state
+// AuthenticationData represents user authentication state.
 type AuthenticationData struct {
 	id           int
 	username     string
 	password     string
-	hwid         *string
+	hardwareID   *string
 	blockedUntil *time.Time
 	blockReason  *string
 }
@@ -20,7 +20,7 @@ func NewAuthenticationData(
 	id int,
 	username string,
 	password string,
-	hwid *string,
+	hardwareID *string,
 	blockedUntil *time.Time,
 	blockReason *string,
 ) *AuthenticationData {
@@ -28,7 +28,7 @@ func NewAuthenticationData(
 		id:           id,
 		username:     username,
 		password:     password,
-		hwid:         hwid,
+		hardwareID:   hardwareID,
 		blockedUntil: blockedUntil,
 		blockReason:  blockReason,
 	}
@@ -42,11 +42,11 @@ func (a *AuthenticationData) CompareHardwareID(
 	hardwareID string,
 	comparator passwordComparator,
 ) (ok bool, needsUpdate bool) {
-	if a.hwid == nil {
+	if a.hardwareID == nil {
 		return true, true
 	}
 
-	return comparator(hardwareID, *a.hwid), false
+	return comparator(hardwareID, *a.hardwareID), false
 }
 
 func (a *AuthenticationData) IsAccountLocked() bool {
@@ -56,8 +56,8 @@ func (a *AuthenticationData) IsAccountLocked() bool {
 func (a *AuthenticationData) TokenData() *TokenData {
 	var hwid string
 
-	if a.hwid != nil {
-		hwid = *a.hwid
+	if a.hardwareID != nil {
+		hwid = *a.hardwareID
 	}
 
 	return &TokenData{
@@ -68,7 +68,7 @@ func (a *AuthenticationData) TokenData() *TokenData {
 }
 
 func (a *AuthenticationData) SetHWID(hwid string) {
-	a.hwid = &hwid
+	a.hardwareID = &hwid
 }
 
 func (a *AuthenticationData) UserID() int {

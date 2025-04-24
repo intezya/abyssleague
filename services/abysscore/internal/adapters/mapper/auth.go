@@ -5,13 +5,13 @@ import (
 	"abysscore/internal/infrastructure/ent"
 )
 
-func ToAuthenticationDataFromEnt(u *ent.User) *entity.AuthenticationData {
+func ToAuthenticationDataFromEnt(user *ent.User) *entity.AuthenticationData {
 	return entity.NewAuthenticationData(
-		u.ID,
-		u.Username,
-		u.Password,
-		u.HardwareID,
-		u.AccountBlockedUntil,
-		u.AccountBlockReason,
+		user.ID,
+		user.Username,
+		user.Password,
+		user.HardwareID,
+		user.AccountBlockedUntil,
+		user.AccountBlockReason,
 	)
 }

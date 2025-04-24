@@ -10,12 +10,12 @@ var (
 	ErrUserWrongHwid      = base.NewError(errors.New("wrong hardware id"), nil, 401)
 	ErrTokenHwidIsInvalid = base.NewError(errors.New("wrong token hardware id"), nil, 401)
 	ErrAccountIsLocked    = func(reason *string) error {
-		var r string
+		var errorMessage string
 
 		if reason != nil {
-			r = *reason
+			errorMessage = *reason
 		}
 
-		return base.NewError(errors.New("account locked"), errors.New(r), 403)
+		return base.NewError(errors.New("account locked"), errors.New(errorMessage), 403)
 	}
 )

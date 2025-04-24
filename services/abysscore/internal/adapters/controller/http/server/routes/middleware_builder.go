@@ -30,7 +30,7 @@ func NewMiddlewareLinker(
 	}
 }
 
-// createAccessLevelChecker creates a middleware to check user access level
+// createAccessLevelChecker creates a middleware to check user access level.
 func createAccessLevelChecker(requiredLevel *access_level.AccessLevel) fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		user := c.UserContext().Value(middleware.UserCtxKey).(*dto.UserDTO)
@@ -52,7 +52,7 @@ func createAccessLevelChecker(requiredLevel *access_level.AccessLevel) fiber.Han
 	}
 }
 
-// createMatchRequirementChecker creates a middleware to check user match state
+// createMatchRequirementChecker creates a middleware to check user match state.
 func createMatchRequirementChecker(matchRequirement MatchRequirement) fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		user := c.UserContext().Value(middleware.UserCtxKey).(*dto.UserDTO)
