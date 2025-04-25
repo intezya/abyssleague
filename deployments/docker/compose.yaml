@@ -1,0 +1,227 @@
+services:
+  websocket-api-gateway:
+    container_name: websocket-api-gateway
+    build:
+      context: .
+      dockerfile: ./deployments/docker/go.Dockerfile
+      args:
+        SERVICE_NAME: websocket
+        OUTPUT_BINARY_NAME: websocket-api-gateway
+      target: final
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:8090:8090"
+      - "127.0.0.1:50051:50051"
+      - "127.0.0.1:50052:50052"
+    environment:
+      - HTTP_PORT=${WEBSOCKET_HTTP_PORT:-8090}
+      - GRPC_SERVER_PORTS=${GRPC_SERVER_PORTS}
+      - WEBSOCKET_HUBS=${WEBSOCKET_HUBS}
+      - LOKI_LABELS=${WEBSOCKET_GATEWAY_LOKI_LABELS}
+      - TZ=UTC
+      - DEBUG=${DEBUG:-false}
+    env_file:
+      - .env
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8090/ping" ]
+      interval: 30s
+      timeout: 15s
+      retries: 3
+      start_period: 15s
+    networks:
+      - monitoring
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      loki:
+        condition: service_started
+
+  abysscore:
+    build:
+      context: .
+      dockerfile: deployments/docker/go.Dockerfile
+      args:
+        SERVICE_NAME: abysscore
+        OUTPUT_BINARY_NAME: abysscore
+      target: final
+    container_name: abysscore
+    ports:
+      - "127.0.0.1:8080:8080"
+      - "127.0.0.1:2112:2112"
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    environment:
+      - REDIS_ADDR=redis:6379
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - LOKI_LABELS=${ABYSSCORE_LOKI_LABELS}
+      - METRICS_PORT=${ABYSSCORE_METRICS_PORT}
+      - TRACER_SERVICE_NAME=abysscore
+      - TRACER_SERVICE_VERSION=v1.0.0
+      - TRACER_ENDPOINT=${TRACER_ENDPOINT:-otel-collector:4317}
+      - WEBSOCKET_API_GATEWAY_HOST=websocket-api-gateway
+      - WEBSOCKET_API_GATEWAY_PORTS=${GRPC_SERVER_PORTS}
+      - TZ=UTC
+      - DEBUG=${DEBUG:-false}
+    env_file:
+      - .env
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8080/health" ]
+      interval: 30s
+      timeout: 15s
+      retries: 3
+      start_period: 15s
+    networks:
+      - monitoring
+      - application
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      loki:
+        condition: service_started
+
+  prometheus:
+    image: prom/prometheus:v3.2.1
+    container_name: prometheus
+    ports:
+      - "127.0.0.1:9090:9090"
+    volumes:
+      - ./monitoring/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+    depends_on:
+      - websocket-api-gateway
+      - abysscore
+    networks:
+      - monitoring
+    environment:
+      - WEBSOCKET_HOST=websocket-api-gateway
+      - WEBSOCKET_PORT=${WEBSOCKET_HTTP_PORT}
+      - ABYSSCORE_HOST=abysscore
+      - ABYSSCORE_PORT=${ABYSSCORE_METRICS_PORT}
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    ports:
+      - "127.0.0.1:3000:3000"
+    environment:
+      - GF_USERS_ALLOW_SIGN_UP=false
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning
+      - ./monitoring/grafana/dashboards:/var/lib/grafana/dashboards
+    depends_on:
+      - prometheus
+      - loki
+    networks:
+      - monitoring
+
+  loki:
+    image: grafana/loki:latest
+    container_name: loki
+    volumes:
+      - loki_data:/loki
+    #      - ./monitoring/loki/local-config.yaml:/etc/loki/local-config.yaml:ro
+    command: -config.file=/etc/loki/local-config.yaml
+    ports:
+      - "127.0.0.1:3100:3100"
+    networks:
+      - monitoring
+
+  promtail:
+    image: grafana/promtail:latest
+    container_name: promtail
+    volumes:
+      - /var/log:/var/log
+      - ./monitoring/promtail/config.yml:/etc/promtail/config.yml
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+    command: -config.file=/etc/promtail/config.yml
+    depends_on:
+      - loki
+    networks:
+      - monitoring
+
+  postgres:
+    image: postgres:14.5-alpine
+    container_name: postgres
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
+    ports:
+      - "127.0.0.1:5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    networks:
+      - application
+
+  redis:
+    image: redis:alpine
+    container_name: redis
+    ports:
+      - "127.0.0.1:6379:6379"
+    healthcheck:
+      test: [ "CMD", "redis-cli", "ping" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 5s
+    networks:
+      - application
+
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:latest
+    volumes:
+      - ./monitoring/otlp/otel-collector-config.yaml:/etc/otel-collector-config.yaml
+    command: [ "--config=/etc/otel-collector-config.yaml" ]
+    ports:
+      - "127.0.0.1:4317:4317"
+      - "127.0.0.1:4318:4318"
+      - "127.0.0.1:8888:8888"
+      - "127.0.0.1:8889:8889"
+    depends_on:
+      - tempo
+      - prometheus
+    networks:
+      - monitoring
+
+  tempo:
+    image: grafana/tempo:latest
+    container_name: tempo
+    command: [ "-config.file=/etc/tempo.yaml" ]
+    volumes:
+      - ./monitoring/otlp/tempo.yaml:/etc/tempo.yaml
+      - tempo_data:/tmp/tempo
+    ports:
+      - "127.0.0.1:3200:3200"   # tempo UI/API
+    networks:
+      - monitoring
+
+networks:
+  monitoring:
+    driver: bridge
+  application:
+    driver: bridge
+
+volumes:
+  grafana_data:
+  loki_data:
+  postgres_data:
+  tempo_data:
