@@ -31,6 +31,11 @@ const UserCtxKey CtxKey = "user"
 
 const TokenCacheTime = 10 * time.Second
 
+var (
+	errTokenNotFoundInCache = errors.New("token not found in cache")
+	errInvalidCacheType     = errors.New("invalid cache type")
+)
+
 type AuthenticationMiddleware struct {
 	authenticationService domainservice.AuthenticationService
 	redisClient           *rediswrapper.ClientWrapper
@@ -87,13 +92,13 @@ func (a *AuthenticationMiddleware) checkTokenCache(token string) (*dto.UserDTO, 
 	val, ok := a.localCache.Load(token)
 
 	if !ok {
-		return nil, errors.New("token not found in cache")
+		return nil, errTokenNotFoundInCache
 	}
 
 	user, ok := val.(*dto.UserDTO)
 
 	if !ok {
-		return nil, errors.New("invalid cache type")
+		return nil, errInvalidCacheType
 	}
 
 	return user, nil

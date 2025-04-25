@@ -2,6 +2,7 @@ package access_level
 
 import (
 	"database/sql/driver"
+	"errors"
 	"fmt"
 	"strings"
 )
@@ -25,6 +26,12 @@ const (
 	Dev
 )
 
+var (
+	errUnknownAccessLevel     = errors.New("unknown AccessLevel")
+	errOutOfRangeAccessLevel  = errors.New("AccessLevel out of range")
+	errInvalidTypeAccessLevel = errors.New("invalid AccessLevel value type")
+)
+
 // Value implements the driver.Valuer interface for saving to DB (as string).
 func (a AccessLevel) Value() (driver.Value, error) {
 	return a.String(), nil
@@ -42,7 +49,7 @@ func (a *AccessLevel) Scan(value interface{}) error {
 			}
 		}
 
-		return fmt.Errorf("unknown AccessLevel: %typedValue", value)
+		return fmt.Errorf("%w: %v", errUnknownAccessLevel, value)
 	case []byte:
 		return a.Scan(string(typedValue))
 	case int64:
@@ -52,9 +59,9 @@ func (a *AccessLevel) Scan(value interface{}) error {
 			return nil
 		}
 
-		return fmt.Errorf("AccessLevel out of range: %typedValue", value)
+		return fmt.Errorf("%w (%v)", errOutOfRangeAccessLevel, value)
 	default:
-		return fmt.Errorf("invalid AccessLevel value type: %T", value)
+		return fmt.Errorf("%w: %T", errInvalidTypeAccessLevel, value)
 	}
 }
 

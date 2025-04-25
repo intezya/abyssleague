@@ -9,6 +9,8 @@ import (
 	"github.com/intezya/abyssleague/services/abysscore/internal/domain/entity"
 )
 
+var ErrInvalidToken = errors.New("invalid token")
+
 type JWTConfiguration struct {
 	secretKey      []byte
 	issuer         string
@@ -79,7 +81,7 @@ func (j *JWTHelper) ValidateToken(tokenString string) (*entity.TokenData, error)
 
 	claims, ok := token.Claims.(*Claim)
 	if !ok || !token.Valid {
-		return nil, errors.New("invalid token")
+		return nil, ErrInvalidToken
 	}
 
 	return claims.AuthenticationData, nil

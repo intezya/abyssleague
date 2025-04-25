@@ -15,6 +15,8 @@ const (
 	defaultEntReconnectDelay      = 2 * time.Second
 )
 
+var errAllConnectionAttemptsFailed = errors.New("all attempts to connect to database failed")
+
 type EntConfig struct {
 	driverName string
 	source     string
@@ -67,7 +69,7 @@ func SetupEnt(config *EntConfig) *ent.Client {
 	}
 
 	if entClient == nil {
-		panic(errors.New("all attempts to connect to database failed"))
+		panic(errAllConnectionAttemptsFailed)
 	}
 
 	err = entClient.Schema.Create(context.Background())

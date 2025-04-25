@@ -1,6 +1,8 @@
 package main
 
 import (
+	"context"
+
 	"github.com/intezya/abyssleague/services/abysscore/internal/adapters/config"
 	"github.com/intezya/abyssleague/services/abysscore/internal/adapters/controller/grpc/factory"
 	"github.com/intezya/abyssleague/services/abysscore/internal/adapters/controller/grpc/wrapper"
@@ -45,7 +47,11 @@ func main() {
 		_ = entClient.Close()
 	}()
 
-	gRPCDependencies := wrapper.NewDependencyProvider(appConfig.GRPCConfig, grpcFactory)
+	gRPCDependencies := wrapper.NewDependencyProvider(
+		context.Background(),
+		appConfig.GRPCConfig,
+		grpcFactory,
+	)
 
 	logger.Log.Debug("grpcDependencies has been initialized")
 

@@ -1,6 +1,7 @@
 package config
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"strconv"
@@ -16,11 +17,24 @@ import (
 	"github.com/intezya/abyssleague/services/abysscore/internal/pkg/auth"
 	"github.com/intezya/pkglib/itertools"
 	"github.com/intezya/pkglib/logger"
-	// ...
 	"github.com/joho/godotenv"
 	"github.com/redis/go-redis/v9"
 )
 
+// Environment types.
+const (
+	EnvTypeDev  = "dev"
+	EnvTypeTest = "test"
+	EnvTypeProd = "prod"
+)
+
+var (
+	errLoginRateLimitKeyEmpty   = errors.New("login rate limit key cannot be empty")
+	errDefaultRateLimitKeyEmpty = errors.New("default rate limit key cannot be empty")
+	errLoadEnvFile              = errors.New("error loading .env file")
+)
+
+// Default configuration values.
 const (
 	defaultServerPort             = 8080
 	defaultJWTExpiration          = 24 * time.Hour
@@ -41,12 +55,25 @@ const (
 	defaultSlowRequestThresholdMs = 300
 )
 
+// ConfigValidator represents configuration validation interface.
+type ConfigValidator interface {
+	Validate() error
+}
+
+// Config represents application configuration.
 type Config struct {
+	// Server configuration
+	ServerPort             int
+	SlowRequestThresholdMs int
+	MetricsPort            int
 	FiberHealthCheckConfig healthcheck.Config
 	FiberRequestIDConfig   requestid.Config
-	IsDebug                bool
-	EnvType                string
 
+	// Environment configuration
+	IsDebug bool
+	EnvType string
+
+	// Component configurations
 	RateLimitConfig  *RateLimitConfig
 	LoggerConfig     *LoggerConfig
 	RedisConfig      *rediswrapper.Config
@@ -54,121 +81,196 @@ type Config struct {
 	JWTConfiguration *auth.JWTConfiguration
 	TracerConfig     *tracer.Config
 	GRPCConfig       *factory.GRPCConfig
-
-	ServerPort  int
-	MetricsPort int
-
-	SlowRequestThresholdMs int
 }
 
-type JWTConfiguration struct {
-	SecretKey      []byte
-	Issuer         string
-	ExpirationTime time.Duration
+// Validate validates the rate limit configuration.
+func (c *RateLimitConfig) Validate() error {
+	if c.LoginRateLimitKey == "" {
+		return errLoginRateLimitKeyEmpty
+	}
+
+	if c.DefaultRateLimitKey == "" {
+		return errDefaultRateLimitKeyEmpty
+	}
+
+	return nil
 }
 
+// GetLokiConfig returns the Loki logger configuration.
+func (l *LoggerConfig) GetLokiConfig() *logger.LokiConfig {
+	return l.lokiConfig
+}
+
+// LoadConfig loads the application configuration from environment variables
+// and returns a complete Config structure.
 func LoadConfig() *Config {
-	_ = godotenv.Load()
+	// Load environment variables from .env file if exists
+	if err := godotenv.Load(); err != nil {
+		// Only log error, don't fail as .env file is optional
+		panic(fmt.Errorf("%w: %w", errLoadEnvFile, err))
+	}
 
-	envType := getEnvString("ENV_TYPE", "prod")
+	envType := getEnvString("ENV_TYPE", EnvTypeProd)
 
 	config := &Config{
+		// Server configuration
+		ServerPort:  getEnvInt("SERVER_PORT", defaultServerPort),
+		MetricsPort: getEnvInt("METRICS_PORT", defaultMetricsPort),
+		SlowRequestThresholdMs: getEnvInt(
+			"SLOW_REQUEST_THRESHOLD_MS",
+			defaultSlowRequestThresholdMs,
+		),
 		FiberHealthCheckConfig: healthcheck.ConfigDefault,
 		FiberRequestIDConfig:   requestid.ConfigDefault,
-		IsDebug:                getEnvBool("DEBUG", false),
-		EnvType:                envType,
 
-		RateLimitConfig: &RateLimitConfig{
-			LoginRateLimitKey: getEnvString(
-				"RATE_LIMIT_LOGIN_KEY",
-				"login_attempts_rate_limit:",
-			),
-			LoginRateLimitTime: getEnvDuration(
-				"RATE_LIMIT_LOGIN_TIME",
-				defaultRateLimitLoginTime,
-			),
-			LoginRateLimit: getEnvInt(
-				"RATE_LIMIT_LOGIN_MAX_REQUESTS",
-				defaultRateLimitLoginRequests,
-			),
-			DefaultRateLimitKey: getEnvString("RATE_LIMIT_DEFAULT_KEY", "rate_limit:"),
-			DefaultRateLimitTime: getEnvDuration(
-				"RATE_LIMIT_DEFAULT_TIME",
-				defaultRateLimitDefaultTime,
-			),
-			DefaultRateLimit: getEnvInt(
-				"RATE_LIMIT_DEFAULT_MAX_REQUESTS",
-				defaultRateLimitDefaultReqs,
-			),
-		},
+		// Environment configuration
+		IsDebug: getEnvBool("DEBUG", false),
+		EnvType: envType,
 
-		LoggerConfig: &LoggerConfig{
-			lokiConfig: &logger.LokiConfig{
-				URL:                  getEnvString("LOKI_ENDPOINT_URL", "localhost:3100"),
-				Labels:               parseLokiLabels(getEnvString("LOKI_LABELS", "")),
-				BatchSize:            getEnvInt("LOKI_BATCH_SIZE", defaultLokiBatchSize),
-				MaxWait:              getEnvDuration("LOKI_MAX_WAIT", defaultLokiMaxWait),
-				Timeout:              getEnvDuration("LOKI_TIMEOUT", defaultLokiTimeout),
-				Compression:          getEnvBool("LOKI_COMPRESSION", true),
-				RetryCount:           getEnvInt("LOKI_RETRY_COUNT", defaultLokiRetryCount),
-				RetryWait:            getEnvDuration("LOKI_RETRY_WAIT", defaultLokiRetryWait),
-				SuppressSinkWarnings: getEnvBool("LOKI_SUPPRESS_WARNINGS", false),
-			},
-		},
-
-		RedisConfig: &rediswrapper.Config{
-			Options: &redis.Options{ //nolint:exhaustruct // redis config contains TOO MANY options
-				Addr:     getEnvString("REDIS_ADDR", "localhost:6379"),
-				Password: getEnvString("REDIS_PASSWORD", ""),
-				DB:       getEnvInt("REDIS_DB", 0),
-			},
-			RetryDelay: getEnvDuration("REDIS_RETRY_DELAY", defaultRedisRetryDelay),
-		},
-
-		EntConfig: persistence.NewEntConfig(
-			getEnvString("DB_DRIVER", "postgres"),
-			buildDBConnectionString(),
-			getEnvInt("DB_MAX_RETRIES", defaultDBMaxRetries),
-			getEnvDuration("DB_RETRY_DELAY", defaultDBRetryDelay),
-		),
-
+		// Component configurations
+		RateLimitConfig: initRateLimitConfig(),
+		LoggerConfig:    initLoggerConfig(envType),
+		RedisConfig:     initRedisConfig(),
+		EntConfig:       initEntConfig(),
 		JWTConfiguration: auth.NewJWTConfiguration(
 			getEnvString("JWT_SECRET", "default-secret-key"),
 			getEnvString("JWT_ISSUER", "com.intezya.abyssleague.auth"),
 			getEnvDuration("JWT_EXPIRATION_TIME", defaultJWTExpiration),
 		),
-
-		TracerConfig: &tracer.Config{
-			Endpoint:           getEnvString("TRACER_ENDPOINT", "localhost:4317"),
-			ServiceName:        getEnvString("TRACER_SERVICE_NAME", ""),
-			ServiceVersion:     getEnvString("TRACER_SERVICE_VERSION", "v1"),
-			ServiceEnvironment: envType,
-		},
-
-		GRPCConfig: &factory.GRPCConfig{
-			WebsocketApiGatewayHost:  getEnvString("WEBSOCKET_API_GATEWAY_HOST", ""),
-			WebsocketApiGatewayPorts: getAndParseGrpcPorts(),
-		},
-
-		ServerPort:             getEnvInt("SERVER_PORT", defaultServerPort),
-		MetricsPort:            getEnvInt("METRICS_PORT", defaultMetricsPort),
-		SlowRequestThresholdMs: defaultSlowRequestThresholdMs,
+		TracerConfig: initTracerConfig(envType),
+		GRPCConfig:   initGRPCConfig(),
 	}
 
-	config.LoggerConfig.lokiConfig.Labels["environment"] = config.EnvType
-
+	// Set specific Fiber middleware configurations
 	config.FiberRequestIDConfig.ContextKey = getEnvString("REQUEST_ID_KEY", "requestid")
 	config.FiberHealthCheckConfig.LivenessEndpoint = getEnvString("LIVENESS_ENDPOINT", "/live")
 	config.FiberHealthCheckConfig.ReadinessEndpoint = getEnvString("READINESS_ENDPOINT", "/health")
 
+	// Validate critical configuration
+	if err := validateConfig(config); err != nil {
+		panic(fmt.Errorf("config validation failed: %w", err))
+	}
+
 	return config
 }
 
-func buildDBConnectionString() string {
-	if os.Getenv("DB_URL") != "" {
-		return os.Getenv("DB_URL")
+// validateConfig performs validation checks on the configuration.
+func validateConfig(config *Config) error {
+	// Validate configurations that implement ConfigValidator
+	validators := []struct {
+		name      string
+		validator ConfigValidator
+	}{
+		{"RateLimitConfig", config.RateLimitConfig},
 	}
 
+	for _, v := range validators {
+		if err := v.validator.Validate(); err != nil {
+			return fmt.Errorf("%s validation failed: %w", v.name, err)
+		}
+	}
+
+	return nil
+}
+
+// initRateLimitConfig initializes rate limit configuration.
+func initRateLimitConfig() *RateLimitConfig {
+	return &RateLimitConfig{
+		// Login rate limiting
+		LoginRateLimitKey:  getEnvString("RATE_LIMIT_LOGIN_KEY", "login_attempts_rate_limit:"),
+		LoginRateLimitTime: getEnvDuration("RATE_LIMIT_LOGIN_TIME", defaultRateLimitLoginTime),
+		LoginRateLimit: getEnvInt(
+			"RATE_LIMIT_LOGIN_MAX_REQUESTS",
+			defaultRateLimitLoginRequests,
+		),
+
+		// Default rate limiting
+		DefaultRateLimitKey: getEnvString("RATE_LIMIT_DEFAULT_KEY", "rate_limit:"),
+		DefaultRateLimitTime: getEnvDuration(
+			"RATE_LIMIT_DEFAULT_TIME",
+			defaultRateLimitDefaultTime,
+		),
+		DefaultRateLimit: getEnvInt(
+			"RATE_LIMIT_DEFAULT_MAX_REQUESTS",
+			defaultRateLimitDefaultReqs,
+		),
+	}
+}
+
+// initLoggerConfig initializes logger configuration.
+func initLoggerConfig(envType string) *LoggerConfig {
+	lokiConfig := &logger.LokiConfig{
+		URL:                  getEnvString("LOKI_ENDPOINT_URL", "localhost:3100"),
+		Labels:               parseLokiLabels(getEnvString("LOKI_LABELS", "")),
+		BatchSize:            getEnvInt("LOKI_BATCH_SIZE", defaultLokiBatchSize),
+		MaxWait:              getEnvDuration("LOKI_MAX_WAIT", defaultLokiMaxWait),
+		Timeout:              getEnvDuration("LOKI_TIMEOUT", defaultLokiTimeout),
+		Compression:          getEnvBool("LOKI_COMPRESSION", true),
+		RetryCount:           getEnvInt("LOKI_RETRY_COUNT", defaultLokiRetryCount),
+		RetryWait:            getEnvDuration("LOKI_RETRY_WAIT", defaultLokiRetryWait),
+		SuppressSinkWarnings: getEnvBool("LOKI_SUPPRESS_WARNINGS", false),
+	}
+
+	// Add environment to labels
+	if lokiConfig.Labels == nil {
+		lokiConfig.Labels = make(map[string]string)
+	}
+
+	lokiConfig.Labels["environment"] = envType
+
+	return &LoggerConfig{
+		lokiConfig: lokiConfig,
+	}
+}
+
+// initRedisConfig initializes Redis configuration.
+func initRedisConfig() *rediswrapper.Config {
+	return &rediswrapper.Config{
+		Options: &redis.Options{ //nolint:exhaustruct // here is too many useless fields
+			Addr:     getEnvString("REDIS_ADDR", "localhost:6379"),
+			Password: getEnvString("REDIS_PASSWORD", ""),
+			DB:       getEnvInt("REDIS_DB", 0),
+		},
+		RetryDelay: getEnvDuration("REDIS_RETRY_DELAY", defaultRedisRetryDelay),
+	}
+}
+
+// initEntConfig initializes database configuration.
+func initEntConfig() *persistence.EntConfig {
+	return persistence.NewEntConfig(
+		getEnvString("DB_DRIVER", "postgres"),
+		buildDBConnectionString(),
+		getEnvInt("DB_MAX_RETRIES", defaultDBMaxRetries),
+		getEnvDuration("DB_RETRY_DELAY", defaultDBRetryDelay),
+	)
+}
+
+// initTracerConfig initializes tracer configuration.
+func initTracerConfig(envType string) *tracer.Config {
+	return &tracer.Config{
+		Endpoint:           getEnvString("TRACER_ENDPOINT", "localhost:4317"),
+		ServiceName:        getEnvString("TRACER_SERVICE_NAME", ""),
+		ServiceVersion:     getEnvString("TRACER_SERVICE_VERSION", "v1"),
+		ServiceEnvironment: envType,
+	}
+}
+
+// initGRPCConfig initializes GRPC configuration.
+func initGRPCConfig() *factory.GRPCConfig {
+	return &factory.GRPCConfig{
+		WebsocketApiGatewayHost:  getEnvString("WEBSOCKET_API_GATEWAY_HOST", ""),
+		WebsocketApiGatewayPorts: parseGrpcPorts(getEnvString("WEBSOCKET_API_GATEWAY_PORTS", "")),
+	}
+}
+
+// buildDBConnectionString creates a database connection string.
+func buildDBConnectionString() string {
+	// Use DB_URL if provided
+	if dbURL := os.Getenv("DB_URL"); dbURL != "" {
+		return dbURL
+	}
+
+	// Otherwise build from components
 	host := getEnvString("DB_HOST", "localhost")
 	port := getEnvString("DB_PORT", "5432")
 	user := getEnvString("DB_USER", "postgres")
@@ -182,6 +284,7 @@ func buildDBConnectionString() string {
 	)
 }
 
+// parseLokiLabels converts a comma-separated key=value string into a map.
 func parseLokiLabels(labelsStr string) map[string]string {
 	labels := make(map[string]string)
 	if labelsStr == "" {
@@ -201,16 +304,26 @@ func parseLokiLabels(labelsStr string) map[string]string {
 	return labels
 }
 
-func getAndParseGrpcPorts() []int {
+// parseGrpcPorts converts a comma-separated list of ports into a slice of integers.
+func parseGrpcPorts(portsStr string) []int {
+	if portsStr == "" {
+		return []int{}
+	}
+
 	return itertools.Map(
-		strings.Split(getEnvString("WEBSOCKET_API_GATEWAY_PORTS", ""), ","),
-		func(s string) int {
-			serverPort, err := strconv.Atoi(s)
-			if err != nil {
-				panic(fmt.Sprintf("Error parsing GRPC_SERVER_PORTS: %s", err))
+		strings.Split(portsStr, ","),
+		func(str string) int {
+			str = strings.TrimSpace(str)
+			if str == "" {
+				return 0
 			}
 
-			return serverPort
+			port, err := strconv.Atoi(str)
+			if err != nil {
+				panic(fmt.Sprintf("Error parsing GRPC port '%s': %v", str, err))
+			}
+
+			return port
 		},
 	)
 }

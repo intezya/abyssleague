@@ -37,6 +37,7 @@ func (r *RecoverMiddleware) Handle() fiber.Handler {
 				case error:
 					recErr = v
 				default:
+					//nolint:err113 // recover panic can be any type, so dynamic error makes sense here
 					recErr = fmt.Errorf("%v", rec)
 				}
 

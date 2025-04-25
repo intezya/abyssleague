@@ -22,7 +22,7 @@ func (h *HashHelper) preHash(raw string) (prehash string) {
 func (h *HashHelper) EncodePassword(raw string) (hash string) {
 	salt, err := crypto.Salt(defaultSaltLength)
 	if err != nil {
-		logger.Log.Errorf("Unexpected error while generating salt: %h", err)
+		logger.Log.Errorf("Unexpected error while generating salt: %v", err)
 
 		for {
 			salt, err = crypto.Salt(defaultSaltLength)

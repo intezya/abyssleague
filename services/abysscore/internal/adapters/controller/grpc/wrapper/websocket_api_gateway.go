@@ -11,6 +11,8 @@ import (
 	"google.golang.org/protobuf/types/known/emptypb"
 )
 
+var errInvalidClientType = errors.New("invalid client type")
+
 type WebsocketServiceWrapper struct {
 	factory     *factory.GrpcClientFactory
 	serviceAddr string
@@ -25,10 +27,11 @@ func (w *WebsocketServiceWrapper) SetClient(client interface{}) error {
 		return nil
 	}
 
-	return errors.New("invalid client type")
+	return errInvalidClientType
 }
 
 func NewWebsocketServiceWrapper(
+	ctx context.Context,
 	factory *factory.GrpcClientFactory,
 	serviceAddr string,
 ) *WebsocketServiceWrapper {
@@ -39,25 +42,32 @@ func NewWebsocketServiceWrapper(
 		client:      nil,
 	}
 
-	go factory.GetAndSetWebsocketApiGatewayClient(serviceAddr, wrapper)
+	go func() {
+		_, err := factory.GetAndSetWebsocketApiGatewayClient(ctx, serviceAddr, wrapper)
+		if err != nil {
+			logger.Log.Warnf("Failed to set WebsocketApiGateway client: %v", err)
+		}
+	}()
 
 	return wrapper
 }
 
-func (w *WebsocketServiceWrapper) ensureClient() bool {
+func (w *WebsocketServiceWrapper) ensureClient(ctx context.Context) bool {
 	if w.client != nil {
 		return true
 	}
 
 	logger.Log.Info("WebsocketService client is nil, attempting to reconnect...")
 
-	w.client = w.factory.GetAndSetWebsocketApiGatewayClient(w.serviceAddr, nil)
+	client, err := w.factory.GetAndSetWebsocketApiGatewayClient(ctx, w.serviceAddr, nil)
 
-	if w.client == nil {
+	if w.client == nil || err != nil {
 		logger.Log.Warn("Failed to reconnect to WebsocketService")
 
 		return false
 	}
+
+	w.client = client
 
 	logger.Log.Info("Successfully reconnected to WebsocketService")
 
@@ -70,7 +80,7 @@ func (w *WebsocketServiceWrapper) GetOnline(
 	ctx, cancel := context.WithTimeout(ctx, w.timeout)
 	defer cancel()
 
-	if !w.ensureClient() {
+	if !w.ensureClient(ctx) {
 		logger.Log.Warn("Using default value for GetOnline due to missing client")
 
 		return &websocketpb.GetOnlineResponse{Online: 0}, nil
@@ -92,7 +102,7 @@ func (w *WebsocketServiceWrapper) GetOnlineUsers(
 	ctx, cancel := context.WithTimeout(ctx, w.timeout)
 	defer cancel()
 
-	if !w.ensureClient() {
+	if !w.ensureClient(ctx) {
 		logger.Log.Warn("Using default value for GetOnlineUsers due to missing client")
 
 		return &websocketpb.GetOnlineUsersResponse{Users: []*websocketpb.OnlineUser{}}, nil
@@ -115,7 +125,7 @@ func (w *WebsocketServiceWrapper) SendMessage(
 	ctx, cancel := context.WithTimeout(ctx, w.timeout)
 	defer cancel()
 
-	if !w.ensureClient() {
+	if !w.ensureClient(ctx) {
 		logger.Log.Warn("Failed to send message due to missing client")
 
 		return nil
@@ -138,7 +148,7 @@ func (w *WebsocketServiceWrapper) Broadcast(
 	ctx, cancel := context.WithTimeout(ctx, w.timeout)
 	defer cancel()
 
-	if !w.ensureClient() {
+	if !w.ensureClient(ctx) {
 		logger.Log.Warn("Failed to broadcast message due to missing client")
 
 		return nil

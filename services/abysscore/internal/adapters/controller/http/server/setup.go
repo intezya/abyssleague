@@ -1,6 +1,7 @@
 package server
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
 	"os"
@@ -27,13 +28,28 @@ const (
 	maxConcurrentConnections = 100
 	writeTimeout             = 5 * time.Second
 	readTimeout              = 5 * time.Second
+	idleTimeout              = 30 * time.Second
 )
 
 // setupMetricsServer creates a separate HTTP server for Prometheus metrics.
 func setupMetricsServer(port int) {
 	go func() {
-		http.Handle("/metrics", promhttp.Handler())
-		logger.Log.Warn(http.ListenAndServe(fmt.Sprintf(":%d", port), nil))
+		mux := http.NewServeMux()
+		mux.Handle("/metrics", promhttp.Handler())
+
+		server := &http.Server{ //nolint:exhaustruct
+			Addr:         fmt.Sprintf(":%d", port),
+			Handler:      mux,
+			ReadTimeout:  readTimeout,
+			WriteTimeout: writeTimeout,
+			IdleTimeout:  idleTimeout,
+		}
+
+		logger.Log.Infof("Starting metrics server on port %d", port)
+
+		if err := server.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
+			logger.Log.Warnf("Metrics server error: %v", err)
+		}
 	}()
 }
 
@@ -49,6 +65,7 @@ func createFiberApp(config *config.Config) *fiber.App {
 			Concurrency:                  maxConcurrentConnections,
 			ReadTimeout:                  readTimeout,
 			WriteTimeout:                 writeTimeout,
+			IdleTimeout:                  idleTimeout,
 			DisableKeepalive:             false,
 			DisableDefaultContentType:    false,
 			DisablePreParseMultipartForm: true,
