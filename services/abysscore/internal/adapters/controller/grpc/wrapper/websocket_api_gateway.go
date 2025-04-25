@@ -3,10 +3,10 @@ package wrapper
 import (
 	"context"
 	"errors"
-	"github.com/intezya/abyssleague/services/abysscore/internal/adapters/controller/grpc/factory"
 	"time"
 
 	websocketpb "abyssproto/websocket"
+	"github.com/intezya/abyssleague/services/abysscore/internal/adapters/controller/grpc/factory"
 	"github.com/intezya/pkglib/logger"
 	"google.golang.org/protobuf/types/known/emptypb"
 )
@@ -28,7 +28,10 @@ func (w *WebsocketServiceWrapper) SetClient(client interface{}) error {
 	return errors.New("invalid client type")
 }
 
-func NewWebsocketServiceWrapper(factory *factory.GrpcClientFactory, serviceAddr string) *WebsocketServiceWrapper {
+func NewWebsocketServiceWrapper(
+	factory *factory.GrpcClientFactory,
+	serviceAddr string,
+) *WebsocketServiceWrapper {
 	wrapper := &WebsocketServiceWrapper{
 		factory:     factory,
 		serviceAddr: serviceAddr,
@@ -61,7 +64,9 @@ func (w *WebsocketServiceWrapper) ensureClient() bool {
 	return true
 }
 
-func (w *WebsocketServiceWrapper) GetOnline(ctx context.Context) (*websocketpb.GetOnlineResponse, error) {
+func (w *WebsocketServiceWrapper) GetOnline(
+	ctx context.Context,
+) (*websocketpb.GetOnlineResponse, error) {
 	ctx, cancel := context.WithTimeout(ctx, w.timeout)
 	defer cancel()
 
@@ -81,7 +86,9 @@ func (w *WebsocketServiceWrapper) GetOnline(ctx context.Context) (*websocketpb.G
 	return response, nil
 }
 
-func (w *WebsocketServiceWrapper) GetOnlineUsers(ctx context.Context) (*websocketpb.GetOnlineUsersResponse, error) {
+func (w *WebsocketServiceWrapper) GetOnlineUsers(
+	ctx context.Context,
+) (*websocketpb.GetOnlineUsersResponse, error) {
 	ctx, cancel := context.WithTimeout(ctx, w.timeout)
 	defer cancel()
 
@@ -101,7 +108,10 @@ func (w *WebsocketServiceWrapper) GetOnlineUsers(ctx context.Context) (*websocke
 	return response, nil
 }
 
-func (w *WebsocketServiceWrapper) SendMessage(ctx context.Context, request *websocketpb.SendMessageRequest) error {
+func (w *WebsocketServiceWrapper) SendMessage(
+	ctx context.Context,
+	request *websocketpb.SendMessageRequest,
+) error {
 	ctx, cancel := context.WithTimeout(ctx, w.timeout)
 	defer cancel()
 
@@ -121,7 +131,10 @@ func (w *WebsocketServiceWrapper) SendMessage(ctx context.Context, request *webs
 	return nil
 }
 
-func (w *WebsocketServiceWrapper) Broadcast(ctx context.Context, request *websocketpb.BroadcastRequest) error {
+func (w *WebsocketServiceWrapper) Broadcast(
+	ctx context.Context,
+	request *websocketpb.BroadcastRequest,
+) error {
 	ctx, cancel := context.WithTimeout(ctx, w.timeout)
 	defer cancel()
 

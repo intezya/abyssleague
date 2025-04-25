@@ -2,6 +2,7 @@ package tracer
 
 import (
 	"context"
+
 	"github.com/intezya/pkglib/logger"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace"
@@ -25,8 +26,8 @@ func Init(config *Config) func() {
 		otlptracegrpc.WithEndpoint(config.Endpoint),
 		otlptracegrpc.WithInsecure(),
 	)
-	exporter, err := otlptrace.New(ctx, client)
 
+	exporter, err := otlptrace.New(ctx, client)
 	if err != nil {
 		logger.Log.Warnf("creating OTLP trace exporter: %v", err)
 	}

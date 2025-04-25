@@ -2,6 +2,7 @@ package domainservice
 
 import (
 	"context"
+
 	"github.com/intezya/abyssleague/services/abysscore/internal/adapters/controller/http/dto/request"
 	"github.com/intezya/abyssleague/services/abysscore/internal/domain/dto"
 	"github.com/intezya/abyssleague/services/abysscore/internal/domain/entity/gameitementity"

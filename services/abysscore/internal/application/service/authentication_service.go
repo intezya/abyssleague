@@ -2,6 +2,9 @@ package applicationservice
 
 import (
 	"context"
+	"strings"
+	"time"
+
 	applicationerror "github.com/intezya/abyssleague/services/abysscore/internal/common/errors/application"
 	"github.com/intezya/abyssleague/services/abysscore/internal/domain/dto"
 	"github.com/intezya/abyssleague/services/abysscore/internal/domain/entity"
@@ -12,8 +15,6 @@ import (
 	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/metrics/tracer"
 	"github.com/intezya/abyssleague/services/abysscore/internal/pkg/timeutils"
 	"github.com/intezya/pkglib/logger"
-	"strings"
-	"time"
 )
 
 // AuthenticationService handles user authentication operations.
@@ -47,7 +48,9 @@ func (a *AuthenticationService) Register(
 	a.prepareCredentials(ctx, credentials)
 
 	user, err := tracer.TraceFnWithResult(
-		ctx, "userRepository.Create", func(ctx context.Context) (*entity.AuthenticationData, error) {
+		ctx,
+		"userRepository.Create",
+		func(ctx context.Context) (*entity.AuthenticationData, error) {
 			return a.userRepository.Create(ctx, credentials)
 		},
 	)
@@ -102,7 +105,10 @@ func (a *AuthenticationService) Authenticate(ctx context.Context, credentials *d
 }
 
 // ValidateToken validates the authentication token and returns user data.
-func (a *AuthenticationService) ValidateToken(ctx context.Context, token string) (*dto.UserDTO, error) {
+func (a *AuthenticationService) ValidateToken(
+	ctx context.Context,
+	token string,
+) (*dto.UserDTO, error) {
 	tokenData, err := tracer.TraceFnWithResult(
 		ctx, "tokenHelper.ValidateToken", func(ctx context.Context) (*entity.TokenData, error) {
 			return a.tokenHelper.ValidateToken(token)
@@ -121,7 +127,10 @@ func (a *AuthenticationService) ValidateToken(ctx context.Context, token string)
 
 	hardwareIDOk, needsUpdate := tracer.Trace2(
 		ctx, "authentication.CompareHardwareID", func(ctx context.Context) (bool, bool) {
-			return authentication.CompareHardwareID(tokenData.Hwid, a.credentialsHelper.VerifyTokenHardwareID)
+			return authentication.CompareHardwareID(
+				tokenData.Hwid,
+				a.credentialsHelper.VerifyTokenHardwareID,
+			)
 		},
 	)
 	if !hardwareIDOk || needsUpdate {
@@ -167,8 +176,14 @@ func (a *AuthenticationService) ChangePassword(
 	encodedPassword := a.encodePassword(ctx, credentials.NewPassword)
 
 	user, err := tracer.TraceFnWithResult(
-		ctx, "userRepository.UpdatePasswordByID", func(ctx context.Context) (*dto.UserFullDTO, error) {
-			return a.userRepository.UpdatePasswordByID(ctx, authentication.UserID(), encodedPassword)
+		ctx,
+		"userRepository.UpdatePasswordByID",
+		func(ctx context.Context) (*dto.UserFullDTO, error) {
+			return a.userRepository.UpdatePasswordByID(
+				ctx,
+				authentication.UserID(),
+				encodedPassword,
+			)
 		},
 	)
 	if err != nil {
@@ -183,7 +198,10 @@ func (a *AuthenticationService) ChangePassword(
 */
 
 // prepareCredentials encodes password and HWID.
-func (a *AuthenticationService) prepareCredentials(ctx context.Context, credentials *dto.CredentialsDTO) {
+func (a *AuthenticationService) prepareCredentials(
+	ctx context.Context,
+	credentials *dto.CredentialsDTO,
+) {
 	credentials.Password = a.encodePassword(ctx, credentials.Password)
 	credentials.HardwareID = a.encodeHWID(ctx, credentials.HardwareID)
 }
@@ -245,7 +263,11 @@ func (a *AuthenticationService) verifyAndUpdateHWID(
 }
 
 // updateHwid updates the hardware ID for a user.
-func (a *AuthenticationService) updateHwid(ctx context.Context, auth *entity.AuthenticationData, rawHwid string) error {
+func (a *AuthenticationService) updateHwid(
+	ctx context.Context,
+	auth *entity.AuthenticationData,
+	rawHwid string,
+) error {
 	newHwid := a.encodeHWID(ctx, rawHwid)
 	auth.SetHWID(newHwid)
 
@@ -299,7 +321,10 @@ func (a *AuthenticationService) processPostLoginTasks(ctx context.Context, user 
 }
 
 // processLoginStreakAndRewards handles post-login processing like login streaks and rewards.
-func (a *AuthenticationService) processLoginStreakAndRewards(ctx context.Context, user *dto.UserDTO) {
+func (a *AuthenticationService) processLoginStreakAndRewards(
+	ctx context.Context,
+	user *dto.UserDTO,
+) {
 	// Only update streak if user hasn't logged in today
 	if !timeutils.IsDayBeforeToday(user.LoginAt) {
 		return
@@ -315,17 +340,24 @@ func (a *AuthenticationService) processLoginStreakAndRewards(ctx context.Context
 		ctx,
 		"userRepository.UpdateLoginStreakLoginAtByID",
 		func(ctx context.Context) error {
-			return a.userRepository.UpdateLoginStreakLoginAtByID(ctx, user.ID, user.LoginStreak, user.LoginAt)
+			return a.userRepository.UpdateLoginStreakLoginAtByID(
+				ctx,
+				user.ID,
+				user.LoginStreak,
+				user.LoginAt,
+			)
 		},
 	)
-
 	if err != nil {
 		logger.Log.Warnw("Failed to update login streak", "error", err, "userID", user.ID)
 	}
 }
 
 // processBanDecrementAfterLogin decrements ban levels if needed.
-func (a *AuthenticationService) processBanDecrementAfterLogin(ctx context.Context, user *dto.UserDTO) {
+func (a *AuthenticationService) processBanDecrementAfterLogin(
+	ctx context.Context,
+	user *dto.UserDTO,
+) {
 	if user.AccountBlockedUntil != nil &&
 		user.AccountBlockedUntil.Add(userentity.AccountBlockDecrementTime).Before(time.Now()) {
 		if user.AccountBlockedLevel > 0 {
@@ -353,14 +385,22 @@ func (a *AuthenticationService) processBanDecrementAfterLogin(ctx context.Contex
 			return a.userRepository.SetBlockUntilAndLevelAndReasonFromUser(ctx, user)
 		},
 	)
-
 	if err != nil {
-		logger.Log.Errorw("Failed to update block until, level, user", "error", err, "userID", user.ID)
+		logger.Log.Errorw(
+			"Failed to update block until, level, user",
+			"error",
+			err,
+			"userID",
+			user.ID,
+		)
 	}
 }
 
 // generateToken creates an authentication token.
-func (a *AuthenticationService) generateToken(ctx context.Context, tokenData *entity.TokenData) string {
+func (a *AuthenticationService) generateToken(
+	ctx context.Context,
+	tokenData *entity.TokenData,
+) string {
 	return tracer.Trace1(
 		ctx,
 		"tokenHelper.TokenGenerator",
@@ -377,7 +417,6 @@ func (a *AuthenticationService) getOnlineCount(ctx context.Context) int {
 		"mainWebsocketService.GetOnlineSoft",
 		func(ctx context.Context) int {
 			res, err := a.mainWebsocketService.GetOnline(ctx)
-
 			if err != nil {
 				return 0
 			}

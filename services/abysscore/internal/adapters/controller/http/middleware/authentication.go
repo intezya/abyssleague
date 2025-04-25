@@ -3,15 +3,16 @@ package middleware
 import (
 	"context"
 	"errors"
-	"github.com/gofiber/fiber/v2"
-	adaptererror "github.com/intezya/abyssleague/services/abysscore/internal/common/errors/adapter"
-	"github.com/intezya/abyssleague/services/abysscore/internal/domain/dto"
-	"github.com/intezya/abyssleague/services/abysscore/internal/domain/service"
-	rediswrapper "github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/cache/redis"
-	"github.com/intezya/pkglib/logger"
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/gofiber/fiber/v2"
+	adaptererror "github.com/intezya/abyssleague/services/abysscore/internal/common/errors/adapter"
+	"github.com/intezya/abyssleague/services/abysscore/internal/domain/dto"
+	domainservice "github.com/intezya/abyssleague/services/abysscore/internal/domain/service"
+	rediswrapper "github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/cache/redis"
+	"github.com/intezya/pkglib/logger"
 )
 
 /* TODO:
@@ -59,11 +60,13 @@ func (a *AuthenticationMiddleware) Handle() fiber.Handler {
 		logger.Log.Debug("Redis client is: ", a.redisClient.Client)
 
 		user, err := a.checkTokenCache(authorizationHeaderValue)
-
 		if err != nil {
 			logger.Log.Debug("Error checking token in cache: ", err)
-			user, err = a.authenticationService.ValidateToken(c.UserContext(), authorizationHeaderValue)
 
+			user, err = a.authenticationService.ValidateToken(
+				c.UserContext(),
+				authorizationHeaderValue,
+			)
 			if err != nil {
 				logger.Log.Debug("Error validating token: ", err)
 

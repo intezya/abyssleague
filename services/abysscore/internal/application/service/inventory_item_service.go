@@ -2,6 +2,7 @@ package applicationservice
 
 import (
 	"context"
+
 	"github.com/intezya/abyssleague/services/abysscore/internal/domain/dto"
 	repositoryports "github.com/intezya/abyssleague/services/abysscore/internal/domain/repository"
 	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/metrics/tracer"
@@ -16,7 +17,10 @@ func NewInventoryItemService(
 	repository repositoryports.InventoryItemRepository,
 	userRepository repositoryports.UserRepository,
 ) *InventoryItemService {
-	return &InventoryItemService{inventoryItemRepository: repository, userRepository: userRepository}
+	return &InventoryItemService{
+		inventoryItemRepository: repository,
+		userRepository:          userRepository,
+	}
 }
 
 func (i *InventoryItemService) GrantToUserByAdmin(
@@ -38,7 +42,6 @@ func (i *InventoryItemService) GrantToUserByAdmin(
 			return i.inventoryItemRepository.Create(ctx, createRequest)
 		},
 	)
-
 	if err != nil {
 		return nil, err
 	}
@@ -48,7 +51,10 @@ func (i *InventoryItemService) GrantToUserByAdmin(
 	return result, nil
 }
 
-func (i *InventoryItemService) FindAllByUserID(ctx context.Context, userID int) ([]*dto.InventoryItemDTO, error) {
+func (i *InventoryItemService) FindAllByUserID(
+	ctx context.Context,
+	userID int,
+) ([]*dto.InventoryItemDTO, error) {
 	items, err := tracer.TraceFnWithResult(
 		ctx,
 		"inventoryItemRepository.FindByUserID",
@@ -56,7 +62,6 @@ func (i *InventoryItemService) FindAllByUserID(ctx context.Context, userID int) 
 			return i.inventoryItemRepository.FindByUserID(ctx, userID)
 		},
 	)
-
 	if err != nil {
 		return nil, err
 	}
@@ -77,7 +82,6 @@ func (i *InventoryItemService) RevokeByAdmin(
 			return i.inventoryItemRepository.FindByUserIDAndID(ctx, userID, inventoryItemID)
 		},
 	)
-
 	if err != nil {
 		return err
 	}
@@ -89,7 +93,6 @@ func (i *InventoryItemService) RevokeByAdmin(
 			return i.inventoryItemRepository.Delete(ctx, inventoryItemID)
 		},
 	)
-
 	if err != nil {
 		return err
 	}
@@ -111,7 +114,6 @@ func (i *InventoryItemService) SetInventoryItemAsCurrent(
 			return i.inventoryItemRepository.FindByUserIDAndID(ctx, user.ID, inventoryItemID)
 		},
 	)
-
 	if err != nil {
 		return err // item not found in inventory
 	}
@@ -123,7 +125,6 @@ func (i *InventoryItemService) SetInventoryItemAsCurrent(
 			return i.userRepository.SetInventoryItemAsCurrent(ctx, user, item)
 		},
 	)
-
 	if err != nil {
 		return err // ???
 	}

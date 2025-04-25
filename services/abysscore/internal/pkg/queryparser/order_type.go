@@ -1,8 +1,9 @@
 package queryparser
 
 import (
-	"github.com/intezya/abyssleague/services/abysscore/internal/domain/entity/types"
 	"strings"
+
+	"github.com/intezya/abyssleague/services/abysscore/internal/domain/entity/types"
 )
 
 func ParseOrderType(input string) (types.OrderType, error) {

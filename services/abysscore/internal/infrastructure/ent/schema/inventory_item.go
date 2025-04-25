@@ -1,11 +1,12 @@
 package schema
 
 import (
+	"time"
+
 	"entgo.io/ent"
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
 	"entgo.io/ent/schema/index"
-	"time"
 )
 
 const systemIssuerId = 0
@@ -21,7 +22,10 @@ func (InventoryItem) Fields() []ent.Field {
 		field.Int("user_id").Immutable(),
 		field.Int("item_id").Immutable(),
 
-		field.Int("received_from_id").Default(systemIssuerId).Positive().Nillable(), // nil if from trade
+		field.Int("received_from_id").
+			Default(systemIssuerId).
+			Positive().
+			Nillable(), // nil if from trade
 		// TODO: relationship with trades
 
 		field.Time("obtained_at").Default(time.Now),

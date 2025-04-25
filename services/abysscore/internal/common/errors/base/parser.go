@@ -2,10 +2,11 @@ package base
 
 import (
 	"errors"
-	"github.com/gofiber/fiber/v2"
-	"github.com/intezya/pkglib/logger"
 	"net/http"
 	"time"
+
+	"github.com/gofiber/fiber/v2"
+	"github.com/intezya/pkglib/logger"
 )
 
 func ParseErrorOrInternalResponse(err error, c *fiber.Ctx) error {

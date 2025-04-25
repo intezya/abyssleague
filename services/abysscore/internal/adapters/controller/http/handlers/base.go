@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"context"
+
 	"github.com/gofiber/fiber/v2"
 	"github.com/intezya/abyssleague/services/abysscore/internal/adapters/controller/http/dto/response"
 	"github.com/intezya/abyssleague/services/abysscore/internal/adapters/controller/http/middleware"

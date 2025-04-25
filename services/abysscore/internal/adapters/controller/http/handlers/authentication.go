@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"context"
+
 	"github.com/gofiber/fiber/v2"
 	"github.com/intezya/abyssleague/services/abysscore/internal/adapters/controller/http/dto/request"
 	domainservice "github.com/intezya/abyssleague/services/abysscore/internal/domain/service"
@@ -25,7 +26,6 @@ func (h *AuthenticationHandler) Register(c *fiber.Ctx) error {
 	ctx := c.UserContext()
 
 	req, err := getRequest[request.AuthenticationRequest](c)
-
 	if err != nil {
 		return handleError(err, c)
 	}
@@ -37,7 +37,6 @@ func (h *AuthenticationHandler) Register(c *fiber.Ctx) error {
 			return h.authenticationService.Register(ctx, req.ToCredentialsDTO())
 		},
 	)
-
 	if err != nil {
 		return handleError(err, c)
 	}
@@ -50,7 +49,6 @@ func (h *AuthenticationHandler) Login(c *fiber.Ctx) error {
 	ctx := c.UserContext()
 
 	req, err := getRequest[request.AuthenticationRequest](c)
-
 	if err != nil {
 		return handleError(err, c)
 	}
@@ -62,7 +60,6 @@ func (h *AuthenticationHandler) Login(c *fiber.Ctx) error {
 			return h.authenticationService.Authenticate(ctx, req.ToCredentialsDTO())
 		},
 	)
-
 	if err != nil {
 		return handleError(err, c)
 	}
@@ -75,7 +72,6 @@ func (h *AuthenticationHandler) ChangePassword(c *fiber.Ctx) error {
 	ctx := c.UserContext()
 
 	req, err := getRequest[request.PasswordChangeRequest](c)
-
 	if err != nil {
 		return handleError(err, c)
 	}
@@ -87,7 +83,6 @@ func (h *AuthenticationHandler) ChangePassword(c *fiber.Ctx) error {
 			return h.authenticationService.ChangePassword(ctx, req.ToDTO())
 		},
 	)
-
 	if err != nil {
 		return handleError(err, c)
 	}

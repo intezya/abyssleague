@@ -2,9 +2,10 @@ package rediswrapper
 
 import (
 	"context"
+	"time"
+
 	"github.com/intezya/pkglib/logger"
 	"github.com/redis/go-redis/v9"
-	"time"
 )
 
 type Config struct {

@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"context"
+
 	"github.com/gofiber/fiber/v2"
 	"github.com/intezya/abyssleague/services/abysscore/internal/adapters/controller/http/dto/request"
 	"github.com/intezya/abyssleague/services/abysscore/internal/domain/dto"
@@ -23,19 +24,16 @@ func (h *InventoryItemHandler) GrantInventoryItemToUser(c *fiber.Ctx) error {
 	ctx := c.UserContext()
 
 	admin, err := extractUser(ctx)
-
 	if err != nil {
 		return handleError(err, c)
 	}
 
 	userID, err := extractIntParam("user_id", c)
-
 	if err != nil {
 		return handleError(err, c)
 	}
 
 	itemID, err := extractIntParam("item_id", c)
-
 	if err != nil {
 		return handleError(err, c)
 	}
@@ -47,7 +45,6 @@ func (h *InventoryItemHandler) GrantInventoryItemToUser(c *fiber.Ctx) error {
 			return h.inventoryItemService.GrantToUserByAdmin(ctx, userID, itemID, admin)
 		},
 	)
-
 	if err != nil {
 		return handleError(err, c)
 	}
@@ -59,7 +56,6 @@ func (h *InventoryItemHandler) GetAllByAuthorization(c *fiber.Ctx) error {
 	ctx := c.UserContext()
 
 	user, err := extractUser(ctx)
-
 	if err != nil {
 		return handleError(err, c)
 	}
@@ -71,7 +67,6 @@ func (h *InventoryItemHandler) GetAllByAuthorization(c *fiber.Ctx) error {
 			return h.inventoryItemService.FindAllByUserID(ctx, user.ID)
 		},
 	)
-
 	if err != nil {
 		return handleError(err, c)
 	}
@@ -83,7 +78,6 @@ func (h *InventoryItemHandler) GetAllByUserID(c *fiber.Ctx) error {
 	ctx := c.UserContext()
 
 	userID, err := extractIntParam("user_id", c)
-
 	if err != nil {
 		return handleError(err, c)
 	}
@@ -95,7 +89,6 @@ func (h *InventoryItemHandler) GetAllByUserID(c *fiber.Ctx) error {
 			return h.inventoryItemService.FindAllByUserID(ctx, userID)
 		},
 	)
-
 	if err != nil {
 		return handleError(err, c)
 	}
@@ -107,19 +100,16 @@ func (h *InventoryItemHandler) RevokeByAdmin(c *fiber.Ctx) error {
 	ctx := c.UserContext()
 
 	admin, err := extractUser(ctx)
-
 	if err != nil {
 		return handleError(err, c)
 	}
 
 	userID, err := extractIntParam("user_id", c)
-
 	if err != nil {
 		return handleError(err, c)
 	}
 
 	itemID, err := extractIntParam("item_id", c)
-
 	if err != nil {
 		return handleError(err, c)
 	}
@@ -131,7 +121,6 @@ func (h *InventoryItemHandler) RevokeByAdmin(c *fiber.Ctx) error {
 			return h.inventoryItemService.RevokeByAdmin(ctx, userID, itemID, admin)
 		},
 	)
-
 	if err != nil {
 		return handleError(err, c)
 	}
@@ -148,7 +137,6 @@ func (h *InventoryItemHandler) SetInventoryItem(c *fiber.Ctx) error {
 	}
 
 	req, err := getRequest[request.SetItemAsCurrent](c)
-
 	if err != nil {
 		return handleError(err, c)
 	}

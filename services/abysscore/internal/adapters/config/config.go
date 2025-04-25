@@ -2,6 +2,11 @@ package config
 
 import (
 	"fmt"
+	"os"
+	"strconv"
+	"strings"
+	"time"
+
 	"github.com/gofiber/fiber/v2/middleware/healthcheck"
 	"github.com/gofiber/fiber/v2/middleware/requestid"
 	"github.com/intezya/abyssleague/services/abysscore/internal/adapters/controller/grpc/factory"
@@ -11,14 +16,9 @@ import (
 	"github.com/intezya/abyssleague/services/abysscore/internal/pkg/auth"
 	"github.com/intezya/pkglib/itertools"
 	"github.com/intezya/pkglib/logger"
-	"github.com/redis/go-redis/v9"
-	"os"
-	"strconv"
-	"strings"
-
 	// ...
 	"github.com/joho/godotenv"
-	"time"
+	"github.com/redis/go-redis/v9"
 )
 
 const (
@@ -79,12 +79,27 @@ func LoadConfig() *Config {
 		EnvType:                envType,
 
 		RateLimitConfig: &RateLimitConfig{
-			LoginRateLimitKey:    getEnvString("RATE_LIMIT_LOGIN_KEY", "login_attempts_rate_limit:"),
-			LoginRateLimitTime:   getEnvDuration("RATE_LIMIT_LOGIN_TIME", defaultRateLimitLoginTime),
-			LoginRateLimit:       getEnvInt("RATE_LIMIT_LOGIN_MAX_REQUESTS", defaultRateLimitLoginRequests),
-			DefaultRateLimitKey:  getEnvString("RATE_LIMIT_DEFAULT_KEY", "rate_limit:"),
-			DefaultRateLimitTime: getEnvDuration("RATE_LIMIT_DEFAULT_TIME", defaultRateLimitDefaultTime),
-			DefaultRateLimit:     getEnvInt("RATE_LIMIT_DEFAULT_MAX_REQUESTS", defaultRateLimitDefaultReqs),
+			LoginRateLimitKey: getEnvString(
+				"RATE_LIMIT_LOGIN_KEY",
+				"login_attempts_rate_limit:",
+			),
+			LoginRateLimitTime: getEnvDuration(
+				"RATE_LIMIT_LOGIN_TIME",
+				defaultRateLimitLoginTime,
+			),
+			LoginRateLimit: getEnvInt(
+				"RATE_LIMIT_LOGIN_MAX_REQUESTS",
+				defaultRateLimitLoginRequests,
+			),
+			DefaultRateLimitKey: getEnvString("RATE_LIMIT_DEFAULT_KEY", "rate_limit:"),
+			DefaultRateLimitTime: getEnvDuration(
+				"RATE_LIMIT_DEFAULT_TIME",
+				defaultRateLimitDefaultTime,
+			),
+			DefaultRateLimit: getEnvInt(
+				"RATE_LIMIT_DEFAULT_MAX_REQUESTS",
+				defaultRateLimitDefaultReqs,
+			),
 		},
 
 		LoggerConfig: &LoggerConfig{
@@ -191,7 +206,6 @@ func getAndParseGrpcPorts() []int {
 		strings.Split(getEnvString("WEBSOCKET_API_GATEWAY_PORTS", ""), ","),
 		func(s string) int {
 			serverPort, err := strconv.Atoi(s)
-
 			if err != nil {
 				panic(fmt.Sprintf("Error parsing GRPC_SERVER_PORTS: %s", err))
 			}

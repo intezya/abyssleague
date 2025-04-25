@@ -1,8 +1,9 @@
 package request
 
 import (
-	"github.com/intezya/abyssleague/services/abysscore/internal/domain/dto"
 	"time"
+
+	"github.com/intezya/abyssleague/services/abysscore/internal/domain/dto"
 )
 
 type CreateUpdateGameItem struct {

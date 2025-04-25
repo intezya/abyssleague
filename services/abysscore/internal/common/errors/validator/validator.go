@@ -2,6 +2,7 @@ package validator
 
 import (
 	"errors"
+
 	"github.com/go-playground/validator/v10"
 	adaptererror "github.com/intezya/abyssleague/services/abysscore/internal/common/errors/adapter"
 	"github.com/intezya/abyssleague/services/abysscore/internal/common/errors/base"

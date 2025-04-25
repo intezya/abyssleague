@@ -2,18 +2,18 @@ package middleware
 
 import (
 	"fmt"
-	"github.com/intezya/abyssleague/services/abysscore/internal/adapters/config"
-	"github.com/intezya/abyssleague/services/abysscore/internal/common/errors/errorutils"
-	"go.opentelemetry.io/otel/trace"
-	"go.uber.org/zap"
 	"strconv"
 	"time"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/intezya/abyssleague/services/abysscore/internal/adapters/config"
+	"github.com/intezya/abyssleague/services/abysscore/internal/common/errors/errorutils"
 	"github.com/intezya/pkglib/logger"
 	"github.com/prometheus/client_golang/prometheus"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/trace"
+	"go.uber.org/zap"
 )
 
 type LoggingMiddleware struct {
@@ -42,8 +42,10 @@ var textContentTypes = []string{
 	"application/xhtml+xml",
 }
 
-const defaultSlowRequestThreshold = 500 * time.Millisecond
-const defaultSamplingRate = 100
+const (
+	defaultSlowRequestThreshold = 500 * time.Millisecond
+	defaultSamplingRate         = 100
+)
 
 func NewLoggingMiddleware(config *config.Config) *LoggingMiddleware {
 	metrics := initPrometheusMetrics()
@@ -218,7 +220,8 @@ func (l *LoggingMiddleware) updateMetrics(c *fiber.Ctx, statusCode int, duration
 	routePath := getSafeRoutePath(c)
 	statusStr := strconv.Itoa(statusCode)
 
-	l.metrics.requestDuration.WithLabelValues(c.Method(), routePath, statusStr).Observe(duration.Seconds())
+	l.metrics.requestDuration.WithLabelValues(c.Method(), routePath, statusStr).
+		Observe(duration.Seconds())
 	l.metrics.requestSize.WithLabelValues(c.Method(), routePath).Observe(float64(len(c.Body())))
 	l.metrics.responseSize.WithLabelValues(
 		c.Method(),
@@ -235,7 +238,8 @@ func logRequest(
 	slowThreshold time.Duration,
 ) {
 	isError := statusCode >= fiber.StatusInternalServerError
-	isWarning := statusCode >= fiber.StatusBadRequest && statusCode < fiber.StatusInternalServerError
+	isWarning := statusCode >= fiber.StatusBadRequest &&
+		statusCode < fiber.StatusInternalServerError
 	isSlow := duration > slowThreshold
 
 	switch {
@@ -246,15 +250,18 @@ func logRequest(
 		log.Info("http request failed with client error")
 	case isSlow:
 		log.With("slow_request", true).Warn("slow http request")
-	// TODO:
-	// case cfg.PathForLevelInfo(path):
-	//	log.Info("http request")
 	default:
 		log.Debug("http request")
 	}
 }
 
-func updateSpanWithResponseData(span trace.Span, statusCode int, c *fiber.Ctx, duration time.Duration, err error) {
+func updateSpanWithResponseData(
+	span trace.Span,
+	statusCode int,
+	c *fiber.Ctx,
+	duration time.Duration,
+	err error,
+) {
 	span.SetAttributes(
 		attribute.Int("http.status_code", statusCode),
 		attribute.Int64("http.response_content_length", int64(c.Response().Header.ContentLength())),

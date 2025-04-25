@@ -2,10 +2,11 @@ package auth
 
 import (
 	"errors"
+	"time"
+
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
 	"github.com/intezya/abyssleague/services/abysscore/internal/domain/entity"
-	"time"
 )
 
 type JWTConfiguration struct {
@@ -14,8 +15,16 @@ type JWTConfiguration struct {
 	expirationTime time.Duration
 }
 
-func NewJWTConfiguration(secretKey string, issuer string, expirationTime time.Duration) *JWTConfiguration {
-	return &JWTConfiguration{secretKey: []byte(secretKey), issuer: issuer, expirationTime: expirationTime}
+func NewJWTConfiguration(
+	secretKey string,
+	issuer string,
+	expirationTime time.Duration,
+) *JWTConfiguration {
+	return &JWTConfiguration{
+		secretKey:      []byte(secretKey),
+		issuer:         issuer,
+		expirationTime: expirationTime,
+	}
 }
 
 type Claim struct {
@@ -64,7 +73,6 @@ func (j *JWTHelper) ValidateToken(tokenString string) (*entity.TokenData, error)
 		jwt.WithIssuer(j.issuer),
 		jwt.WithStrictDecoding(),
 	)
-
 	if err != nil {
 		return nil, err
 	}

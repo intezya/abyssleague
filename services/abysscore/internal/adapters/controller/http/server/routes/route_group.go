@@ -79,7 +79,10 @@ func (rg *RouteGroup) Register(app *fiber.App, middlewareLinker *MiddlewareLinke
 			}
 
 			if entry.Route.MatchRequirement != MatchIrrelevant {
-				handlers = append(handlers, createMatchRequirementChecker(entry.Route.MatchRequirement))
+				handlers = append(
+					handlers,
+					createMatchRequirementChecker(entry.Route.MatchRequirement),
+				)
 			}
 		}
 

@@ -1,11 +1,12 @@
 package schema
 
 import (
+	"time"
+
 	"entgo.io/ent"
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
 	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/ent/schema/access_level"
-	"time"
 )
 
 type User struct {

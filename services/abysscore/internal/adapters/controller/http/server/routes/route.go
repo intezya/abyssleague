@@ -22,6 +22,7 @@ const (
 	AuthRateLimit
 	DefaultRateLimit
 )
+
 const (
 	MethodGet    = fiber.MethodGet
 	MethodPost   = fiber.MethodPost

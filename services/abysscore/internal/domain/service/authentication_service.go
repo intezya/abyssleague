@@ -2,6 +2,7 @@ package domainservice
 
 import (
 	"context"
+
 	"github.com/intezya/abyssleague/services/abysscore/internal/domain/dto"
 	"github.com/intezya/abyssleague/services/abysscore/internal/domain/entity"
 )
@@ -12,15 +13,25 @@ type AuthenticationResult struct {
 	OnlineCount int              `json:"online_count"`
 }
 
-func NewAuthenticationResult(token string, user *dto.UserFullDTO, onlineCount int) *AuthenticationResult {
+func NewAuthenticationResult(
+	token string,
+	user *dto.UserFullDTO,
+	onlineCount int,
+) *AuthenticationResult {
 	return &AuthenticationResult{Token: token, User: user, OnlineCount: onlineCount}
 }
 
 type AuthenticationService interface {
 	Register(ctx context.Context, credentials *dto.CredentialsDTO) (*AuthenticationResult, error)
-	Authenticate(ctx context.Context, credentials *dto.CredentialsDTO) (*AuthenticationResult, error)
+	Authenticate(
+		ctx context.Context,
+		credentials *dto.CredentialsDTO,
+	) (*AuthenticationResult, error)
 	ValidateToken(ctx context.Context, token string) (*dto.UserDTO, error)
-	ChangePassword(ctx context.Context, credentials *dto.ChangePasswordDTO) (*AuthenticationResult, error)
+	ChangePassword(
+		ctx context.Context,
+		credentials *dto.ChangePasswordDTO,
+	) (*AuthenticationResult, error)
 }
 
 type TokenHelper interface {

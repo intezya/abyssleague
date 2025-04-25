@@ -1,13 +1,14 @@
 package factory
 
 import (
-	websocketpb "abyssproto/websocket"
 	"fmt"
+	"time"
+
+	websocketpb "abyssproto/websocket"
 	"github.com/intezya/pkglib/logger"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/keepalive"
-	"time"
 )
 
 type GRPCConfig struct {
@@ -15,8 +16,10 @@ type GRPCConfig struct {
 	WebsocketApiGatewayPorts []int
 }
 
-const mainWebsocketServerIdx = 0
-const draftWebsocketServerIdx = 1
+const (
+	mainWebsocketServerIdx  = 0
+	draftWebsocketServerIdx = 1
+)
 
 const (
 	gRPCMaxRetries     = 10
@@ -34,7 +37,11 @@ func (g *GRPCConfig) MainWebsocketServerAddress() string {
 		return ""
 	}
 
-	return fmt.Sprintf("%s:%d", g.WebsocketApiGatewayHost, g.WebsocketApiGatewayPorts[mainWebsocketServerIdx])
+	return fmt.Sprintf(
+		"%s:%d",
+		g.WebsocketApiGatewayHost,
+		g.WebsocketApiGatewayPorts[mainWebsocketServerIdx],
+	)
 }
 
 func (g *GRPCConfig) DraftWebsocketServerAddress() string {
@@ -42,7 +49,11 @@ func (g *GRPCConfig) DraftWebsocketServerAddress() string {
 		return ""
 	}
 
-	return fmt.Sprintf("%s:%d", g.WebsocketApiGatewayHost, g.WebsocketApiGatewayPorts[draftWebsocketServerIdx])
+	return fmt.Sprintf(
+		"%s:%d",
+		g.WebsocketApiGatewayHost,
+		g.WebsocketApiGatewayPorts[draftWebsocketServerIdx],
+	)
 }
 
 type GrpcClientFactory struct {
@@ -110,7 +121,12 @@ func (f *GrpcClientFactory) GetAndSetWebsocketApiGatewayClient(
 			break
 		}
 
-		logger.Log.Infof("Connection to %s failed: %v , retrying in %v seconds...", address, err, gRPCReconnectDelay)
+		logger.Log.Infof(
+			"Connection to %s failed: %v , retrying in %v seconds...",
+			address,
+			err,
+			gRPCReconnectDelay,
+		)
 
 		if attempt < gRPCMaxRetries {
 			time.Sleep(gRPCReconnectDelay)

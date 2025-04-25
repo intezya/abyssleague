@@ -1,11 +1,12 @@
 package routes
 
 import (
+	"path"
+
 	"github.com/intezya/abyssleague/services/abysscore/internal/adapters/config"
 	"github.com/intezya/abyssleague/services/abysscore/internal/adapters/controller/http/handlers"
 	domainservice "github.com/intezya/abyssleague/services/abysscore/internal/domain/service"
 	rediswrapper "github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/cache/redis"
-	"path"
 )
 
 type DependencyProvider struct {

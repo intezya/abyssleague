@@ -2,6 +2,7 @@ package errorutils
 
 import (
 	"errors"
+
 	"github.com/intezya/abyssleague/services/abysscore/internal/common/errors/base"
 	"github.com/intezya/pkglib/logger"
 )

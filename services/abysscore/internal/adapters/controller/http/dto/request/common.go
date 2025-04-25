@@ -7,8 +7,10 @@ import (
 	"github.com/intezya/abyssleague/services/abysscore/internal/pkg/queryparser"
 )
 
-const defaultPage = 1
-const defaultSize = 10
+const (
+	defaultPage = 1
+	defaultSize = 10
+)
 
 type OrderTypeValidator[T ~string] = func(v string) (T, error)
 
@@ -24,13 +26,11 @@ func NewPaginationQuery[orderByT ~string](
 	orderTypeValidator OrderTypeValidator[orderByT],
 ) (*PaginationQuery[orderByT], error) {
 	orderBy, err := orderTypeValidator(c.Query("order_by", ""))
-
 	if err != nil {
 		return nil, adaptererror.BadRequestFunc(err)
 	}
 
 	orderType, err := queryparser.ParseOrderType(c.Query("order_type", ""))
-
 	if err != nil {
 		return nil, adaptererror.BadRequestFunc(err)
 	}

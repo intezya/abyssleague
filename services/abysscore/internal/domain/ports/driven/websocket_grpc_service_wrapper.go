@@ -1,8 +1,9 @@
 package drivenports
 
 import (
-	websocketpb "abyssproto/websocket"
 	"context"
+
+	websocketpb "abyssproto/websocket"
 )
 
 type WebsocketService interface {

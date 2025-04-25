@@ -2,6 +2,7 @@ package applicationservice
 
 import (
 	"context"
+
 	"github.com/intezya/abyssleague/services/abysscore/internal/adapters/controller/http/dto/request"
 	"github.com/intezya/abyssleague/services/abysscore/internal/domain/dto"
 	"github.com/intezya/abyssleague/services/abysscore/internal/domain/entity/gameitementity"
@@ -30,7 +31,6 @@ func (g *GameItemService) Create(
 			return g.gameItemRepository.Create(ctx, request.ToDTO())
 		},
 	)
-
 	if err != nil {
 		return nil, err // ???
 	}
@@ -46,7 +46,6 @@ func (g *GameItemService) FindByID(ctx context.Context, id int) (*dto.GameItemDT
 			return g.gameItemRepository.FindByID(ctx, id)
 		},
 	)
-
 	if err != nil {
 		return nil, err // not found
 	}
@@ -62,10 +61,15 @@ func (g *GameItemService) FindAllPaged(
 		ctx,
 		"gameItemRepository.FindAllPaged",
 		func(ctx context.Context) (*dto.PaginatedResult[*dto.GameItemDTO], error) {
-			return g.gameItemRepository.FindAllPaged(ctx, query.Page, query.Size, query.OrderBy, query.OrderType)
+			return g.gameItemRepository.FindAllPaged(
+				ctx,
+				query.Page,
+				query.Size,
+				query.OrderBy,
+				query.OrderType,
+			)
 		},
 	)
-
 	if err != nil {
 		return nil, err // ???
 	}
@@ -83,7 +87,6 @@ func (g *GameItemService) Update(
 	err := tracer.TraceFn(ctx, "gameItemRepository.UpdateByID", func(ctx context.Context) error {
 		return g.gameItemRepository.UpdateByID(ctx, id, request.ToDTO())
 	})
-
 	if err != nil {
 		return err // not found
 	}
@@ -100,7 +103,6 @@ func (g *GameItemService) Delete(
 	err := tracer.TraceFn(ctx, "gameItemRepository.DeleteByID", func(ctx context.Context) error {
 		return g.gameItemRepository.DeleteByID(ctx, id)
 	})
-
 	if err != nil {
 		return err // not found
 	}

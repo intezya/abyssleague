@@ -2,6 +2,7 @@ package tracer
 
 import (
 	"context"
+
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/codes"
@@ -22,7 +23,6 @@ func TraceFn(ctx context.Context, spanName string, fn func(context.Context) erro
 	defer span.End()
 
 	err := fn(ctx)
-
 	if err != nil {
 		span.SetStatus(codes.Error, err.Error())
 		span.RecordError(err)
@@ -34,14 +34,17 @@ func TraceFn(ctx context.Context, spanName string, fn func(context.Context) erro
 // TraceFnWithResult wraps a function with a span, returns a result and records errors.
 //
 //nolint:varnamelen
-func TraceFnWithResult[T any](ctx context.Context, spanName string, fn func(context.Context) (T, error)) (T, error) {
+func TraceFnWithResult[T any](
+	ctx context.Context,
+	spanName string,
+	fn func(context.Context) (T, error),
+) (T, error) {
 	tracer := otel.Tracer("application")
 
 	ctx, span := tracer.Start(ctx, spanName)
 	defer span.End()
 
 	result, err := fn(ctx)
-
 	if err != nil {
 		span.SetStatus(codes.Error, err.Error())
 		span.RecordError(err)
@@ -94,7 +97,11 @@ func Trace1[T any](ctx context.Context, spanName string, fn func(context.Context
 // Trace2 runs a function within a span and returns a result, ignoring errors.
 //
 //nolint:varnamelen
-func Trace2[R1, R2 any](ctx context.Context, spanName string, fn func(context.Context) (R1, R2)) (R1, R2) {
+func Trace2[R1, R2 any](
+	ctx context.Context,
+	spanName string,
+	fn func(context.Context) (R1, R2),
+) (R1, R2) {
 	tracer := otel.Tracer("application")
 
 	ctx, span := tracer.Start(ctx, spanName)

@@ -1,8 +1,9 @@
 package wrapper
 
 import (
-	"github.com/intezya/abyssleague/services/abysscore/internal/adapters/controller/grpc/factory"
 	"time"
+
+	"github.com/intezya/abyssleague/services/abysscore/internal/adapters/controller/grpc/factory"
 )
 
 const (
@@ -21,8 +22,14 @@ func NewDependencyProvider(
 	factory *factory.GrpcClientFactory,
 ) *DependencyProvider {
 	return &DependencyProvider{
-		config:                config,
-		MainWebsocketService:  NewWebsocketServiceWrapper(factory, config.MainWebsocketServerAddress()),
-		DraftWebsocketService: NewWebsocketServiceWrapper(factory, config.DraftWebsocketServerAddress()),
+		config: config,
+		MainWebsocketService: NewWebsocketServiceWrapper(
+			factory,
+			config.MainWebsocketServerAddress(),
+		),
+		DraftWebsocketService: NewWebsocketServiceWrapper(
+			factory,
+			config.DraftWebsocketServerAddress(),
+		),
 	}
 }

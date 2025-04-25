@@ -4,9 +4,10 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
+
 	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/ent"
 	"github.com/intezya/pkglib/logger"
-	"time"
 )
 
 const (
@@ -53,7 +54,12 @@ func SetupEnt(config *EntConfig) *ent.Client {
 			break
 		}
 
-		logger.Log.Warnf("Attempt %d of %d: Failed to connect to database: %v", attempt, maxRetries, err)
+		logger.Log.Warnf(
+			"Attempt %d of %d: Failed to connect to database: %v",
+			attempt,
+			maxRetries,
+			err,
+		)
 
 		if attempt < maxRetries {
 			time.Sleep(retryDelay)
@@ -65,7 +71,6 @@ func SetupEnt(config *EntConfig) *ent.Client {
 	}
 
 	err = entClient.Schema.Create(context.Background())
-
 	if err != nil {
 		panic(fmt.Errorf("failed to create schema: %w", err))
 	}

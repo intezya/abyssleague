@@ -1,12 +1,16 @@
 package routes
 
 import (
+	"path"
+
 	"github.com/intezya/abyssleague/services/abysscore/internal/adapters/controller/http/handlers"
 	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/ent/schema/access_level"
-	"path"
 )
 
-func GetInventoryItemGroup(handlers *handlers.DependencyProvider, provider *DependencyProvider) *RouteGroup {
+func GetInventoryItemGroup(
+	handlers *handlers.DependencyProvider,
+	provider *DependencyProvider,
+) *RouteGroup {
 	inventoryItemGroup := NewRouteGroup(path.Join(provider.apiPrefix, "users"))
 
 	inventoryItemGroup.Add(

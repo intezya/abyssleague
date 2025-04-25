@@ -2,6 +2,12 @@ package server
 
 import (
 	"fmt"
+	"net/http"
+	"os"
+	"os/signal"
+	"syscall"
+	"time"
+
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/healthcheck"
 	"github.com/gofiber/fiber/v2/middleware/pprof"
@@ -14,11 +20,6 @@ import (
 	"github.com/intezya/pkglib/logger"
 	jsoniter "github.com/json-iterator/go"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
-	"net/http"
-	"os"
-	"os/signal"
-	"syscall"
-	"time"
 )
 
 const (
@@ -75,7 +76,10 @@ func setupCoreMiddleware(app *fiber.App, config *config.Config) {
 }
 
 // createMiddlewareLinker creates all application middleware and links them.
-func createMiddlewareLinker(dependencies *routes.DependencyProvider, config *config.Config) *routes.MiddlewareLinker {
+func createMiddlewareLinker(
+	dependencies *routes.DependencyProvider,
+	config *config.Config,
+) *routes.MiddlewareLinker {
 	loggingMiddleware := middleware.NewLoggingMiddleware(config)
 	recoverMiddleware := middleware.NewRecoverMiddleware(config.FiberRequestIDConfig)
 	rateLimitMiddleware := middleware.NewRateLimitMiddleware(

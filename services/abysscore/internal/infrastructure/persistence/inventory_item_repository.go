@@ -2,6 +2,7 @@ package persistence
 
 import (
 	"context"
+
 	"github.com/intezya/abyssleague/services/abysscore/internal/adapters/mapper"
 	repositoryerrors "github.com/intezya/abyssleague/services/abysscore/internal/common/errors/repository"
 	"github.com/intezya/abyssleague/services/abysscore/internal/domain/dto"
@@ -28,7 +29,6 @@ func (r *InventoryItemRepository) Create(
 		SetUserID(inventoryItem.UserID).
 		SetReceivedFromID(inventoryItem.ReceivedFromID).
 		Save(ctx)
-
 	if err != nil {
 		return nil, r.handleQueryError(err)
 	}
@@ -36,13 +36,15 @@ func (r *InventoryItemRepository) Create(
 	return mapper.ToInventoryItemDTOFromEnt(result), nil
 }
 
-func (r *InventoryItemRepository) FindByUserID(ctx context.Context, userID int) ([]*dto.InventoryItemDTO, error) {
+func (r *InventoryItemRepository) FindByUserID(
+	ctx context.Context,
+	userID int,
+) ([]*dto.InventoryItemDTO, error) {
 	inventoryItems, err := r.client.InventoryItem.
 		Query().
 		Where(inventoryitem.UserIDEQ(userID)).
 		WithItem().
 		All(ctx)
-
 	if err != nil {
 		return nil, r.handleQueryError(err)
 	}
@@ -63,7 +65,6 @@ func (r *InventoryItemRepository) FindByUserIDAndID(
 			inventoryitem.UserIDEQ(userID),
 		).
 		First(ctx)
-
 	if err != nil {
 		return nil, r.handleQueryError(err)
 	}
@@ -75,7 +76,6 @@ func (r *InventoryItemRepository) Delete(ctx context.Context, inventoryItemID in
 	err := r.client.InventoryItem.
 		DeleteOneID(inventoryItemID).
 		Exec(ctx)
-
 	if err != nil {
 		return r.handleQueryError(err)
 	}

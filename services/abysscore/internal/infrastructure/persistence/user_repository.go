@@ -2,14 +2,15 @@ package persistence
 
 import (
 	"context"
+	"strings"
+	"time"
+
 	"github.com/intezya/abyssleague/services/abysscore/internal/adapters/mapper"
 	repositoryerrors "github.com/intezya/abyssleague/services/abysscore/internal/common/errors/repository"
 	"github.com/intezya/abyssleague/services/abysscore/internal/domain/dto"
 	"github.com/intezya/abyssleague/services/abysscore/internal/domain/entity"
 	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/ent"
 	entUser "github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/ent/user"
-	"strings"
-	"time"
 )
 
 // UserRepository provides access to user data in the database.
@@ -36,7 +37,6 @@ func (r *UserRepository) Create(
 		SetPassword(credentials.Password).
 		SetHardwareID(credentials.HardwareID).
 		Save(ctx)
-
 	if err != nil {
 		return nil, r.handleConstraintError(err)
 	}
@@ -50,7 +50,6 @@ func (r *UserRepository) FindDTOById(ctx context.Context, id int) (*dto.UserDTO,
 		Query().
 		Where(entUser.IDEQ(id)).
 		Only(ctx)
-
 	if err != nil {
 		return nil, r.handleQueryError(err)
 	}
@@ -70,7 +69,6 @@ func (r *UserRepository) FindFullDTOById(ctx context.Context, id int) (*dto.User
 		WithReceivedFriendRequests().
 		WithStatistics().
 		Only(ctx)
-
 	if err != nil {
 		return nil, r.handleQueryError(err)
 	}
@@ -79,7 +77,10 @@ func (r *UserRepository) FindFullDTOById(ctx context.Context, id int) (*dto.User
 }
 
 // FindAuthenticationByLowerUsername retrieves authentication data by lowercase username.
-func (r *UserRepository) FindAuthenticationByLowerUsername(ctx context.Context, lowerUsername string) (
+func (r *UserRepository) FindAuthenticationByLowerUsername(
+	ctx context.Context,
+	lowerUsername string,
+) (
 	*entity.AuthenticationData,
 	error,
 ) {
@@ -87,7 +88,6 @@ func (r *UserRepository) FindAuthenticationByLowerUsername(ctx context.Context, 
 		Query().
 		Where(entUser.LowerUsernameEQ(lowerUsername)).
 		Only(ctx)
-
 	if err != nil {
 		return nil, r.handleQueryError(err)
 	}
@@ -101,7 +101,6 @@ func (r *UserRepository) UpdateHWIDByID(ctx context.Context, id int, hardwareID 
 		UpdateOneID(id).
 		SetHardwareID(hardwareID).
 		Save(ctx)
-
 	if err != nil {
 		if ent.IsConstraintError(err) && strings.Contains(err.Error(), "hardwareID") {
 			return repositoryerrors.WrapUserHwidConflict(err)
@@ -130,12 +129,15 @@ func (r *UserRepository) UpdateLoginStreakLoginAtByID(
 }
 
 // UpdatePasswordByID updates a user's password and returns the updated user data.
-func (r *UserRepository) UpdatePasswordByID(ctx context.Context, id int, password string) (*dto.UserFullDTO, error) {
+func (r *UserRepository) UpdatePasswordByID(
+	ctx context.Context,
+	id int,
+	password string,
+) (*dto.UserFullDTO, error) {
 	user, err := r.client.User.
 		UpdateOneID(id).
 		SetPassword(password).
 		Save(ctx)
-
 	if err != nil {
 		return nil, r.handleQueryError(err)
 	}
@@ -144,7 +146,10 @@ func (r *UserRepository) UpdatePasswordByID(ctx context.Context, id int, passwor
 }
 
 // SetBlockUntilAndLevelAndReasonFromUser updates a user's block status information.
-func (r *UserRepository) SetBlockUntilAndLevelAndReasonFromUser(ctx context.Context, user *dto.UserDTO) error {
+func (r *UserRepository) SetBlockUntilAndLevelAndReasonFromUser(
+	ctx context.Context,
+	user *dto.UserDTO,
+) error {
 	_, err := r.client.User.
 		UpdateOneID(user.ID).
 		SetNillableAccountBlockedUntil(user.AccountBlockedUntil).
@@ -167,7 +172,6 @@ func (r *UserRepository) SetInventoryItemAsCurrent(
 		UpdateOneID(user.ID).
 		SetCurrentItemID(item.ID).
 		Save(ctx)
-
 	if err != nil {
 		return r.handleUpdateError(err)
 	}

@@ -2,13 +2,14 @@ package middleware
 
 import (
 	"fmt"
+	"runtime/debug"
+	"time"
+
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/requestid"
 	"github.com/intezya/abyssleague/services/abysscore/internal/common/errors/base"
 	"github.com/intezya/abyssleague/services/abysscore/internal/common/errors/errorutils"
 	"github.com/intezya/pkglib/logger"
-	"runtime/debug"
-	"time"
 )
 
 type RecoverMiddleware struct {
