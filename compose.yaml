@@ -1,9 +1,11 @@
 services:
-  websocket-api-gateway:
-    container_name: websocket-api-gateway
+  websocket-messaging:
+    container_name: websocket-messaging
     build:
       context: .
-      dockerfile: ./deployments/docker/websocket.Dockerfile
+      dockerfile: ./deployments/docker/websocket-messaging.Dockerfile
+      target: final
+    restart: unless-stopped
     ports:
       - "127.0.0.1:8090:8090"
       - "127.0.0.1:50051:50051"
@@ -13,6 +15,8 @@ services:
       - GRPC_SERVER_PORTS=${GRPC_SERVER_PORTS}
       - WEBSOCKET_HUBS=${WEBSOCKET_HUBS}
       - LOKI_LABELS=${WEBSOCKET_GATEWAY_LOKI_LABELS}
+      - TZ=UTC
+      - DEBUG=${DEBUG:-false}
     env_file:
       - .env
     logging:
@@ -37,10 +41,11 @@ services:
         condition: service_started
 
   abysscore:
-    container_name: abysscore
     build:
       context: .
-      dockerfile: ./deployments/docker/abysscore.Dockerfile
+      dockerfile: deployments/docker/abysscore.Dockerfile
+      target: final
+    container_name: abysscore
     ports:
       - "127.0.0.1:8080:8080"
       - "127.0.0.1:2112:2112"
@@ -58,8 +63,10 @@ services:
       - TRACER_SERVICE_NAME=abysscore
       - TRACER_SERVICE_VERSION=v1.0.0
       - TRACER_ENDPOINT=${TRACER_ENDPOINT:-otel-collector:4317}
-      - WEBSOCKET_API_GATEWAY_HOST=websocket-api-gateway
+      - WEBSOCKET_API_GATEWAY_HOST=websocket-messaging
       - WEBSOCKET_API_GATEWAY_PORTS=${GRPC_SERVER_PORTS}
+      - TZ=UTC
+      - DEBUG=${DEBUG:-false}
     env_file:
       - .env
     healthcheck:
@@ -87,12 +94,12 @@ services:
     volumes:
       - ./monitoring/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
     depends_on:
-      - websocket-api-gateway
+      - websocket-messaging
       - abysscore
     networks:
       - monitoring
     environment:
-      - WEBSOCKET_HOST=websocket-api-gateway
+      - WEBSOCKET_HOST=websocket-messaging
       - WEBSOCKET_PORT=${WEBSOCKET_HTTP_PORT}
       - ABYSSCORE_HOST=abysscore
       - ABYSSCORE_PORT=${ABYSSCORE_METRICS_PORT}

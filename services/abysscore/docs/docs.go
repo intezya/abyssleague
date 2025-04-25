@@ -1057,16 +1057,20 @@ const docTemplate = `{
                     }
                 },
                 "page": {
-                    "type": "integer"
+                    "type": "integer",
+                    "example": 1
                 },
                 "size": {
-                    "type": "integer"
+                    "type": "integer",
+                    "example": 10
                 },
                 "total_items": {
-                    "type": "integer"
+                    "type": "integer",
+                    "example": 777
                 },
                 "total_pages": {
-                    "type": "integer"
+                    "type": "integer",
+                    "example": 78
                 }
             }
         },
@@ -1080,16 +1084,20 @@ const docTemplate = `{
                     }
                 },
                 "page": {
-                    "type": "integer"
+                    "type": "integer",
+                    "example": 1
                 },
                 "size": {
-                    "type": "integer"
+                    "type": "integer",
+                    "example": 10
                 },
                 "total_items": {
-                    "type": "integer"
+                    "type": "integer",
+                    "example": 777
                 },
                 "total_pages": {
-                    "type": "integer"
+                    "type": "integer",
+                    "example": 78
                 }
             }
         },

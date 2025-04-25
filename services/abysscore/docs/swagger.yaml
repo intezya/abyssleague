@@ -227,12 +227,16 @@ definitions:
           $ref: '#/definitions/dto.GameItemDTO'
         type: array
       page:
+        example: 1
         type: integer
       size:
+        example: 10
         type: integer
       total_items:
+        example: 777
         type: integer
       total_pages:
+        example: 78
         type: integer
     type: object
   examples.PaginatedInventoryItemsDTOResponse:
@@ -242,12 +246,16 @@ definitions:
           $ref: '#/definitions/dto.InventoryItemDTO'
         type: array
       page:
+        example: 1
         type: integer
       size:
+        example: 10
         type: integer
       total_items:
+        example: 777
         type: integer
       total_pages:
+        example: 78
         type: integer
     type: object
   examples.TooManyRequestsResponse:
