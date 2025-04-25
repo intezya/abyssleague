@@ -194,11 +194,52 @@ definitions:
       path:
         type: string
     type: object
+  examples.InventoryItemDTOSuccessResponse:
+    properties:
+      code:
+        example: 200
+        type: integer
+      data:
+        $ref: '#/definitions/dto.InventoryItemDTO'
+      message:
+        example: success
+        type: string
+      path:
+        type: string
+    type: object
+  examples.InventoryItemNotFoundResponse:
+    properties:
+      code:
+        example: 404
+        type: integer
+      detail:
+        type: string
+      message:
+        example: item not found in inventory
+        type: string
+      path:
+        type: string
+    type: object
   examples.PaginatedGameItemsDTOResponse:
     properties:
       data:
         items:
           $ref: '#/definitions/dto.GameItemDTO'
+        type: array
+      page:
+        type: integer
+      size:
+        type: integer
+      total_items:
+        type: integer
+      total_pages:
+        type: integer
+    type: object
+  examples.PaginatedInventoryItemsDTOResponse:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/dto.InventoryItemDTO'
         type: array
       page:
         type: integer
@@ -334,6 +375,11 @@ definitions:
       - new_password
       - old_password
       - username
+    type: object
+  request.SetItemAsCurrent:
+    properties:
+      inventory_item_id:
+        type: integer
     type: object
 host: localhost:8080
 info:
@@ -541,6 +587,8 @@ paths:
           description: Unprocessable entity - invalid request types
           schema:
             $ref: '#/definitions/examples.UnprocessableEntityResponse'
+      security:
+        - BearerAuth: [ ]
       summary: Create game item
       tags:
         - Game Items
@@ -570,6 +618,8 @@ paths:
           description: Unprocessable entity - invalid request types
           schema:
             $ref: '#/definitions/examples.UnprocessableEntityResponse'
+      security:
+        - BearerAuth: [ ]
       summary: Delete game item
       tags:
         - Game Items
@@ -632,10 +682,174 @@ paths:
           description: Unprocessable entity - invalid request types
           schema:
             $ref: '#/definitions/examples.UnprocessableEntityResponse'
+      security:
+        - BearerAuth: [ ]
       summary: Update game item
       tags:
         - Game Items
-schemes:
-  - http
-  - https
+  /api/users/{user_id}/inventory:
+    get:
+      description: Admin retrieves all inventory items for a specified user
+      parameters:
+        - description: User ID
+          in: path
+          name: user_id
+          required: true
+          type: integer
+      produces:
+        - application/json
+      responses:
+        "200":
+          description: List of user's inventory items
+          schema:
+            items:
+              $ref: '#/definitions/examples.PaginatedInventoryItemsDTOResponse'
+            type: array
+        "400":
+          description: Bad request - invalid ID
+          schema:
+            $ref: '#/definitions/examples.BadRequestResponse'
+        "403":
+          description: Forbidden - not enough rights
+          schema:
+            $ref: '#/definitions/examples.ForbiddenByAccessLevelResponse'
+        "404":
+          description: Not found - user not found
+          schema:
+            $ref: '#/definitions/examples.UserNotFoundResponse'
+      security:
+        - BearerAuth: [ ]
+      summary: Get user's inventory
+      tags:
+        - Inventory Items
+    post:
+      description: Admin grants a game item to a specific user
+      parameters:
+        - description: User ID
+          in: path
+          name: user_id
+          required: true
+          type: integer
+        - description: Item ID
+          in: path
+          name: item_id
+          required: true
+          type: integer
+      produces:
+        - application/json
+      responses:
+        "200":
+          description: Granted inventory item
+          schema:
+            $ref: '#/definitions/examples.InventoryItemDTOSuccessResponse'
+        "400":
+          description: Bad request - invalid ID
+          schema:
+            $ref: '#/definitions/examples.BadRequestResponse'
+        "403":
+          description: Forbidden - not enough rights
+          schema:
+            $ref: '#/definitions/examples.ForbiddenByAccessLevelResponse'
+        "404":
+          description: Not found - item not found
+          schema:
+            $ref: '#/definitions/examples.GameItemNotFound'
+      security:
+        - BearerAuth: [ ]
+      summary: Grant item to user
+      tags:
+        - Inventory Items
+  /api/users/{user_id}/inventory/{item_id}:
+    delete:
+      description: Admin revokes a game item from a specific user
+      parameters:
+        - description: User ID
+          in: path
+          name: user_id
+          required: true
+          type: integer
+        - description: Item ID
+          in: path
+          name: item_id
+          required: true
+          type: integer
+      produces:
+        - application/json
+      responses:
+        "204":
+          description: Item successfully revoked
+        "400":
+          description: Bad request - invalid ID
+          schema:
+            $ref: '#/definitions/examples.BadRequestResponse'
+        "403":
+          description: Forbidden - not enough rights
+          schema:
+            $ref: '#/definitions/examples.ForbiddenByAccessLevelResponse'
+        "404":
+          description: Not found - inventory item not found
+          schema:
+            $ref: '#/definitions/examples.InventoryItemNotFoundResponse'
+      security:
+        - BearerAuth: [ ]
+      summary: Revoke item from user
+      tags:
+        - Inventory Items
+  /api/users/inventory:
+    get:
+      description: Returns all inventory items for the currently authenticated user
+      produces:
+        - application/json
+      responses:
+        "200":
+          description: List of user's inventory items
+          schema:
+            items:
+              $ref: '#/definitions/examples.PaginatedInventoryItemsDTOResponse'
+            type: array
+      security:
+        - BearerAuth: [ ]
+      summary: Get current user's inventory
+      tags:
+        - Inventory Items
+  /api/users/me/inventory/set_item:
+    post:
+      consumes:
+        - application/json
+      description: Sets a specific inventory item as current for the authenticated
+        user
+      parameters:
+        - description: Inventory item details
+          in: body
+          name: request
+          required: true
+          schema:
+            $ref: '#/definitions/request.SetItemAsCurrent'
+      produces:
+        - application/json
+      responses:
+        "204":
+          description: Item successfully set as current
+        "400":
+          description: Bad request - invalid request body
+          schema:
+            $ref: '#/definitions/examples.BadRequestResponse'
+        "404":
+          description: Not found - inventory item not found
+          schema:
+            $ref: '#/definitions/examples.InventoryItemNotFoundResponse'
+        "422":
+          description: Unprocessable entity - invalid request types
+          schema:
+            $ref: '#/definitions/examples.UnprocessableEntityResponse'
+      security:
+        - BearerAuth: [ ]
+      summary: Set inventory item as current
+      tags:
+        - Inventory Items
+securityDefinitions:
+  BearerAuth:
+    in: header
+    name: Authorization
+    type: apiKey
 swagger: "2.0"

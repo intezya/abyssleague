@@ -34,3 +34,10 @@ type AuthenticationSuccessResponse struct {
 	Code    int                                `json:"code"    example:"200"`
 	Path    string                             `json:"path"`
 }
+
+type InventoryItemDTOSuccessResponse struct {
+	Message string               `json:"message" example:"success"`
+	Data    dto.InventoryItemDTO `json:"data"`
+	Code    int                  `json:"code"    example:"200"`
+	Path    string               `json:"path"`
+}

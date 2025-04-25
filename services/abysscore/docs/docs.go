@@ -270,6 +270,11 @@ const docTemplate = `{
                 }
             },
             "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Admin creates a new game item",
                 "consumes": [
                     "application/json"
@@ -361,6 +366,11 @@ const docTemplate = `{
                 }
             },
             "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Admin updates a game item by ID",
                 "consumes": [
                     "application/json"
@@ -415,6 +425,11 @@ const docTemplate = `{
                 }
             },
             "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Admin deletes a game item by ID",
                 "produces": [
                     "application/json"
@@ -452,6 +467,256 @@ const docTemplate = `{
                         "description": "Unprocessable entity - invalid request types",
                         "schema": {
                             "$ref": "#/definitions/examples.UnprocessableEntityResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/users/inventory": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Returns all inventory items for the currently authenticated user",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Inventory Items"
+                ],
+                "summary": "Get current user's inventory",
+                "responses": {
+                    "200": {
+                        "description": "List of user's inventory items",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/examples.PaginatedInventoryItemsDTOResponse"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/users/me/inventory/set_item": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Sets a specific inventory item as current for the authenticated user",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Inventory Items"
+                ],
+                "summary": "Set inventory item as current",
+                "parameters": [
+                    {
+                        "description": "Inventory item details",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.SetItemAsCurrent"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Item successfully set as current"
+                    },
+                    "400": {
+                        "description": "Bad request - invalid request body",
+                        "schema": {
+                            "$ref": "#/definitions/examples.BadRequestResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not found - inventory item not found",
+                        "schema": {
+                            "$ref": "#/definitions/examples.InventoryItemNotFoundResponse"
+                        }
+                    },
+                    "422": {
+                        "description": "Unprocessable entity - invalid request types",
+                        "schema": {
+                            "$ref": "#/definitions/examples.UnprocessableEntityResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/users/{user_id}/inventory": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Admin retrieves all inventory items for a specified user",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Inventory Items"
+                ],
+                "summary": "Get user's inventory",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "User ID",
+                        "name": "user_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "List of user's inventory items",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/examples.PaginatedInventoryItemsDTOResponse"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request - invalid ID",
+                        "schema": {
+                            "$ref": "#/definitions/examples.BadRequestResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden - not enough rights",
+                        "schema": {
+                            "$ref": "#/definitions/examples.ForbiddenByAccessLevelResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not found - user not found",
+                        "schema": {
+                            "$ref": "#/definitions/examples.UserNotFoundResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Admin grants a game item to a specific user",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Inventory Items"
+                ],
+                "summary": "Grant item to user",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "User ID",
+                        "name": "user_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Item ID",
+                        "name": "item_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Granted inventory item",
+                        "schema": {
+                            "$ref": "#/definitions/examples.InventoryItemDTOSuccessResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request - invalid ID",
+                        "schema": {
+                            "$ref": "#/definitions/examples.BadRequestResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden - not enough rights",
+                        "schema": {
+                            "$ref": "#/definitions/examples.ForbiddenByAccessLevelResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not found - item not found",
+                        "schema": {
+                            "$ref": "#/definitions/examples.GameItemNotFound"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/users/{user_id}/inventory/{item_id}": {
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Admin revokes a game item from a specific user",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Inventory Items"
+                ],
+                "summary": "Revoke item from user",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "User ID",
+                        "name": "user_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Item ID",
+                        "name": "item_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Item successfully revoked"
+                    },
+                    "400": {
+                        "description": "Bad request - invalid ID",
+                        "schema": {
+                            "$ref": "#/definitions/examples.BadRequestResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden - not enough rights",
+                        "schema": {
+                            "$ref": "#/definitions/examples.ForbiddenByAccessLevelResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not found - inventory item not found",
+                        "schema": {
+                            "$ref": "#/definitions/examples.InventoryItemNotFoundResponse"
                         }
                     }
                 }
@@ -744,6 +1009,44 @@ const docTemplate = `{
                 }
             }
         },
+        "examples.InventoryItemDTOSuccessResponse": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "integer",
+                    "example": 200
+                },
+                "data": {
+                    "$ref": "#/definitions/dto.InventoryItemDTO"
+                },
+                "message": {
+                    "type": "string",
+                    "example": "success"
+                },
+                "path": {
+                    "type": "string"
+                }
+            }
+        },
+        "examples.InventoryItemNotFoundResponse": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "integer",
+                    "example": 404
+                },
+                "detail": {
+                    "type": "string"
+                },
+                "message": {
+                    "type": "string",
+                    "example": "item not found in inventory"
+                },
+                "path": {
+                    "type": "string"
+                }
+            }
+        },
         "examples.PaginatedGameItemsDTOResponse": {
             "type": "object",
             "properties": {
@@ -751,6 +1054,29 @@ const docTemplate = `{
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/dto.GameItemDTO"
+                    }
+                },
+                "page": {
+                    "type": "integer"
+                },
+                "size": {
+                    "type": "integer"
+                },
+                "total_items": {
+                    "type": "integer"
+                },
+                "total_pages": {
+                    "type": "integer"
+                }
+            }
+        },
+        "examples.PaginatedInventoryItemsDTOResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dto.InventoryItemDTO"
                     }
                 },
                 "page": {
@@ -947,6 +1273,21 @@ const docTemplate = `{
                     "example": "my_legendary_username"
                 }
             }
+        },
+        "request.SetItemAsCurrent": {
+            "type": "object",
+            "properties": {
+                "inventory_item_id": {
+                    "type": "integer"
+                }
+            }
+        }
+    },
+    "securityDefinitions": {
+        "BearerAuth": {
+            "type": "apiKey",
+            "name": "Authorization",
+            "in": "header"
         }
     }
 }`
@@ -956,7 +1297,7 @@ var SwaggerInfo = &swag.Spec{
 	Version:          "1.0",
 	Host:             "localhost:8080",
 	BasePath:         "/",
-	Schemes:          []string{"http", "https"},
+	Schemes:          []string{},
 	Title:            "AbyssCore API",
 	Description:      "API of AbyssCore server",
 	InfoInstanceName: "swagger",
