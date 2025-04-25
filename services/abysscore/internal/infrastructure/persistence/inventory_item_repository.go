@@ -47,9 +47,7 @@ func (r *InventoryItemRepository) FindByUserID(ctx context.Context, userID int) 
 		return nil, r.handleQueryError(err)
 	}
 
-	mapped := itertools.Map(inventoryItems, func(v *ent.InventoryItem) *dto.InventoryItemDTO {
-		return mapper.ToInventoryItemDTOFromEnt(v)
-	})
+	mapped := itertools.Map(inventoryItems, mapper.ToInventoryItemDTOFromEnt)
 
 	return mapped, nil
 }

@@ -6,14 +6,14 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/ent/predicate"
-	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/ent/user"
-	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/ent/userbalance"
 	"time"
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/ent/predicate"
+	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/ent/user"
+	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/ent/userbalance"
 )
 
 // UserBalanceUpdate is the builder for updating UserBalance entities.

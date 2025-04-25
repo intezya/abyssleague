@@ -4,13 +4,13 @@ package ent
 
 import (
 	"fmt"
-	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/ent/user"
-	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/ent/userbalance"
 	"strings"
 	"time"
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
+	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/ent/user"
+	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/ent/userbalance"
 )
 
 // UserBalance is the model entity for the UserBalance schema.

@@ -33,9 +33,13 @@ func NewMiddlewareLinker(
 // createAccessLevelChecker creates a middleware to check user access level.
 func createAccessLevelChecker(requiredLevel *access_level.AccessLevel) fiber.Handler {
 	return func(c *fiber.Ctx) error {
-		user := c.UserContext().Value(middleware.UserCtxKey).(*dto.UserDTO)
+		user, ok := c.UserContext().Value(middleware.UserCtxKey).(*dto.UserDTO)
 
-		logger.Log.Debug("user is nil?: ", user)
+		if !ok {
+			logger.Log.Error("mismatched client type for middleware")
+
+			return adaptererror.InternalServerError.ToErrorResponse(c)
+		}
 
 		logger.Log.Debugw(
 			"debug createAccessLevelChecker",
@@ -45,7 +49,7 @@ func createAccessLevelChecker(requiredLevel *access_level.AccessLevel) fiber.Han
 		)
 
 		if user.AccessLevel < *requiredLevel {
-			return adaptererror.InsufficientAccessLevel.ToErrorResponse(c)
+			return adaptererror.ForbiddenByInsufficientAccessLevel.ToErrorResponse(c)
 		}
 
 		return c.Next()
@@ -55,9 +59,16 @@ func createAccessLevelChecker(requiredLevel *access_level.AccessLevel) fiber.Han
 // createMatchRequirementChecker creates a middleware to check user match state.
 func createMatchRequirementChecker(matchRequirement MatchRequirement) fiber.Handler {
 	return func(c *fiber.Ctx) error {
-		user := c.UserContext().Value(middleware.UserCtxKey).(*dto.UserDTO)
+		user, ok := c.UserContext().Value(middleware.UserCtxKey).(*dto.UserDTO)
+
+		if !ok {
+			logger.Log.Error("mismatched client type for middleware")
+
+			return adaptererror.InternalServerError.ToErrorResponse(c)
+		}
 
 		switch matchRequirement {
+		case MatchIrrelevant:
 		case MustBeInMatch:
 			if user.CurrentMatchID == nil {
 				return adaptererror.UserMatchStateError(

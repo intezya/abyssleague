@@ -12,8 +12,9 @@ import (
 	For some cases varnamelen linter is disabled because it is infra code.
 */
 
-// nolint:varnamelen
 // TraceFn wraps a function with a span and handles error recording.
+//
+//nolint:varnamelen
 func TraceFn(ctx context.Context, spanName string, fn func(context.Context) error) error {
 	tracer := otel.Tracer("application")
 
@@ -30,8 +31,9 @@ func TraceFn(ctx context.Context, spanName string, fn func(context.Context) erro
 	return err
 }
 
-// nolint:varnamelen
 // TraceFnWithResult wraps a function with a span, returns a result and records errors.
+//
+//nolint:varnamelen
 func TraceFnWithResult[T any](ctx context.Context, spanName string, fn func(context.Context) (T, error)) (T, error) {
 	tracer := otel.Tracer("application")
 
@@ -65,8 +67,9 @@ func AddAttribute(ctx context.Context, key string, value interface{}) {
 	}
 }
 
-// nolint:varnamelen
 // Trace0 runs a function within a span, ignoring errors.
+//
+//nolint:varnamelen
 func Trace0(ctx context.Context, spanName string, fn func(context.Context)) {
 	tracer := otel.Tracer("application")
 
@@ -76,8 +79,9 @@ func Trace0(ctx context.Context, spanName string, fn func(context.Context)) {
 	fn(ctx)
 }
 
-// nolint:varnamelen
 // Trace1 runs a function within a span and returns a result, ignoring errors.
+//
+//nolint:varnamelen
 func Trace1[T any](ctx context.Context, spanName string, fn func(context.Context) T) T {
 	tracer := otel.Tracer("application")
 
@@ -87,8 +91,9 @@ func Trace1[T any](ctx context.Context, spanName string, fn func(context.Context
 	return fn(ctx)
 }
 
-// nolint:varnamelen
 // Trace2 runs a function within a span and returns a result, ignoring errors.
+//
+//nolint:varnamelen
 func Trace2[R1, R2 any](ctx context.Context, spanName string, fn func(context.Context) (R1, R2)) (R1, R2) {
 	tracer := otel.Tracer("application")
 

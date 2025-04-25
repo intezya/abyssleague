@@ -39,6 +39,7 @@ func setupMetricsServer(port int) {
 // createFiberApp creates and configures a new Fiber application.
 func createFiberApp(config *config.Config) *fiber.App {
 	return fiber.New(
+		//nolint:exhaustruct // used default if not changed
 		fiber.Config{
 			Prefork:                      false,
 			StrictRouting:                true,

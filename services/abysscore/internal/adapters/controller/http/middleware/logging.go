@@ -77,7 +77,7 @@ func initPrometheusMetrics() *prometheusMetrics {
 
 	metrics := &prometheusMetrics{
 		requestDuration: prometheus.NewHistogramVec(
-			prometheus.HistogramOpts{
+			prometheus.HistogramOpts{ //nolint:exhaustruct // useless (for this application) fields
 				Name:    "http_request_duration_seconds",
 				Help:    "Duration of HTTP requests in seconds",
 				Buckets: prometheus.DefBuckets,
@@ -85,7 +85,7 @@ func initPrometheusMetrics() *prometheusMetrics {
 			[]string{"method", "path", "status"},
 		),
 		requestSize: prometheus.NewHistogramVec(
-			prometheus.HistogramOpts{
+			prometheus.HistogramOpts{ //nolint:exhaustruct // useless (for this application) fields
 				Name:    "http_request_size_bytes",
 				Help:    "Size of HTTP requests in bytes",
 				Buckets: prometheus.ExponentialBuckets(bucketStart, bucketFactor, bucketCount),
@@ -93,7 +93,7 @@ func initPrometheusMetrics() *prometheusMetrics {
 			[]string{"method", "path"},
 		),
 		responseSize: prometheus.NewHistogramVec(
-			prometheus.HistogramOpts{
+			prometheus.HistogramOpts{ //nolint:exhaustruct // useless (for this application) fields
 				Name:    "http_response_size_bytes",
 				Help:    "Size of HTTP responses in bytes",
 				Buckets: prometheus.ExponentialBuckets(bucketStart, bucketFactor, bucketCount),

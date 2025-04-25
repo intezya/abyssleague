@@ -41,7 +41,7 @@ func (r *RecoverMiddleware) Handle() fiber.Handler {
 
 				// Create a structured error with additional context
 				structuredErr := base.NewError(
-					fmt.Errorf("server panic: %v", recErr),
+					fmt.Errorf("server panic: %w", recErr),
 					recErr,
 					fiber.StatusInternalServerError,
 				)

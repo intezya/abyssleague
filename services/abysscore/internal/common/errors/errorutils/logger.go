@@ -6,7 +6,7 @@ import (
 	"github.com/intezya/pkglib/logger"
 )
 
-// LogError logs an error with its details and stack trace
+// LogError logs an error with its details and stack trace.
 func LogError(err error) {
 	// Try to cast to our custom error type
 	var customErr *base.Error

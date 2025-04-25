@@ -58,7 +58,7 @@ func NewGrpcClientFactory() *GrpcClientFactory {
 }
 
 type ClientReceiver interface {
-	SetClient(client interface{})
+	SetClient(client interface{}) error
 }
 
 func (f *GrpcClientFactory) GetAndSetWebsocketApiGatewayClient(
@@ -71,10 +71,14 @@ func (f *GrpcClientFactory) GetAndSetWebsocketApiGatewayClient(
 		logger.Log.Info("Using existing connection: ", address)
 
 		if receiver != nil {
-			receiver.SetClient(client)
+			_ = receiver.SetClient(client)
 		}
 
-		return client.(websocketpb.WebsocketServiceClient)
+		typedClient, ok := client.(websocketpb.WebsocketServiceClient)
+
+		if ok {
+			return typedClient
+		}
 	}
 
 	var conn *grpc.ClientConn
@@ -124,7 +128,7 @@ func (f *GrpcClientFactory) GetAndSetWebsocketApiGatewayClient(
 	f.clients[key] = client
 
 	if receiver != nil {
-		receiver.SetClient(client)
+		_ = receiver.SetClient(client)
 	}
 
 	return client

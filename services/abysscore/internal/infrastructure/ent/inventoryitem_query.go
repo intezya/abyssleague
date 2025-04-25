@@ -5,16 +5,16 @@ package ent
 import (
 	"context"
 	"fmt"
-	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/ent/gameitem"
-	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/ent/inventoryitem"
-	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/ent/predicate"
-	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/ent/user"
 	"math"
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/ent/gameitem"
+	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/ent/inventoryitem"
+	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/ent/predicate"
+	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/ent/user"
 )
 
 // InventoryItemQuery is the builder for querying InventoryItem entities.

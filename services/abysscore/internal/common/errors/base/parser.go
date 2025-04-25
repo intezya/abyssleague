@@ -5,6 +5,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/intezya/pkglib/logger"
 	"net/http"
+	"time"
 )
 
 func ParseErrorOrInternalResponse(err error, c *fiber.Ctx) error {
@@ -21,10 +22,13 @@ func ParseErrorOrInternalResponse(err error, c *fiber.Ctx) error {
 		)
 
 		return c.Status(fiber.StatusInternalServerError).JSON(&ErrorResponse{
-			Message: err.Error(),
-			Detail:  "error not recognized",
-			Code:    http.StatusInternalServerError,
-			Path:    c.Path(),
+			Message:   err.Error(),
+			Detail:    "error not recognized",
+			Code:      http.StatusInternalServerError,
+			Path:      c.Path(),
+			Timestamp: time.Now(),
+			ErrorID:   generateErrorID(),
+			Metadata:  nil,
 		})
 	}
 

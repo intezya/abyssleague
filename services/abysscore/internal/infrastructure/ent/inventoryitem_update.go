@@ -6,13 +6,13 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/ent/inventoryitem"
-	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/ent/predicate"
 	"time"
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/ent/inventoryitem"
+	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/ent/predicate"
 )
 
 // InventoryItemUpdate is the builder for updating InventoryItem entities.

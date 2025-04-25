@@ -27,7 +27,7 @@ func NewRateLimitMiddleware(
 	cfg *config.Config,
 ) *RateLimitMiddleware {
 	loginAttemptsCounter := prometheus.NewCounterVec(
-		prometheus.CounterOpts{
+		prometheus.CounterOpts{ //nolint:exhaustruct // useless (for this application) fields
 			Name: "login_rate_limit_attempts_total",
 			Help: "Count of login attempts hitting rate limits",
 		},
@@ -35,7 +35,7 @@ func NewRateLimitMiddleware(
 	)
 
 	rateLimitCounter := prometheus.NewCounterVec(
-		prometheus.CounterOpts{
+		prometheus.CounterOpts{ //nolint:exhaustruct // useless (for this application) fields
 			Name: "api_rate_limit_hits_total",
 			Help: "Count of requests hitting general API rate limits",
 		},

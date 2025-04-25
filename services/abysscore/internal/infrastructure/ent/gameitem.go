@@ -4,12 +4,12 @@ package ent
 
 import (
 	"fmt"
-	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/ent/gameitem"
 	"strings"
 	"time"
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
+	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/ent/gameitem"
 )
 
 // GameItem is the model entity for the GameItem schema.

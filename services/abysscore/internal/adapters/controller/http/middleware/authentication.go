@@ -44,6 +44,7 @@ func NewAuthenticationMiddleware(
 	return &AuthenticationMiddleware{
 		authenticationService: authenticationService,
 		redisClient:           redisClient,
+		localCache:            sync.Map{},
 	}
 }
 

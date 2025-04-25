@@ -20,20 +20,7 @@ func NewAuthenticationHandler(
 	}
 }
 
-// Register handles user registration
-// @Summary Register a new user
-// @Description Creates a new user account with the provided credentials
-// @Tags Authentication
-// @Accept json
-// @Produce json
-// @Param request body request.AuthenticationRequest true "User registration details"
-// @Success 200 {object} examples.AuthenticationSuccessResponse "User successfully registered"
-// @Failure 400 {object} examples.BadRequestResponse "Bad request - missed request fields"
-// @Failure 409 {object} examples.UsernameConflictResponse "Conflict - user with this username already exists"
-// @Failure 409 {object} examples.HardwareIDConflictResponse "Conflict - only one account per device allowed"
-// @Failure 422 {object} examples.UnprocessableEntityResponse "Unprocessable entity - invalid request types"
-// @Failure 429 {object} examples.TooManyRequestsResponse "Too many requests - received too many auth requests"
-// @Router /api/auth/register [post]
+// @Router /api/auth/register [post].
 func (h *AuthenticationHandler) Register(c *fiber.Ctx) error {
 	ctx := c.UserContext()
 
@@ -58,23 +45,7 @@ func (h *AuthenticationHandler) Register(c *fiber.Ctx) error {
 	return sendSuccess(result, c)
 }
 
-// Login handles user authentication
-// @Summary Authenticate user
-// @Description Authenticates a user with username and password
-// @Tags Authentication
-// @Accept json
-// @Produce json
-// @Param request body request.AuthenticationRequest true "User login credentials"
-// @Success 200 {object} examples.AuthenticationSuccessResponse "Successfully authenticated"
-// @Failure 400 {object} examples.BadRequestResponse "Bad request - missed request fields"
-// @Failure 401 {object} examples.UserWrongPasswordResponse "Unauthorized - wrong password"
-// @Failure 401 {object} examples.UserWrongHardwareIDResponse "Unauthorized - wrong hardware id"
-// @Failure 404 {object} examples.UserNotFoundResponse "Not found - user with this username not found"
-// @Failure 409 {object} examples.UsernameConflictResponse "Conflict - user with this username already exists"
-// @Failure 409 {object} examples.HardwareIDConflictResponse "Conflict - only one account per device allowed"
-// @Failure 422 {object} examples.UnprocessableEntityResponse "Unprocessable entity - invalid request types"
-// @Failure 429 {object} examples.TooManyRequestsResponse "Too many requests - received too many auth requests"
-// @Router /api/auth/login [post]
+// @Router /api/auth/login [post].
 func (h *AuthenticationHandler) Login(c *fiber.Ctx) error {
 	ctx := c.UserContext()
 
@@ -99,20 +70,7 @@ func (h *AuthenticationHandler) Login(c *fiber.Ctx) error {
 	return sendSuccess(result, c)
 }
 
-// ChangePassword handles changing user password
-// @Summary Change user password
-// @Description Changes the password for an existing user
-// @Tags Authentication
-// @Accept json
-// @Produce json
-// @Param request body request.PasswordChangeRequest true "Password change details"
-// @Success 200 {object} examples.AuthenticationSuccessResponse "Password successfully changed"
-// @Failure 400 {object} examples.BadRequestResponse "Bad request - missed request fields"
-// @Failure 401 {object} examples.UserWrongPasswordResponse "Unauthorized - wrong password"
-// @Failure 404 {object} examples.UserNotFoundResponse "Not found - user with this username not found"
-// @Failure 422 {object} examples.UnprocessableEntityResponse "Unprocessable entity - invalid request types"
-// @Failure 429 {object} examples.TooManyRequestsResponse "Too many requests - received too many auth requests"
-// @Router /api/auth/change_password [post]
+// @Router /api/auth/change_password [post].
 func (h *AuthenticationHandler) ChangePassword(c *fiber.Ctx) error {
 	ctx := c.UserContext()
 

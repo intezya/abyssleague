@@ -28,12 +28,13 @@ func NewDependencyProvider(
 	config *config.Config,
 ) *DependencyProvider {
 	apiPrefix := "/api"
-	dp := &DependencyProvider{ // nolint:varnamelen // canonical naming for this context
+	dp := &DependencyProvider{ //nolint:varnamelen // canonical naming for this context
 		Config:                config,
 		RedisClient:           redisClient,
 		AuthenticationService: authenticationService,
 		apiPrefix:             apiPrefix,
 		Routes:                make(map[string]*Route),
+		routeGroups:           nil,
 	}
 
 	// Setup route groups

@@ -6,12 +6,12 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/ent/playermatchresult"
-	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/ent/predicate"
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/ent/playermatchresult"
+	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/ent/predicate"
 )
 
 // PlayerMatchResultUpdate is the builder for updating PlayerMatchResult entities.

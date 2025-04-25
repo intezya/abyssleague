@@ -4,12 +4,12 @@ package ent
 
 import (
 	"context"
-	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/ent/gameitem"
-	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/ent/predicate"
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/ent/gameitem"
+	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/ent/predicate"
 )
 
 // GameItemDelete is the builder for deleting a GameItem entity.

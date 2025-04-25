@@ -9,9 +9,8 @@ import (
 	// required by schema hooks.
 	_ "github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/ent/runtime"
 
-	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/ent/migrate"
-
 	"entgo.io/ent/dialect/sql/schema"
+	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/ent/migrate"
 )
 
 type (

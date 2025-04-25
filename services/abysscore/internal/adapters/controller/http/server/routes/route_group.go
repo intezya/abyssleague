@@ -63,11 +63,11 @@ func (rg *RouteGroup) Register(app *fiber.App, middlewareLinker *MiddlewareLinke
 
 		// Rate limiting middleware
 		switch entry.Route.RateLimit {
+		case DisableRateLimit:
 		case DefaultRateLimit:
 			handlers = append(handlers, middlewareLinker.rateLimitMiddleware.HandleDefault())
 		case AuthRateLimit:
 			handlers = append(handlers, middlewareLinker.rateLimitMiddleware.HandleForAuth())
-		default:
 		}
 
 		// Authentication middleware

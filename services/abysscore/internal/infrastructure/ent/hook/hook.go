@@ -6,6 +6,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/ent"
 )
 
 // The FriendRequestFunc type is an adapter to allow the use of ordinary

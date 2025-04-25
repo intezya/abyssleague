@@ -9,9 +9,7 @@ const (
 	defaultSaltLength = 32
 )
 
-type HashHelper struct {
-	config *crypto.ArgonConfig
-}
+type HashHelper struct{}
 
 func NewHashHelper() *HashHelper {
 	return &HashHelper{}
@@ -35,11 +33,11 @@ func (h *HashHelper) EncodePassword(raw string) (hash string) {
 		}
 	}
 
-	return crypto.HashArgon2(h.preHash(raw), salt, h.config)
+	return crypto.HashArgon2(h.preHash(raw), salt, nil)
 }
 
 func (h *HashHelper) VerifyPassword(raw, hash string) bool {
-	return crypto.VerifyArgon2(h.preHash(raw), hash, h.config)
+	return crypto.VerifyArgon2(h.preHash(raw), hash, nil)
 }
 
 func (h *HashHelper) EncodeHardwareID(raw string) (hash string) {

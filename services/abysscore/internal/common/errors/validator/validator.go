@@ -18,13 +18,13 @@ func NewValidator() *Validator {
 	}
 }
 
-var v = NewValidator() // nolint:varnamelen // disabled because it is pkg (truth-source) code
+var v = NewValidator() //nolint:varnamelen // disabled because it is pkg (truth-source) code
 
 func (v *Validator) ValidateStruct(s interface{}) error {
 	return v.validator.Struct(s)
 }
 
-var validationError = adaptererror.UnprocessableEntity(errors.New("validation error"))
+var errValidationFailed = adaptererror.UnprocessableEntity(errors.New("validation error"))
 
 func ValidateJSON(dto interface{}) error {
 	if err := v.ValidateStruct(dto); err != nil {
@@ -42,7 +42,7 @@ func ValidateJSON(dto interface{}) error {
 
 		logger.Log.Debugw("validation error", "err", err)
 
-		return validationError
+		return errValidationFailed
 	}
 
 	return nil

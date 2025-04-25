@@ -3,12 +3,12 @@
 package user
 
 import (
-	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/ent/predicate"
-	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/ent/schema/access_level"
 	"time"
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
+	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/ent/predicate"
+	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/ent/schema/access_level"
 )
 
 // ID filters vertices based on their ID field.

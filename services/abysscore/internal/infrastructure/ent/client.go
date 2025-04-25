@@ -11,6 +11,10 @@ import (
 
 	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/ent/migrate"
 
+	"entgo.io/ent"
+	"entgo.io/ent/dialect"
+	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/ent/friendrequest"
 	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/ent/gameitem"
 	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/ent/inventoryitem"
@@ -19,11 +23,6 @@ import (
 	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/ent/statistic"
 	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/ent/user"
 	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/ent/userbalance"
-
-	"entgo.io/ent"
-	"entgo.io/ent/dialect"
-	"entgo.io/ent/dialect/sql"
-	"entgo.io/ent/dialect/sql/sqlgraph"
 )
 
 // Client is the client that holds all ent builders.

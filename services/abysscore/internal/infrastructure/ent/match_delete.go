@@ -4,12 +4,12 @@ package ent
 
 import (
 	"context"
-	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/ent/match"
-	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/ent/predicate"
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/ent/match"
+	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/ent/predicate"
 )
 
 // MatchDelete is the builder for deleting a Match entity.

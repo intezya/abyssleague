@@ -6,6 +6,11 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"sync"
+	"time"
+
+	"entgo.io/ent"
+	"entgo.io/ent/dialect/sql"
 	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/ent/friendrequest"
 	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/ent/gameitem"
 	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/ent/inventoryitem"
@@ -16,11 +21,6 @@ import (
 	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/ent/statistic"
 	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/ent/user"
 	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/ent/userbalance"
-	"sync"
-	"time"
-
-	"entgo.io/ent"
-	"entgo.io/ent/dialect/sql"
 )
 
 const (

@@ -40,11 +40,7 @@ func (User) Fields() []ent.Field {
 
 		field.Bool("invites_enabled").Default(false),
 
-		field.Time("login_at").Default(
-			func() time.Time {
-				return time.Now()
-			},
-		),
+		field.Time("login_at").Default(time.Now),
 		field.Int("login_streak").Default(0),
 
 		field.Time("created_at").Default(time.Now).Immutable(),

@@ -6,16 +6,16 @@ import (
 	"context"
 	"database/sql/driver"
 	"fmt"
-	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/ent/match"
-	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/ent/playermatchresult"
-	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/ent/predicate"
-	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/ent/user"
 	"math"
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/ent/match"
+	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/ent/playermatchresult"
+	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/ent/predicate"
+	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/ent/user"
 )
 
 // MatchQuery is the builder for querying Match entities.

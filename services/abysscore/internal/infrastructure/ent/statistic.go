@@ -4,13 +4,13 @@ package ent
 
 import (
 	"fmt"
-	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/ent/statistic"
-	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/ent/user"
 	"strings"
 	"time"
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
+	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/ent/statistic"
+	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/ent/user"
 )
 
 // Statistic is the model entity for the Statistic schema.

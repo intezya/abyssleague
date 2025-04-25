@@ -39,12 +39,7 @@ func ToUserFullDTOFromEnt(user *ent.User) *dto.UserFullDTO {
 		},
 	)
 
-	mappedItems := itertools.Map(
-		user.Edges.Items,
-		func(inventoryItem *ent.InventoryItem) *dto.InventoryItemDTO {
-			return ToInventoryItemDTOFromEnt(inventoryItem)
-		},
-	)
+	mappedItems := itertools.Map(user.Edges.Items, ToInventoryItemDTOFromEnt)
 
 	return &dto.UserFullDTO{
 		UserDTO: ToUserDTOFromEnt(user),

@@ -4,12 +4,12 @@ package ent
 
 import (
 	"context"
-	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/ent/predicate"
-	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/ent/statistic"
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/ent/predicate"
+	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/ent/statistic"
 )
 
 // StatisticDelete is the builder for deleting a Statistic entity.

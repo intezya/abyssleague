@@ -6,9 +6,9 @@ import (
 	"github.com/intezya/abyssleague/services/abysscore/internal/common/errors/base"
 )
 
-// Pre-defined adapter layer errors
+// Pre-defined adapter layer errors.
 var (
-	// Static errors
+	// Static errors.
 
 	TooManyRequests = base.NewError(
 		errors.New("too many requests"),
@@ -22,19 +22,13 @@ var (
 		fiber.StatusInternalServerError,
 	)
 
-	BadRequest = base.NewError(
-		errors.New("bad request"),
-		nil,
-		fiber.StatusBadRequest,
-	)
-
-	InsufficientAccessLevel = base.NewError(
+	ForbiddenByInsufficientAccessLevel = base.NewError(
 		errors.New("insufficient access level"),
 		nil,
 		fiber.StatusForbidden,
 	)
 
-	// Functions for wrapping errors
+	// Functions for wrapping errors.
 
 	BadRequestFunc = func(wrapped error) *base.Error {
 		return base.NewError(

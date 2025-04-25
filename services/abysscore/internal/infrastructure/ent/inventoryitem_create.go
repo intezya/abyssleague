@@ -6,13 +6,13 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/ent/gameitem"
-	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/ent/inventoryitem"
-	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/ent/user"
 	"time"
 
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/ent/gameitem"
+	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/ent/inventoryitem"
+	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/ent/user"
 )
 
 // InventoryItemCreate is the builder for creating a InventoryItem entity.

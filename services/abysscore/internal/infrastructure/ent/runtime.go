@@ -3,6 +3,8 @@
 package ent
 
 import (
+	"time"
+
 	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/ent/friendrequest"
 	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/ent/gameitem"
 	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/ent/inventoryitem"
@@ -13,7 +15,6 @@ import (
 	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/ent/statistic"
 	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/ent/user"
 	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/ent/userbalance"
-	"time"
 )
 
 // The init function reads all schema descriptors with runtime code

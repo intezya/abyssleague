@@ -40,7 +40,7 @@ func Success(data interface{}, c *fiber.Ctx) error {
 
 func NoContent(c *fiber.Ctx) error {
 	return c.Status(fiber.StatusOK).JSON(
-		Response{
+		Response{ //nolint:exhaustruct // Data field missed because NO CONTENT
 			Message: successMessage,
 			Code:    fiber.StatusNoContent,
 			Path:    c.Path(),

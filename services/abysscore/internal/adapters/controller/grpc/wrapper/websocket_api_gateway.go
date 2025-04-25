@@ -2,6 +2,7 @@ package wrapper
 
 import (
 	"context"
+	"errors"
 	"github.com/intezya/abyssleague/services/abysscore/internal/adapters/controller/grpc/factory"
 	"time"
 
@@ -17,8 +18,14 @@ type WebsocketServiceWrapper struct {
 	timeout     time.Duration
 }
 
-func (w *WebsocketServiceWrapper) SetClient(client interface{}) {
-	w.client = client.(websocketpb.WebsocketServiceClient)
+func (w *WebsocketServiceWrapper) SetClient(client interface{}) error {
+	if typedClient, ok := client.(websocketpb.WebsocketServiceClient); ok {
+		w.client = typedClient
+
+		return nil
+	}
+
+	return errors.New("invalid client type")
 }
 
 func NewWebsocketServiceWrapper(factory *factory.GrpcClientFactory, serviceAddr string) *WebsocketServiceWrapper {
@@ -26,6 +33,7 @@ func NewWebsocketServiceWrapper(factory *factory.GrpcClientFactory, serviceAddr 
 		factory:     factory,
 		serviceAddr: serviceAddr,
 		timeout:     defaultGRPCTimeout,
+		client:      nil,
 	}
 
 	go factory.GetAndSetWebsocketApiGatewayClient(serviceAddr, wrapper)

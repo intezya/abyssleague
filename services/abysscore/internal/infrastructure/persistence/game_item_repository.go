@@ -98,9 +98,7 @@ func (r *GameItemRepository) FindAllPaged(
 		return nil, repositoryerrors.WrapUnexpectedError(err)
 	}
 
-	mappedItems := itertools.Map(gameItems, func(item *ent.GameItem) *dto.GameItemDTO {
-		return mapper.ToGameItemDTOFromEnt(item)
-	})
+	mappedItems := itertools.Map(gameItems, mapper.ToGameItemDTOFromEnt)
 
 	return &dto.PaginatedResult[*dto.GameItemDTO]{
 		Data:       mappedItems,

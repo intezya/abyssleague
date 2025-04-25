@@ -1,4 +1,3 @@
-// common/errors/base/error.go
 package base
 
 import (
@@ -9,7 +8,9 @@ import (
 	"time"
 )
 
-// Error represents a structured application error with stack trace capabilities
+const baseStackTraceLengthForError = 20
+
+// Error represents a structured application error with stack trace capabilities.
 type Error struct {
 	Custom    error                  // Public-facing error message
 	Wrapped   error                  // Original error for debugging
@@ -21,7 +22,7 @@ type Error struct {
 	metadata  map[string]interface{} // Additional error context
 }
 
-// ErrorResponse defines the structure of error JSON responses
+// ErrorResponse defines the structure of error JSON responses.
 type ErrorResponse struct {
 	Message   string                 `json:"message"`
 	Detail    string                 `json:"detail,omitempty"`
@@ -32,60 +33,65 @@ type ErrorResponse struct {
 	Metadata  map[string]interface{} `json:"metadata,omitempty"`
 }
 
-// Error implements the error interface
+// Error implements the error interface.
 func (e *Error) Error() string {
 	return e.Custom.Error()
 }
 
-// WithCode allows changing the status code of an existing error
+// WithCode allows changing the status code of an existing error.
 func (e *Error) WithCode(code int) *Error {
 	e.code = code
+
 	return e
 }
 
-// SetErrorID sets the unique error identifier
+// SetErrorID sets the unique error identifier.
 func (e *Error) SetErrorID(id string) {
 	e.errorID = id
 }
 
-// SetTimestamp sets the error timestamp
+// SetTimestamp sets the error timestamp.
 func (e *Error) SetTimestamp(t time.Time) {
 	e.timestamp = t
 }
 
-// SetStackTrace sets the raw stack trace (useful for panics)
+// SetStackTrace sets the raw stack trace (useful for panics).
 func (e *Error) SetStackTrace(stack string) {
 	e.rawStack = stack
 }
 
-// SetMetadata sets additional context information for the error
+// SetMetadata sets additional context information for the error.
 func (e *Error) SetMetadata(data map[string]interface{}) {
 	e.metadata = data
 }
 
-// AddMetadata adds a single key-value pair to the error metadata
+// AddMetadata adds a single key-value pair to the error metadata.
 func (e *Error) AddMetadata(key string, value interface{}) *Error {
 	if e.metadata == nil {
 		e.metadata = make(map[string]interface{})
 	}
+
 	e.metadata[key] = value
+
 	return e
 }
 
-// NewError creates a structured error with stack trace
+// NewError creates a structured error with stack trace.
 func NewError(custom error, wrapped error, code int) *Error {
 	// Generate stack trace
-	stackBuf := make([]uintptr, 20)
-	length := runtime.Callers(2, stackBuf)
+	stackBuf := make([]uintptr, baseStackTraceLengthForError)
+	length := runtime.Callers(2, stackBuf) //nolint:mnd // This is a magic!
 	stack := make([]string, 0, length)
 
 	frames := runtime.CallersFrames(stackBuf[:length])
+
 	for {
 		frame, more := frames.Next()
 		// Skip system and library frames
 		if !isSystemFrame(frame.Function) {
 			stack = append(stack, fmt.Sprintf("%s:%d", frame.Function, frame.Line))
 		}
+
 		if !more {
 			break
 		}
@@ -102,62 +108,67 @@ func NewError(custom error, wrapped error, code int) *Error {
 		timestamp: time.Now(),
 		errorID:   errorID,
 		metadata:  make(map[string]interface{}),
+		rawStack:  "",
 	}
 }
 
-// StatusCode returns the HTTP status code
+// StatusCode returns the HTTP status code.
 func (e *Error) StatusCode() int {
 	return e.code
 }
 
-// Message returns the user-facing error message
+// Message returns the user-facing error message.
 func (e *Error) Message() string {
 	if e.Custom != nil {
 		return e.Custom.Error()
 	}
+
 	if e.Wrapped != nil {
 		return e.Wrapped.Error()
 	}
+
 	return "unknown error"
 }
 
-// Detail returns detailed technical error information
+// Detail returns detailed technical error information.
 func (e *Error) Detail() string {
 	if e.Wrapped != nil {
 		return e.Wrapped.Error()
 	}
+
 	if e.Custom != nil {
 		return e.Custom.Error()
 	}
+
 	return ""
 }
 
-// ErrorID returns the unique error identifier
+// ErrorID returns the unique error identifier.
 func (e *Error) ErrorID() string {
 	return e.errorID
 }
 
-// Timestamp returns when the error occurred
+// Timestamp returns when the error occurred.
 func (e *Error) Timestamp() time.Time {
 	return e.timestamp
 }
 
-// StackTrace returns the error stack trace
+// StackTrace returns the error stack trace.
 func (e *Error) StackTrace() []string {
 	return e.stack
 }
 
-// RawStackTrace returns the raw stack trace string (for panics)
+// RawStackTrace returns the raw stack trace string (for panics).
 func (e *Error) RawStackTrace() string {
 	return e.rawStack
 }
 
-// Metadata returns additional error context
+// Metadata returns additional error context.
 func (e *Error) Metadata() map[string]interface{} {
 	return e.metadata
 }
 
-// ToErrorResponse converts the error to HTTP response
+// ToErrorResponse converts the error to HTTP response.
 func (e *Error) ToErrorResponse(c *fiber.Ctx) error {
 	response := &ErrorResponse{
 		Message:   e.Message(),
@@ -166,6 +177,7 @@ func (e *Error) ToErrorResponse(c *fiber.Ctx) error {
 		Path:      c.Path(),
 		Timestamp: e.timestamp,
 		ErrorID:   e.errorID,
+		Metadata:  nil,
 	}
 
 	// Only include metadata in response if it exists and is not empty
@@ -176,7 +188,7 @@ func (e *Error) ToErrorResponse(c *fiber.Ctx) error {
 	return c.Status(e.StatusCode()).JSON(response)
 }
 
-// Helper functions
+// Helper functions.
 func isSystemFrame(funcName string) bool {
 	// Skip standard library and runtime frames
 	return funcName == "runtime.goexit" ||

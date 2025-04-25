@@ -3,11 +3,11 @@
 package userbalance
 
 import (
-	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/ent/predicate"
 	"time"
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
+	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/ent/predicate"
 )
 
 // ID filters vertices based on their ID field.

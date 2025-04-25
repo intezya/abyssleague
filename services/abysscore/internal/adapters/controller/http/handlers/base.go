@@ -7,9 +7,9 @@ import (
 	"github.com/intezya/abyssleague/services/abysscore/internal/adapters/controller/http/middleware"
 	adaptererror "github.com/intezya/abyssleague/services/abysscore/internal/common/errors/adapter"
 	"github.com/intezya/abyssleague/services/abysscore/internal/common/errors/base"
+	"github.com/intezya/abyssleague/services/abysscore/internal/common/errors/validator"
 	"github.com/intezya/abyssleague/services/abysscore/internal/domain/dto"
 	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/metrics/tracer"
-	"github.com/intezya/abyssleague/services/abysscore/internal/pkg/validator"
 )
 
 var wrapInvalidRequestBody = func(wrapped error) error {

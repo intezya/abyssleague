@@ -20,6 +20,7 @@ type ClientWrapper struct {
 
 func NewClientWrapper(config *Config) *ClientWrapper {
 	wrapper := &ClientWrapper{
+		Client:            nil,
 		config:            config,
 		closeConnectingCh: make(chan struct{}),
 	}

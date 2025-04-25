@@ -6,6 +6,10 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
+
+	"entgo.io/ent/dialect/sql/sqlgraph"
+	"entgo.io/ent/schema/field"
 	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/ent/friendrequest"
 	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/ent/inventoryitem"
 	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/ent/match"
@@ -13,10 +17,6 @@ import (
 	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/ent/statistic"
 	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/ent/user"
 	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/ent/userbalance"
-	"time"
-
-	"entgo.io/ent/dialect/sql/sqlgraph"
-	"entgo.io/ent/schema/field"
 )
 
 // UserCreate is the builder for creating a User entity.

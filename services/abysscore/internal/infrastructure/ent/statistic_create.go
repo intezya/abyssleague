@@ -6,12 +6,12 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/ent/statistic"
-	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/ent/user"
 	"time"
 
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/ent/statistic"
+	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/ent/user"
 )
 
 // StatisticCreate is the builder for creating a Statistic entity.

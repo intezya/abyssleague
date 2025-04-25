@@ -3,6 +3,7 @@ package auth
 import (
 	"errors"
 	"github.com/golang-jwt/jwt/v5"
+	"github.com/google/uuid"
 	"github.com/intezya/abyssleague/services/abysscore/internal/domain/entity"
 	"time"
 )
@@ -34,10 +35,13 @@ func (j *JWTHelper) TokenGenerator(tokenData *entity.TokenData) string {
 	claims := &Claim{
 		AuthenticationData: tokenData,
 		RegisteredClaims: jwt.RegisteredClaims{
-			ExpiresAt: jwt.NewNumericDate(time.Now().Add(j.expirationTime)),
-			IssuedAt:  jwt.NewNumericDate(time.Now()),
-			NotBefore: jwt.NewNumericDate(time.Now()),
 			Issuer:    j.issuer,
+			Subject:   tokenData.Username,
+			Audience:  nil,
+			ExpiresAt: jwt.NewNumericDate(time.Now().Add(j.expirationTime)),
+			NotBefore: jwt.NewNumericDate(time.Now()),
+			IssuedAt:  jwt.NewNumericDate(time.Now()),
+			ID:        uuid.New().String(),
 		},
 	}
 
@@ -49,7 +53,7 @@ func (j *JWTHelper) TokenGenerator(tokenData *entity.TokenData) string {
 }
 
 func (j *JWTHelper) ValidateToken(tokenString string) (*entity.TokenData, error) {
-	claims := &Claim{}
+	claims := &Claim{} //nolint:exhaustruct
 
 	token, err := jwt.ParseWithClaims(
 		tokenString,

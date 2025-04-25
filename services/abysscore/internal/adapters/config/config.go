@@ -70,83 +70,81 @@ type JWTConfiguration struct {
 func LoadConfig() *Config {
 	_ = godotenv.Load()
 
+	envType := getEnvString("ENV_TYPE", "prod")
+
 	config := &Config{
-		IsDebug:    getEnvBool("DEBUG", false),
-		EnvType:    getEnvString("ENV_TYPE", "prod"),
-		ServerPort: getEnvInt("SERVER_PORT", defaultServerPort),
-	}
+		FiberHealthCheckConfig: healthcheck.ConfigDefault,
+		FiberRequestIDConfig:   requestid.ConfigDefault,
+		IsDebug:                getEnvBool("DEBUG", false),
+		EnvType:                envType,
 
-	config.JWTConfiguration = auth.NewJWTConfiguration(
-		getEnvString("JWT_SECRET", "default-secret-key"),
-		getEnvString("JWT_ISSUER", "com.intezya.abyssleague.auth"),
-		getEnvDuration("JWT_EXPIRATION_TIME", defaultJWTExpiration),
-	)
-
-	config.RedisConfig = &rediswrapper.Config{
-		Options: &redis.Options{
-			Addr:     getEnvString("REDIS_ADDR", "localhost:6379"),
-			Password: getEnvString("REDIS_PASSWORD", ""),
-			DB:       getEnvInt("REDIS_DB", 0),
+		RateLimitConfig: &RateLimitConfig{
+			LoginRateLimitKey:    getEnvString("RATE_LIMIT_LOGIN_KEY", "login_attempts_rate_limit:"),
+			LoginRateLimitTime:   getEnvDuration("RATE_LIMIT_LOGIN_TIME", defaultRateLimitLoginTime),
+			LoginRateLimit:       getEnvInt("RATE_LIMIT_LOGIN_MAX_REQUESTS", defaultRateLimitLoginRequests),
+			DefaultRateLimitKey:  getEnvString("RATE_LIMIT_DEFAULT_KEY", "rate_limit:"),
+			DefaultRateLimitTime: getEnvDuration("RATE_LIMIT_DEFAULT_TIME", defaultRateLimitDefaultTime),
+			DefaultRateLimit:     getEnvInt("RATE_LIMIT_DEFAULT_MAX_REQUESTS", defaultRateLimitDefaultReqs),
 		},
-		RetryDelay: getEnvDuration("REDIS_RETRY_DELAY", defaultRedisRetryDelay),
-	}
 
-	config.EntConfig = persistence.NewEntConfig(
-		getEnvString("DB_DRIVER", "postgres"),
-		buildDBConnectionString(),
-		getEnvInt("DB_MAX_RETRIES", defaultDBMaxRetries),
-		getEnvDuration("DB_RETRY_DELAY", defaultDBRetryDelay),
-	)
-
-	config.LoggerConfig = &LoggerConfig{
-		lokiConfig: &logger.LokiConfig{
-			URL:                  getEnvString("LOKI_ENDPOINT_URL", "localhost:3100"),
-			Labels:               parseLokiLabels(getEnvString("LOKI_LABELS", "")),
-			BatchSize:            getEnvInt("LOKI_BATCH_SIZE", defaultLokiBatchSize),
-			MaxWait:              getEnvDuration("LOKI_MAX_WAIT", defaultLokiMaxWait),
-			Timeout:              getEnvDuration("LOKI_TIMEOUT", defaultLokiTimeout),
-			Compression:          getEnvBool("LOKI_COMPRESSION", true),
-			RetryCount:           getEnvInt("LOKI_RETRY_COUNT", defaultLokiRetryCount),
-			RetryWait:            getEnvDuration("LOKI_RETRY_WAIT", defaultLokiRetryWait),
-			SuppressSinkWarnings: getEnvBool("LOKI_SUPPRESS_WARNINGS", false),
+		LoggerConfig: &LoggerConfig{
+			lokiConfig: &logger.LokiConfig{
+				URL:                  getEnvString("LOKI_ENDPOINT_URL", "localhost:3100"),
+				Labels:               parseLokiLabels(getEnvString("LOKI_LABELS", "")),
+				BatchSize:            getEnvInt("LOKI_BATCH_SIZE", defaultLokiBatchSize),
+				MaxWait:              getEnvDuration("LOKI_MAX_WAIT", defaultLokiMaxWait),
+				Timeout:              getEnvDuration("LOKI_TIMEOUT", defaultLokiTimeout),
+				Compression:          getEnvBool("LOKI_COMPRESSION", true),
+				RetryCount:           getEnvInt("LOKI_RETRY_COUNT", defaultLokiRetryCount),
+				RetryWait:            getEnvDuration("LOKI_RETRY_WAIT", defaultLokiRetryWait),
+				SuppressSinkWarnings: getEnvBool("LOKI_SUPPRESS_WARNINGS", false),
+			},
 		},
+
+		RedisConfig: &rediswrapper.Config{
+			Options: &redis.Options{ //nolint:exhaustruct // redis config contains TOO MANY options
+				Addr:     getEnvString("REDIS_ADDR", "localhost:6379"),
+				Password: getEnvString("REDIS_PASSWORD", ""),
+				DB:       getEnvInt("REDIS_DB", 0),
+			},
+			RetryDelay: getEnvDuration("REDIS_RETRY_DELAY", defaultRedisRetryDelay),
+		},
+
+		EntConfig: persistence.NewEntConfig(
+			getEnvString("DB_DRIVER", "postgres"),
+			buildDBConnectionString(),
+			getEnvInt("DB_MAX_RETRIES", defaultDBMaxRetries),
+			getEnvDuration("DB_RETRY_DELAY", defaultDBRetryDelay),
+		),
+
+		JWTConfiguration: auth.NewJWTConfiguration(
+			getEnvString("JWT_SECRET", "default-secret-key"),
+			getEnvString("JWT_ISSUER", "com.intezya.abyssleague.auth"),
+			getEnvDuration("JWT_EXPIRATION_TIME", defaultJWTExpiration),
+		),
+
+		TracerConfig: &tracer.Config{
+			Endpoint:           getEnvString("TRACER_ENDPOINT", "localhost:4317"),
+			ServiceName:        getEnvString("TRACER_SERVICE_NAME", ""),
+			ServiceVersion:     getEnvString("TRACER_SERVICE_VERSION", "v1"),
+			ServiceEnvironment: envType,
+		},
+
+		GRPCConfig: &factory.GRPCConfig{
+			WebsocketApiGatewayHost:  getEnvString("WEBSOCKET_API_GATEWAY_HOST", ""),
+			WebsocketApiGatewayPorts: getAndParseGrpcPorts(),
+		},
+
+		ServerPort:             getEnvInt("SERVER_PORT", defaultServerPort),
+		MetricsPort:            getEnvInt("METRICS_PORT", defaultMetricsPort),
+		SlowRequestThresholdMs: defaultSlowRequestThresholdMs,
 	}
 
 	config.LoggerConfig.lokiConfig.Labels["environment"] = config.EnvType
 
-	config.FiberHealthCheckConfig = healthcheck.Config{
-		LivenessEndpoint:  getEnvString("LIVENESS_ENDPOINT", "/live"),
-		ReadinessEndpoint: getEnvString("READINESS_ENDPOINT", "/health"),
-	}
-
-	config.FiberRequestIDConfig = requestid.Config{
-		ContextKey: getEnvString("REQUEST_ID_KEY", "requestid"),
-	}
-
-	config.RateLimitConfig = &RateLimitConfig{
-		LoginRateLimitKey:    getEnvString("RATE_LIMIT_LOGIN_KEY", "login_attempts_rate_limit:"),
-		LoginRateLimitTime:   getEnvDuration("RATE_LIMIT_LOGIN_TIME", defaultRateLimitLoginTime),
-		LoginRateLimit:       getEnvInt("RATE_LIMIT_LOGIN_MAX_REQUESTS", defaultRateLimitLoginRequests),
-		DefaultRateLimitKey:  getEnvString("RATE_LIMIT_DEFAULT_KEY", "rate_limit:"),
-		DefaultRateLimitTime: getEnvDuration("RATE_LIMIT_DEFAULT_TIME", defaultRateLimitDefaultTime),
-		DefaultRateLimit:     getEnvInt("RATE_LIMIT_DEFAULT_MAX_REQUESTS", defaultRateLimitDefaultReqs),
-	}
-
-	config.GRPCConfig = &factory.GRPCConfig{
-		WebsocketApiGatewayHost:  getEnvString("WEBSOCKET_API_GATEWAY_HOST", ""),
-		WebsocketApiGatewayPorts: getAndParseGrpcPorts(),
-	}
-
-	config.MetricsPort = getEnvInt("METRICS_PORT", defaultMetricsPort)
-
-	config.SlowRequestThresholdMs = defaultSlowRequestThresholdMs
-
-	config.TracerConfig = &tracer.Config{
-		Endpoint:           getEnvString("TRACER_ENDPOINT", "localhost:4317"),
-		ServiceName:        getEnvString("TRACER_SERVICE_NAME", ""),
-		ServiceVersion:     getEnvString("TRACER_SERVICE_VERSION", "v1"),
-		ServiceEnvironment: config.EnvType,
-	}
+	config.FiberRequestIDConfig.ContextKey = getEnvString("REQUEST_ID_KEY", "requestid")
+	config.FiberHealthCheckConfig.LivenessEndpoint = getEnvString("LIVENESS_ENDPOINT", "/live")
+	config.FiberHealthCheckConfig.ReadinessEndpoint = getEnvString("READINESS_ENDPOINT", "/health")
 
 	return config
 }
