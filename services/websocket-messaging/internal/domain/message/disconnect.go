@@ -8,10 +8,19 @@ type message struct {
 	Message string `json:"message"`
 }
 
-var DisconnectByOtherClient, _ = json.Marshal(
-	message{
-		Type:    "disconnect",
-		Subtype: "other_client",
-		Message: "You have been disconnected by another connection",
-	},
-)
+var DisconnectByOtherClient []byte
+
+func init() {
+	var err error
+
+	DisconnectByOtherClient, err = json.Marshal(
+		message{
+			Type:    "disconnect",
+			Subtype: "other_client",
+			Message: "You have been disconnected by another connection",
+		},
+	)
+	if err != nil {
+		panic("failed to marshal disconnect message: " + err.Error())
+	}
+}

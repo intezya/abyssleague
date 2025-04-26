@@ -5,6 +5,4 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-var (
-	InternalError = status.Errorf(codes.Internal, "An unexpected error occured")
-)
+var InternalError = status.Errorf(codes.Internal, "An unexpected error occurred")

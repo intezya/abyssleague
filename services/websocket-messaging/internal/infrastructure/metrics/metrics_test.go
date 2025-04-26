@@ -7,8 +7,8 @@ import (
 )
 
 func TestMetricsInitialization(t *testing.T) {
+	t.Parallel()
 	// Test that all metrics are properly initialized
-
 	// Test simple metrics
 	simpleMetrics := []struct {
 		name   string
@@ -36,9 +36,9 @@ func TestMetricsInitialization(t *testing.T) {
 }
 
 func TestMetricsUsage(t *testing.T) {
+	t.Parallel()
 	// Test that we can use the metrics without errors
 	// This is a simple smoke test to ensure the metrics are usable
-
 	// Test incrementing counters
 	TotalConnections.Inc()
 	WebsocketMessagesSent.Inc()

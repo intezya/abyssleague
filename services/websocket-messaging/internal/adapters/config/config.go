@@ -2,15 +2,16 @@ package config
 
 import (
 	"fmt"
-	"github.com/intezya/abyssleague/services/websocket-messaging/internal/pkg/auth"
-	"github.com/intezya/pkglib/configloader"
-	"github.com/intezya/pkglib/itertools"
-	"github.com/intezya/pkglib/logger"
 	"log"
 	"os"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/intezya/abyssleague/services/websocket-messaging/internal/pkg/auth"
+	"github.com/intezya/pkglib/configloader"
+	"github.com/intezya/pkglib/itertools"
+	"github.com/intezya/pkglib/logger"
 )
 
 /*
@@ -76,7 +77,6 @@ func initLogger(isDebug bool, envType string) {
 		logger.WithEnvironment(envType),
 		logger.WithLoki(lokiConfig),
 	)
-
 	if err != nil {
 		log.Printf("Error initializing logger: %v", err)
 	}
@@ -90,7 +90,10 @@ func Configure() *Config {
 	initLogger(getEnvBool("DEBUG", false), envType)
 
 	grpcPorts := itertools.Map(
-		strings.Split(configloader.GetEnvOrFallback("GRPC_SERVER_PORTS", string(int32(DefaultGRPCPort))), ","),
+		strings.Split(
+			configloader.GetEnvOrFallback("GRPC_SERVER_PORTS", string(int32(DefaultGRPCPort))),
+			",",
+		),
 		func(s string) int {
 			if i, err := strconv.Atoi(s); err != nil {
 				panic(fmt.Sprintf("Error parsing GRPC_SERVER_PORTS: %s", err))
@@ -130,6 +133,7 @@ func Configure() *Config {
 
 func Setup() *Config {
 	configloader.LoadEnv()
+
 	return Configure()
 }
 
@@ -148,6 +152,7 @@ func parseLokiLabels(labelsStr string) map[string]string {
 			labels[key] = value
 		}
 	}
+
 	return labels
 }
 
@@ -157,5 +162,6 @@ func getEnvBool(key string, fallback bool) bool {
 			return boolVal
 		}
 	}
+
 	return fallback
 }

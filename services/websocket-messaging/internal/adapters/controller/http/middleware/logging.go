@@ -2,14 +2,18 @@ package middleware
 
 import (
 	"bufio"
-	"fmt"
-	"github.com/intezya/abyssleague/services/websocket-messaging/internal/adapters/controller/http/routes"
-	"github.com/intezya/abyssleague/services/websocket-messaging/internal/infrastructure/metrics"
-	"github.com/intezya/pkglib/logger"
+	"errors"
 	"net"
 	"net/http"
 	"time"
+
+	"github.com/intezya/abyssleague/services/websocket-messaging/internal/adapters/controller/http/routes"
+	"github.com/intezya/abyssleague/services/websocket-messaging/internal/infrastructure/metrics"
+	"github.com/intezya/pkglib/logger"
 )
+
+// ErrHijackNotSupported is returned when the underlying ResponseWriter does not support Hijack.
+var ErrHijackNotSupported = errors.New("underlying ResponseWriter does not support Hijack")
 
 func LoggingMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(
@@ -38,6 +42,7 @@ func LoggingMiddleware(next http.Handler) http.Handler {
 					"user_agent", r.UserAgent(),
 					"content_length", r.ContentLength,
 				)
+
 				return
 			}
 
@@ -78,5 +83,6 @@ func (lrw *loggingResponseWriter) Hijack() (net.Conn, *bufio.ReadWriter, error) 
 	if hijacker, ok := lrw.ResponseWriter.(http.Hijacker); ok {
 		return hijacker.Hijack()
 	}
-	return nil, nil, fmt.Errorf("underlying ResponseWriter does not support Hijack")
+
+	return nil, nil, ErrHijackNotSupported
 }

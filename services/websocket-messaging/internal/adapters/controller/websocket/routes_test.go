@@ -1,16 +1,19 @@
 package websocket
 
 import (
-	"github.com/intezya/abyssleague/services/websocket-messaging/internal/adapters/controller/http/routes"
-	"github.com/intezya/abyssleague/services/websocket-messaging/internal/infrastructure/hub"
-	"github.com/intezya/abyssleague/services/websocket-messaging/internal/pkg/auth"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 	"time"
+
+	"github.com/intezya/abyssleague/services/websocket-messaging/internal/adapters/controller/http/routes"
+	"github.com/intezya/abyssleague/services/websocket-messaging/internal/infrastructure/hub"
+	"github.com/intezya/abyssleague/services/websocket-messaging/internal/pkg/auth"
 )
 
 func TestSetupRoute(t *testing.T) {
+	t.Parallel()
 	// Create a test HTTP mux
 	mux := http.NewServeMux()
 
@@ -35,7 +38,9 @@ func TestSetupRoute(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Failed to send request: %v", err)
 	}
-	defer resp.Body.Close()
+	defer func(Body io.ReadCloser) {
+		_ = Body.Close()
+	}(resp.Body)
 
 	// The request should fail with 400 Bad Request (missing upgrade header)
 	// or 401 Unauthorized (missing auth token)

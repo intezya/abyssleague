@@ -1,8 +1,9 @@
 package entity
 
 import (
-	"github.com/intezya/abyssleague/services/websocket-messaging/internal/pkg/auth"
 	"strconv"
+
+	"github.com/intezya/abyssleague/services/websocket-messaging/internal/pkg/auth"
 )
 
 type AuthenticationData struct {

@@ -2,11 +2,16 @@ package app
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	"net"
+
 	"github.com/intezya/pkglib/logger"
 	"google.golang.org/grpc"
-	"net"
 )
+
+// ErrShutdownTimeout is returned when the gRPC server shutdown times out.
+var ErrShutdownTimeout = errors.New("shutdown timed out")
 
 type GRPCApp struct {
 	GRPCServer *grpc.Server
@@ -20,6 +25,7 @@ func NewGRPCApp(port int) *GRPCApp {
 	return &GRPCApp{
 		GRPCServer: grpcServer,
 		port:       port,
+		listener:   nil,
 	}
 }
 
@@ -30,9 +36,11 @@ func (a *GRPCApp) Start(ctx context.Context) error {
 	if err != nil {
 		return fmt.Errorf("failed to listen on port %d: %w", a.port, err)
 	}
+
 	a.listener = lis
 
 	errCh := make(chan error, 1)
+
 	go func() {
 		if err := a.GRPCServer.Serve(lis); err != nil {
 			errCh <- fmt.Errorf("gRPC server error: %w", err)
@@ -42,6 +50,7 @@ func (a *GRPCApp) Start(ctx context.Context) error {
 	select {
 	case <-ctx.Done():
 		logger.Log.Infof("Shutting down gRPC server on port %d...", a.port)
+
 		return nil
 	case err := <-errCh:
 		return err
@@ -59,10 +68,12 @@ func (a *GRPCApp) Shutdown(ctx context.Context) error {
 	select {
 	case <-shutdownComplete:
 		logger.Log.Infof("gRPC server on port %d shutdown completed", a.port)
+
 		return nil
 	case <-ctx.Done():
 		logger.Log.Warnf("gRPC server on port %d shutdown timed out, forcing stop", a.port)
 		a.GRPCServer.Stop()
-		return fmt.Errorf("shutdown timed out")
+
+		return ErrShutdownTimeout
 	}
 }

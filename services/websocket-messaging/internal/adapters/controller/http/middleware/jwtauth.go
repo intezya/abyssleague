@@ -1,11 +1,12 @@
 package middleware
 
 import (
+	"net/http"
+	"strings"
+
 	"github.com/intezya/abyssleague/services/websocket-messaging/internal/domain/entity"
 	"github.com/intezya/abyssleague/services/websocket-messaging/internal/pkg/auth"
 	"github.com/intezya/pkglib/logger"
-	"net/http"
-	"strings"
 )
 
 type SecurityMiddleware struct {
@@ -25,16 +26,18 @@ func (m *SecurityMiddleware) JwtAuth(
 	if authHeader == "" {
 		logger.Log.Debug("missing authorization header")
 		http.Error(w, "missing authorization header", http.StatusUnauthorized)
-		return
+
+		return authenticationData
 	}
 
-	token := softExtractTokenFromHeader(authHeader, "Bearer ", "Token ")
-	tokenData, err := m.jwtService.ValidateToken(token)
+	token := SoftExtractTokenFromHeader(authHeader, "Bearer ", "Token ")
 
+	tokenData, err := m.jwtService.ValidateToken(token)
 	if err != nil {
 		logger.Log.Debug("validating token error: ", err)
 		http.Error(w, err.Error(), http.StatusUnauthorized)
-		return
+
+		return authenticationData
 	}
 
 	authenticationData = entity.DecodeToAuthenticationData(tokenData)
@@ -42,13 +45,14 @@ func (m *SecurityMiddleware) JwtAuth(
 	if authenticationData == nil {
 		logger.Log.Debug("malformed token data")
 		http.Error(w, "malformed token data", http.StatusUnauthorized)
-		return
+
+		return authenticationData
 	}
 
 	return authenticationData
 }
 
-func softExtractTokenFromHeader(tokenString string, availablePrefixes ...string) string {
+func SoftExtractTokenFromHeader(tokenString string, availablePrefixes ...string) string {
 	for _, prefix := range availablePrefixes {
 		if token, found := strings.CutPrefix(tokenString, prefix); found {
 			return token

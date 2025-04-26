@@ -1,11 +1,14 @@
 package hub
 
 import (
+	"time"
+
 	"github.com/gorilla/websocket"
 	"github.com/intezya/abyssleague/services/websocket-messaging/internal/domain/entity"
 	"github.com/intezya/pkglib/logger"
-	"time"
 )
+
+const sendBufferSize = 256
 
 type Client struct {
 	Hub            *Hub
@@ -24,7 +27,8 @@ func NewClient(
 		Hub:            hub,
 		authentication: authentication,
 		conn:           conn,
-		Send:           make(chan []byte, 256),
+		Send:           make(chan []byte, sendBufferSize),
+		connectTime:    time.Now(),
 	}
 }
 
@@ -34,20 +38,22 @@ func (c *Client) GetAuthentication() *entity.AuthenticationData {
 
 func (c *Client) CloseClient() error {
 	close(c.Send)
+
 	return c.conn.Close()
 }
 
 func (c *Client) ReadPump() {
 	defer func() {
 		c.Hub.unregister <- c
-		c.conn.Close()
+		_ = c.conn.Close()
 	}()
 
 	c.conn.SetReadLimit(maxMessageSize)
-	c.conn.SetReadDeadline(time.Now().Add(connectionTimeout))
+	_ = c.conn.SetReadDeadline(time.Now().Add(connectionTimeout))
 	c.conn.SetPongHandler(
 		func(string) error {
-			c.conn.SetReadDeadline(time.Now().Add(connectionTimeout))
+			_ = c.conn.SetReadDeadline(time.Now().Add(connectionTimeout))
+
 			return nil
 		},
 	)
@@ -55,13 +61,18 @@ func (c *Client) ReadPump() {
 	for {
 		_, message, err := c.conn.ReadMessage()
 		if err != nil {
-			if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseAbnormalClosure) {
+			if websocket.IsUnexpectedCloseError(
+				err,
+				websocket.CloseGoingAway,
+				websocket.CloseAbnormalClosure,
+			) {
 				logger.Log.Debugf("error: %v", err)
 			}
+
 			break
 		}
 
-		c.conn.SetReadDeadline(time.Now().Add(connectionTimeout))
+		_ = c.conn.SetReadDeadline(time.Now().Add(connectionTimeout))
 
 		logger.Log.Debugf("Received message from user %d: %s", c.authentication.ID(), message)
 
@@ -73,15 +84,17 @@ func (c *Client) WritePump() {
 	ticker := time.NewTicker(connectionPingPeriod)
 	defer func() {
 		ticker.Stop()
-		c.conn.Close()
+
+		_ = c.conn.Close()
 	}()
 
 	for {
 		select {
 		case message, ok := <-c.Send:
-			c.conn.SetWriteDeadline(time.Now().Add(writeWaitTimeout))
+			_ = c.conn.SetWriteDeadline(time.Now().Add(writeWaitTimeout))
 			if !ok {
-				c.conn.WriteMessage(websocket.CloseMessage, []byte{})
+				_ = c.conn.WriteMessage(websocket.CloseMessage, []byte{})
+
 				return
 			}
 
@@ -89,23 +102,27 @@ func (c *Client) WritePump() {
 			if err != nil {
 				return
 			}
-			w.Write(message)
+
+			_, _ = w.Write(message)
 
 			n := len(c.Send)
-			for i := 0; i < n; i++ {
-				w.Write([]byte{'\n'})
-				w.Write(<-c.Send)
+			for range n {
+				_, _ = w.Write([]byte{'\n'})
+				_, _ = w.Write(<-c.Send)
 			}
 
 			if err := w.Close(); err != nil {
 				return
 			}
 		case <-ticker.C:
-			c.conn.SetWriteDeadline(time.Now().Add(writeWaitTimeout))
+			_ = c.conn.SetWriteDeadline(time.Now().Add(writeWaitTimeout))
+
 			if err := c.conn.WriteMessage(websocket.PingMessage, nil); err != nil {
 				logger.Log.Debugf("Error sending ping to user %d: %v", c.authentication.ID(), err)
+
 				return
 			}
+
 			logger.Log.Debugf("Sent ping to user %d", c.authentication.ID())
 		}
 	}

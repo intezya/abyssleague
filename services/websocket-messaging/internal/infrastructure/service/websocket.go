@@ -3,9 +3,12 @@ package service
 import (
 	"context"
 	"errors"
+
 	"github.com/intezya/abyssleague/services/websocket-messaging/internal/domain/entity"
-	hubpackage "github.com/intezya/abyssleague/services/websocket-messaging/internal/infrastructure/hub"
 )
+
+// ErrFailedToSendMessage is returned when a message cannot be sent to a user.
+var ErrFailedToSendMessage = errors.New("failed to send message to user")
 
 type OnlineUser struct {
 	Id         int64
@@ -23,7 +26,7 @@ type WebsocketService struct {
 	hub Hub
 }
 
-func NewWebsocketService(hub *hubpackage.Hub) *WebsocketService {
+func NewWebsocketService(hub Hub) *WebsocketService {
 	return &WebsocketService{hub: hub}
 }
 
@@ -34,6 +37,7 @@ func (s *WebsocketService) GetOnline(ctx context.Context) (int, error) {
 func (s *WebsocketService) GetOnlineUsers(ctx context.Context) ([]*OnlineUser, error) {
 	clients := s.hub.GetClients(ctx)
 	result := make([]*OnlineUser, len(clients))
+
 	for idx, client := range clients {
 		result[idx] = &OnlineUser{
 			Id:         int64(client.ID()),
@@ -41,17 +45,20 @@ func (s *WebsocketService) GetOnlineUsers(ctx context.Context) ([]*OnlineUser, e
 			HardwareID: client.HardwareID(),
 		}
 	}
+
 	return result, nil
 }
 
 func (s *WebsocketService) SendToUser(ctx context.Context, userID int, jsonPayload []byte) error {
 	if !s.hub.SendToUser(ctx, userID, jsonPayload) {
-		return errors.New("failed to send message to user")
+		return ErrFailedToSendMessage
 	}
+
 	return nil
 }
 
 func (s *WebsocketService) Broadcast(ctx context.Context, jsonPayload []byte) error {
 	s.hub.Broadcast(ctx, jsonPayload)
+
 	return nil
 }

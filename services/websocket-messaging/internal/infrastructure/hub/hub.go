@@ -1,11 +1,12 @@
 package hub
 
 import (
+	"sync"
+	"time"
+
 	"github.com/intezya/abyssleague/services/websocket-messaging/internal/domain/message"
 	"github.com/intezya/abyssleague/services/websocket-messaging/internal/infrastructure/metrics"
 	"github.com/intezya/pkglib/logger"
-	"sync"
-	"time"
 )
 
 const (
@@ -15,7 +16,7 @@ const (
 	maxMessageSize       = 1024
 )
 
-// UserID typealias
+// UserID typealias.
 type UserID = int
 
 type SendToUser struct {
@@ -39,6 +40,7 @@ func NewHub(name string) *Hub {
 		name:        name,
 		clients:     make(map[*Client]bool),
 		clientsByID: make(map[int]*Client),
+		mu:          sync.Mutex{},
 		register:    make(chan *Client),
 		unregister:  make(chan *Client),
 		broadcast:   make(chan []byte),
@@ -46,85 +48,90 @@ func NewHub(name string) *Hub {
 	}
 }
 
-func (h *Hub) GetName() string {
-	return h.name
+func (hub *Hub) GetName() string {
+	return hub.name
 }
 
-func (h *Hub) Run() {
-	logger.Log.Infof("Hub %s started", h.name)
+func (hub *Hub) Run() {
+	logger.Log.Infof("Hub %s started", hub.name)
 
 	for {
 		select {
-		case <-h.done:
-			logger.Log.Infof("Hub %s received stop signal", h.name)
+		case <-hub.done:
+			logger.Log.Infof("Hub %s received stop signal", hub.name)
+
 			return
 
-		case client := <-h.register:
-			h.mu.Lock()
-			if existingClient, exists := h.clientsByID[client.authentication.ID()]; exists {
+		case client := <-hub.register:
+			hub.mu.Lock()
+			if existingClient, exists := hub.clientsByID[client.authentication.ID()]; exists {
 				existingClient.Send <- message.DisconnectByOtherClient
 				close(existingClient.Send)
-				delete(h.clients, existingClient)
+				delete(hub.clients, existingClient)
 			}
 
 			client.connectTime = time.Now()
+
 			metrics.TotalConnections.Inc()
 			metrics.ActiveConnections.Inc()
 
-			h.clients[client] = true
-			h.clientsByID[client.authentication.ID()] = client
-			h.mu.Unlock()
+			hub.clients[client] = true
+			hub.clientsByID[client.authentication.ID()] = client
+			hub.mu.Unlock()
 
-		case client := <-h.unregister:
-			h.mu.Lock()
-			if _, ok := h.clients[client]; ok {
+		case client := <-hub.unregister:
+			hub.mu.Lock()
+			if _, ok := hub.clients[client]; ok {
 				duration := time.Since(client.connectTime).Seconds()
 
 				metrics.ConnectionDuration.Observe(duration)
 				metrics.ActiveConnections.Dec()
 
-				delete(h.clients, client)
-				if h.clientsByID[client.authentication.ID()] == client {
-					delete(h.clientsByID, client.authentication.ID())
+				delete(hub.clients, client)
+
+				if hub.clientsByID[client.authentication.ID()] == client {
+					delete(hub.clientsByID, client.authentication.ID())
 				}
+
 				close(client.Send)
 			}
-			h.mu.Unlock()
+			hub.mu.Unlock()
 
-		case msg := <-h.broadcast:
-			h.mu.Lock()
-			for client := range h.clients {
+		case msg := <-hub.broadcast:
+			hub.mu.Lock()
+			for client := range hub.clients {
 				select {
 				case client.Send <- msg:
 				default:
 					close(client.Send)
-					delete(h.clients, client)
-					if h.clientsByID[client.authentication.ID()] == client {
-						delete(h.clientsByID, client.authentication.ID())
+					delete(hub.clients, client)
+
+					if hub.clientsByID[client.authentication.ID()] == client {
+						delete(hub.clientsByID, client.authentication.ID())
 					}
 				}
 			}
-			h.mu.Unlock()
+			hub.mu.Unlock()
 		}
 	}
 }
 
-func (h *Hub) Stop() {
-	logger.Log.Infof("Stopping hub %s...", h.name)
+func (hub *Hub) Stop() {
+	logger.Log.Infof("Stopping hub %s...", hub.name)
 
-	close(h.done)
+	close(hub.done)
 
 	time.Sleep(100 * time.Millisecond)
 
-	h.mu.Lock()
-	defer h.mu.Unlock()
+	hub.mu.Lock()
+	defer hub.mu.Unlock()
 
-	for client := range h.clients {
+	for client := range hub.clients {
 		close(client.Send)
 	}
 
-	h.clients = make(map[*Client]bool)
-	h.clientsByID = make(map[int]*Client)
+	hub.clients = make(map[*Client]bool)
+	hub.clientsByID = make(map[int]*Client)
 
-	logger.Log.Infof("Hub %s stopped successfully", h.name)
+	logger.Log.Infof("Hub %s stopped successfully", hub.name)
 }

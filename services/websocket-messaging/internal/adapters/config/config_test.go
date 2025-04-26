@@ -7,6 +7,8 @@ import (
 )
 
 func TestIsDevMode(t *testing.T) {
+	t.Parallel()
+
 	tests := []struct {
 		name     string
 		envType  string
@@ -31,6 +33,8 @@ func TestIsDevMode(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
 			config := &Config{
 				EnvType: tt.envType,
 			}
@@ -42,6 +46,7 @@ func TestIsDevMode(t *testing.T) {
 }
 
 func TestJwtConfiguration(t *testing.T) {
+	t.Parallel()
 	// Since JWTConfiguration fields are unexported, we can't test them directly
 	// Instead, we'll verify that the configuration is created without errors
 	config := &Config{
@@ -59,6 +64,8 @@ func TestJwtConfiguration(t *testing.T) {
 }
 
 func TestParseLokiLabels(t *testing.T) {
+	t.Parallel()
+
 	tests := []struct {
 		name      string
 		labelsStr string
@@ -93,11 +100,19 @@ func TestParseLokiLabels(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
 			got := parseLokiLabels(tt.labelsStr)
 			if len(got) != len(tt.expected) {
-				t.Errorf("parseLokiLabels() returned %d labels, want %d", len(got), len(tt.expected))
+				t.Errorf(
+					"parseLokiLabels() returned %d labels, want %d",
+					len(got),
+					len(tt.expected),
+				)
+
 				return
 			}
+
 			for k, v := range tt.expected {
 				if got[k] != v {
 					t.Errorf("parseLokiLabels() label %s = %s, want %s", k, got[k], v)
@@ -108,6 +123,8 @@ func TestParseLokiLabels(t *testing.T) {
 }
 
 func TestGetEnvBool(t *testing.T) {
+	t.Parallel()
+
 	tests := []struct {
 		name     string
 		key      string
@@ -147,6 +164,8 @@ func TestGetEnvBool(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
 			if tt.value != "" {
 				os.Setenv(tt.key, tt.value)
 				defer os.Unsetenv(tt.key)
@@ -162,8 +181,10 @@ func TestGetEnvBool(t *testing.T) {
 }
 
 func TestConfigure(t *testing.T) {
+	t.Parallel()
 	// Save original environment variables
 	origEnv := make(map[string]string)
+
 	for _, key := range []string{
 		"ENV_TYPE", "DEBUG", "GRPC_SERVER_PORTS", "WEBSOCKET_HUBS",
 		"JWT_SECRET", "JWT_ISSUER", "HTTP_PORT",
@@ -178,6 +199,7 @@ func TestConfigure(t *testing.T) {
 		for key := range origEnv {
 			os.Unsetenv(key)
 		}
+
 		for key, val := range origEnv {
 			os.Setenv(key, val)
 		}
@@ -210,7 +232,8 @@ func TestConfigure(t *testing.T) {
 			t.Errorf("Expected EnvType to be 'test', got '%s'", config.EnvType)
 		}
 
-		if len(config.GRPCPorts) != 2 || config.GRPCPorts[0] != 50051 || config.GRPCPorts[1] != 50052 {
+		if len(config.GRPCPorts) != 2 || config.GRPCPorts[0] != 50051 ||
+			config.GRPCPorts[1] != 50052 {
 			t.Errorf("Expected GRPCPorts to be [50051, 50052], got %v", config.GRPCPorts)
 		}
 

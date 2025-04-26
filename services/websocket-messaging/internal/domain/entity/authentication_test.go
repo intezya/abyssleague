@@ -1,13 +1,15 @@
 package entity
 
 import (
-	"github.com/intezya/abyssleague/services/websocket-messaging/internal/pkg/auth"
 	"reflect"
 	"strconv"
 	"testing"
+
+	"github.com/intezya/abyssleague/services/websocket-messaging/internal/pkg/auth"
 )
 
 func TestNewAuthenticationData(t *testing.T) {
+	t.Parallel()
 	// Test creating a new authentication data object
 	id := 123
 	username := "testuser"
@@ -34,6 +36,7 @@ func TestNewAuthenticationData(t *testing.T) {
 }
 
 func TestAuthenticationData_Encode(t *testing.T) {
+	t.Parallel()
 	// Test encoding to a map
 	authData := NewAuthenticationData(123, "testuser", "testhwid")
 
@@ -51,6 +54,7 @@ func TestAuthenticationData_Encode(t *testing.T) {
 }
 
 func TestDecodeToAuthenticationData(t *testing.T) {
+	t.Parallel()
 	// Test decoding from a TokenData
 	tokenData := &auth.TokenData{
 		ID:       123,
@@ -78,6 +82,7 @@ func TestDecodeToAuthenticationData(t *testing.T) {
 }
 
 func TestAuthenticationData_Getters(t *testing.T) {
+	t.Parallel()
 	// Test all getters with different values
 	testCases := []struct {
 		id       int
@@ -92,6 +97,8 @@ func TestAuthenticationData_Getters(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run("ID:"+strconv.Itoa(tc.id), func(t *testing.T) {
+			t.Parallel()
+
 			authData := NewAuthenticationData(tc.id, tc.username, tc.hwid)
 
 			if authData.ID() != tc.id {

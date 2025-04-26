@@ -2,25 +2,26 @@ package hub
 
 import (
 	"context"
+
 	"github.com/intezya/abyssleague/services/websocket-messaging/internal/domain/entity"
 	"github.com/intezya/abyssleague/services/websocket-messaging/internal/infrastructure/metrics"
 )
 
-func (h *Hub) RegisterClient(client *Client) {
-	h.register <- client
+func (hub *Hub) RegisterClient(client *Client) {
+	hub.register <- client
 }
 
-func (h *Hub) UnregisterClient(client *Client) {
-	h.unregister <- client
+func (hub *Hub) UnregisterClient(client *Client) {
+	hub.unregister <- client
 }
 
-func (h *Hub) GetClients(ctx context.Context) []*entity.AuthenticationData {
-	h.mu.Lock()
-	defer h.mu.Unlock()
+func (hub *Hub) GetClients(ctx context.Context) []*entity.AuthenticationData {
+	hub.mu.Lock()
+	defer hub.mu.Unlock()
 
-	result := make([]*entity.AuthenticationData, 0, len(h.clients))
+	result := make([]*entity.AuthenticationData, 0, len(hub.clients))
 
-	for client, ok := range h.clients {
+	for client, ok := range hub.clients {
 		if ok {
 			result = append(result, client.authentication)
 		}
@@ -29,11 +30,11 @@ func (h *Hub) GetClients(ctx context.Context) []*entity.AuthenticationData {
 	return result
 }
 
-func (h *Hub) SendToUser(ctx context.Context, userId int, jsonPayload []byte) bool {
-	h.mu.Lock()
-	defer h.mu.Unlock()
+func (hub *Hub) SendToUser(ctx context.Context, userId int, jsonPayload []byte) bool {
+	hub.mu.Lock()
+	defer hub.mu.Unlock()
 
-	client, exists := h.clientsByID[userId]
+	client, exists := hub.clientsByID[userId]
 	if !exists {
 		return false
 	}
@@ -47,12 +48,13 @@ func (h *Hub) SendToUser(ctx context.Context, userId int, jsonPayload []byte) bo
 		return true
 	default:
 		close(client.Send)
-		delete(h.clients, client)
-		delete(h.clientsByID, userId)
+		delete(hub.clients, client)
+		delete(hub.clientsByID, userId)
+
 		return false
 	}
 }
 
-func (h *Hub) Broadcast(ctx context.Context, message []byte) {
-	h.broadcast <- message
+func (hub *Hub) Broadcast(ctx context.Context, message []byte) {
+	hub.broadcast <- message
 }

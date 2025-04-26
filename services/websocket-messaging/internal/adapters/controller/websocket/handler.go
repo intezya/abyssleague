@@ -2,11 +2,12 @@ package websocket
 
 import (
 	"encoding/json"
+	"net/http"
+
 	"github.com/gorilla/websocket"
 	"github.com/intezya/abyssleague/services/websocket-messaging/internal/adapters/controller/http/middleware"
 	"github.com/intezya/abyssleague/services/websocket-messaging/internal/infrastructure/hub"
 	"github.com/intezya/pkglib/logger"
-	"net/http"
 )
 
 type Handler struct {
@@ -40,6 +41,7 @@ func (h *Handler) GetHandler() http.HandlerFunc {
 		conn, err := h.upgrader.Upgrade(w, r, nil)
 		if err != nil {
 			logger.Log.Warn("Error upgrading connection:", err)
+
 			return
 		}
 

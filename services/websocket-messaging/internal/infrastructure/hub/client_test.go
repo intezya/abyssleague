@@ -1,9 +1,10 @@
 package hub
 
 import (
+	"testing"
+
 	"github.com/gorilla/websocket"
 	"github.com/intezya/abyssleague/services/websocket-messaging/internal/domain/entity"
-	"testing"
 )
 
 // Note: Testing the Client struct is challenging because it depends on a real
@@ -21,12 +22,13 @@ import (
 // integration tests would be more appropriate than unit tests.
 
 func TestGetAuthentication(t *testing.T) {
+	t.Parallel()
 	// This is a simple test that doesn't require a real websocket connection
 	// Create test authentication data
 	authData := entity.NewAuthenticationData(1, "testuser", "testhwid")
 
 	// Create a client with nil connection (we're not using it in this test)
-	client := &Client{
+	client := &Client{ //nolint:exhaustruct
 		authentication: authData,
 	}
 
@@ -39,8 +41,9 @@ func TestGetAuthentication(t *testing.T) {
 }
 
 func TestNewClient(t *testing.T) {
+	t.Parallel()
 	// Create test data
-	hub := &Hub{}
+	hub := &Hub{} //nolint:exhaustruct
 	authData := entity.NewAuthenticationData(1, "testuser", "testhwid")
 	conn := &websocket.Conn{} // Using a nil connection is fine for this test
 
@@ -51,22 +54,27 @@ func TestNewClient(t *testing.T) {
 	if client.Hub != hub {
 		t.Errorf("Expected Hub to be %v, got %v", hub, client.Hub)
 	}
+
 	if client.authentication != authData {
 		t.Errorf("Expected authentication to be %v, got %v", authData, client.authentication)
 	}
+
 	if client.conn != conn {
 		t.Errorf("Expected conn to be %v, got %v", conn, client.conn)
 	}
+
 	if client.Send == nil {
 		t.Errorf("Expected Send channel to be non-nil")
 	}
+
 	if cap(client.Send) != 256 {
 		t.Errorf("Expected Send channel capacity to be 256, got %d", cap(client.Send))
 	}
 }
 
-// TestChannelClosing is a simple test to verify our understanding of how channel closing works
+// TestChannelClosing is a simple test to verify our understanding of how channel closing works.
 func TestChannelClosing(t *testing.T) {
+	t.Parallel()
 	// Create a channel
 	ch := make(chan []byte, 256)
 

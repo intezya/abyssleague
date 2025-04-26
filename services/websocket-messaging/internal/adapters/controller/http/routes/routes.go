@@ -8,12 +8,13 @@ const (
 
 var NotInfoLogging = []string{PingPath, MetricsPath}
 
-// IsInfoLogging if path is in NotInfoLogging return false and request must be logged as debug
+// IsInfoLogging if path is in NotInfoLogging return false and request must be logged as debug.
 func IsInfoLogging(path string) bool {
 	for _, v := range NotInfoLogging {
 		if path == v {
 			return false
 		}
 	}
+
 	return true
 }

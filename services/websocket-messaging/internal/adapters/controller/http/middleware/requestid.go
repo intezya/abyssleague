@@ -2,9 +2,10 @@ package middleware
 
 import (
 	"context"
+	"net/http"
+
 	"github.com/google/uuid"
 	"github.com/intezya/pkglib/logger"
-	"net/http"
 )
 
 type key string
@@ -38,5 +39,6 @@ func GetRequestID(ctx context.Context) string {
 	if id, ok := ctx.Value(requestIDKey).(string); ok {
 		return id
 	}
+
 	return ""
 }

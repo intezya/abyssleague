@@ -3,11 +3,14 @@ package service
 import (
 	"context"
 	"errors"
-	"github.com/intezya/abyssleague/services/websocket-messaging/internal/domain/entity"
 	"testing"
+
+	"github.com/intezya/abyssleague/services/websocket-messaging/internal/domain/entity"
 )
 
-// MockHub is a mock implementation of the Hub interface for testing
+var errFailedToSendMessage = errors.New("failed to send message to user")
+
+// MockHub is a mock implementation of the Hub interface for testing.
 type MockHub struct {
 	GetClientsFunc func(ctx context.Context) []*entity.AuthenticationData
 	SendToUserFunc func(ctx context.Context, userId int, jsonPayload []byte) bool
@@ -26,12 +29,14 @@ func (m *MockHub) Broadcast(ctx context.Context, jsonPayload []byte) {
 	m.BroadcastFunc(ctx, jsonPayload)
 }
 
-// Create a test-specific version of NewWebsocketService that accepts our MockHub
+// Create a test-specific version of NewWebsocketService that accepts our MockHub.
 func newTestWebsocketService(mockHub *MockHub) *WebsocketService {
 	return &WebsocketService{hub: mockHub}
 }
 
 func TestGetOnline(t *testing.T) {
+	t.Parallel()
+
 	tests := []struct {
 		name           string
 		mockGetClients func(ctx context.Context) []*entity.AuthenticationData
@@ -61,14 +66,16 @@ func TestGetOnline(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			mockHub := &MockHub{
+			t.Parallel()
+
+			mockHub := &MockHub{ //nolint:exhaustruct
 				GetClientsFunc: tt.mockGetClients,
 			}
 			service := newTestWebsocketService(mockHub)
 
-			count, err := service.GetOnline(context.Background())
+			count, err := service.GetOnline(t.Context())
 
-			if err != tt.expectedError {
+			if !errors.Is(err, tt.expectedError) {
 				t.Errorf("Expected error %v, got %v", tt.expectedError, err)
 			}
 
@@ -80,6 +87,8 @@ func TestGetOnline(t *testing.T) {
 }
 
 func TestGetOnlineUsers(t *testing.T) {
+	t.Parallel()
+
 	tests := []struct {
 		name           string
 		mockGetClients func(ctx context.Context) []*entity.AuthenticationData
@@ -109,25 +118,29 @@ func TestGetOnlineUsers(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			mockHub := &MockHub{
+			t.Parallel()
+
+			mockHub := &MockHub{ //nolint:exhaustruct
 				GetClientsFunc: tt.mockGetClients,
 			}
 			service := newTestWebsocketService(mockHub)
 
-			users, err := service.GetOnlineUsers(context.Background())
+			users, err := service.GetOnlineUsers(t.Context())
 
-			if err != tt.expectedError {
+			if !errors.Is(err, tt.expectedError) {
 				t.Errorf("Expected error %v, got %v", tt.expectedError, err)
 			}
 
 			if len(users) != tt.expectedCount {
 				t.Errorf("Expected %d users, got %d", tt.expectedCount, len(users))
+
 				return
 			}
 
 			if tt.expectedCount > 0 {
 				// Verify first user data
-				if users[0].Id != 1 || users[0].Username != "user1" || users[0].HardwareID != "hw1" {
+				if users[0].Id != 1 || users[0].Username != "user1" ||
+					users[0].HardwareID != "hw1" {
 					t.Errorf("User data mismatch: %v", users[0])
 				}
 			}
@@ -136,6 +149,8 @@ func TestGetOnlineUsers(t *testing.T) {
 }
 
 func TestSendToUser(t *testing.T) {
+	t.Parallel()
+
 	tests := []struct {
 		name           string
 		userId         int
@@ -159,21 +174,24 @@ func TestSendToUser(t *testing.T) {
 			mockSendToUser: func(ctx context.Context, userId int, jsonPayload []byte) bool {
 				return false
 			},
-			expectedError: errors.New("failed to send message to user"),
+			expectedError: errFailedToSendMessage,
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			mockHub := &MockHub{
+			t.Parallel()
+
+			mockHub := &MockHub{ //nolint:exhaustruct
 				SendToUserFunc: tt.mockSendToUser,
 			}
 			service := newTestWebsocketService(mockHub)
 
-			err := service.SendToUser(context.Background(), tt.userId, tt.jsonPayload)
+			err := service.SendToUser(t.Context(), tt.userId, tt.jsonPayload)
 
 			if (err == nil && tt.expectedError != nil) || (err != nil && tt.expectedError == nil) {
 				t.Errorf("Expected error %v, got %v", tt.expectedError, err)
+
 				return
 			}
 
@@ -185,16 +203,17 @@ func TestSendToUser(t *testing.T) {
 }
 
 func TestBroadcast(t *testing.T) {
+	t.Parallel()
+
 	broadcastCalled := false
-	mockHub := &MockHub{
+	mockHub := &MockHub{ //nolint:exhaustruct
 		BroadcastFunc: func(ctx context.Context, jsonPayload []byte) {
 			broadcastCalled = true
 		},
 	}
 	service := newTestWebsocketService(mockHub)
 
-	err := service.Broadcast(context.Background(), []byte(`{"message":"broadcast"}`))
-
+	err := service.Broadcast(t.Context(), []byte(`{"message":"broadcast"}`))
 	if err != nil {
 		t.Errorf("Expected no error, got %v", err)
 	}

@@ -1,10 +1,14 @@
 package auth
 
 import (
-	"fmt"
-	"github.com/golang-jwt/jwt/v5"
+	"errors"
 	"time"
+
+	"github.com/golang-jwt/jwt/v5"
 )
+
+// ErrInvalidToken is returned when a token is invalid or cannot be validated.
+var ErrInvalidToken = errors.New("invalid token")
 
 type TokenData struct {
 	ID       int    `json:"id"`
@@ -18,8 +22,16 @@ type JWTConfiguration struct {
 	expirationTime time.Duration
 }
 
-func NewJWTConfiguration(secretKey string, issuer string, expirationTime time.Duration) *JWTConfiguration {
-	return &JWTConfiguration{secretKey: []byte(secretKey), issuer: issuer, expirationTime: expirationTime}
+func NewJWTConfiguration(
+	secretKey string,
+	issuer string,
+	expirationTime time.Duration,
+) *JWTConfiguration {
+	return &JWTConfiguration{
+		secretKey:      []byte(secretKey),
+		issuer:         issuer,
+		expirationTime: expirationTime,
+	}
 }
 
 type Claim struct {
@@ -43,6 +55,9 @@ func (j *JWTHelper) TokenGenerator(tokenData *TokenData) string {
 			IssuedAt:  jwt.NewNumericDate(time.Now()),
 			NotBefore: jwt.NewNumericDate(time.Now()),
 			Issuer:    j.issuer,
+			Subject:   "",
+			Audience:  nil,
+			ID:        "",
 		},
 	}
 
@@ -54,7 +69,10 @@ func (j *JWTHelper) TokenGenerator(tokenData *TokenData) string {
 }
 
 func (j *JWTHelper) ValidateToken(tokenString string) (*TokenData, error) {
-	claims := &Claim{}
+	claims := &Claim{
+		AuthenticationData: nil,
+		RegisteredClaims:   jwt.RegisteredClaims{}, //nolint:exhaustruct
+	}
 
 	token, err := jwt.ParseWithClaims(
 		tokenString,
@@ -65,14 +83,13 @@ func (j *JWTHelper) ValidateToken(tokenString string) (*TokenData, error) {
 		jwt.WithIssuer(j.issuer),
 		jwt.WithStrictDecoding(),
 	)
-
 	if err != nil {
 		return nil, err
 	}
 
 	claims, ok := token.Claims.(*Claim)
 	if !ok || !token.Valid {
-		return nil, fmt.Errorf("invalid token")
+		return nil, ErrInvalidToken
 	}
 
 	return claims.AuthenticationData, nil

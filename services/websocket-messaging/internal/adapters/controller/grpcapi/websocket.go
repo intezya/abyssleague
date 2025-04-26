@@ -1,8 +1,9 @@
 package grpcapi
 
 import (
-	websocketpb "abyssproto/websocket"
 	"context"
+
+	websocketpb "abyssproto/websocket"
 	"github.com/intezya/abyssleague/services/websocket-messaging/internal/infrastructure/service"
 	"github.com/intezya/pkglib/itertools"
 	"google.golang.org/grpc"
@@ -24,7 +25,10 @@ type WebsocketHandler struct {
 }
 
 func NewWebsocketHandler(websocketService WebsocketService) *WebsocketHandler {
-	return &WebsocketHandler{websocketService: websocketService}
+	return &WebsocketHandler{
+		UnimplementedWebsocketServiceServer: websocketpb.UnimplementedWebsocketServiceServer{},
+		websocketService:                    websocketService,
+	}
 }
 
 func (h *WebsocketHandler) GetOnline(
@@ -35,7 +39,6 @@ func (h *WebsocketHandler) GetOnline(
 	error,
 ) {
 	result, err := h.websocketService.GetOnline(ctx)
-
 	if err != nil {
 		return nil, InternalError
 	}
@@ -53,7 +56,6 @@ func (h *WebsocketHandler) GetOnlineUsers(
 	error,
 ) {
 	result, err := h.websocketService.GetOnlineUsers(ctx)
-
 	if err != nil {
 		return nil, InternalError
 	}
@@ -81,7 +83,7 @@ func (h *WebsocketHandler) SendMessage(
 	*emptypb.Empty,
 	error,
 ) {
-	if request.UserId == 0 {
+	if request.GetUserId() == 0 {
 		return nil, status.Errorf(codes.InvalidArgument, "UserId is required")
 	}
 
@@ -89,13 +91,12 @@ func (h *WebsocketHandler) SendMessage(
 		return nil, status.Errorf(codes.InvalidArgument, "JsonPayload is required")
 	}
 
-	err := h.websocketService.SendToUser(ctx, int(request.UserId), request.JsonPayload)
-
+	err := h.websocketService.SendToUser(ctx, int(request.GetUserId()), request.GetJsonPayload())
 	if err != nil {
 		return nil, status.Errorf(codes.NotFound, "User not connected")
 	}
 
-	return nil, nil
+	return nil, nil //nolint:nilnil // nil, nil - noreturn, without error
 }
 
 func (h *WebsocketHandler) Broadcast(
@@ -109,13 +110,12 @@ func (h *WebsocketHandler) Broadcast(
 		return nil, status.Errorf(codes.InvalidArgument, "JsonPayload is required")
 	}
 
-	err := h.websocketService.Broadcast(ctx, request.JsonPayload)
-
+	err := h.websocketService.Broadcast(ctx, request.GetJsonPayload())
 	if err != nil {
 		return nil, InternalError
 	}
 
-	return nil, nil
+	return nil, nil //nolint:nilnil // nil, nil - noreturn, without error
 }
 
 func (h *WebsocketHandler) Setup(gRPCServer *grpc.Server) {

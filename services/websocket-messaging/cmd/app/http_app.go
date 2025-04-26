@@ -4,13 +4,22 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"net/http"
+	"time"
+
 	"github.com/intezya/abyssleague/services/websocket-messaging/internal/adapters/config"
 	"github.com/intezya/abyssleague/services/websocket-messaging/internal/adapters/controller/http/middleware"
 	"github.com/intezya/abyssleague/services/websocket-messaging/internal/adapters/controller/http/routes"
 	"github.com/intezya/pkglib/logger"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
-	"net/http"
-	"time"
+)
+
+const (
+	maxHeaderBytes    = 1 << 20 // 1 mb
+	readTimeout       = 15 * time.Second
+	writeTimeout      = 15 * time.Second
+	idleTimeout       = 60 * time.Second
+	readHeaderTimeout = 10 * time.Second
 )
 
 type HttpApp struct {
@@ -34,11 +43,22 @@ func NewHttpApp(config *config.Config) *HttpApp {
 	loggedHandler := middleware.RequestIDMiddleware(middleware.LoggingMiddleware(mux))
 
 	server := &http.Server{
-		Addr:         fmt.Sprintf(":%d", config.HTTPPort),
-		Handler:      loggedHandler,
-		ReadTimeout:  15 * time.Second,
-		WriteTimeout: 15 * time.Second,
-		IdleTimeout:  60 * time.Second,
+		Addr:                         fmt.Sprintf(":%d", config.HTTPPort),
+		Handler:                      loggedHandler,
+		ReadTimeout:                  readTimeout,
+		WriteTimeout:                 writeTimeout,
+		IdleTimeout:                  idleTimeout,
+		ReadHeaderTimeout:            readHeaderTimeout,
+		MaxHeaderBytes:               maxHeaderBytes, // 1 MB
+		TLSConfig:                    nil,
+		DisableGeneralOptionsHandler: false,
+		TLSNextProto:                 nil,
+		ConnState:                    nil,
+		ErrorLog:                     nil,
+		BaseContext:                  nil,
+		ConnContext:                  nil,
+		HTTP2:                        nil,
+		Protocols:                    nil,
 	}
 
 	return &HttpApp{
@@ -58,19 +78,24 @@ func (a *HttpApp) Start(ctx context.Context) error {
 		if err := a.Server.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
 			errCh <- fmt.Errorf("HTTP server error: %w", err)
 		}
+
 		close(errCh)
 	}()
 
 	select {
 	case <-ctx.Done():
 		logger.Log.Info("HTTP server context cancelled")
+
 		return nil
 	case err := <-errCh:
 		a.running = false
+
 		if err != nil {
 			logger.Log.Errorf("HTTP server failed: %v", err)
+
 			return err
 		}
+
 		return nil
 	}
 }
@@ -78,6 +103,7 @@ func (a *HttpApp) Start(ctx context.Context) error {
 func (a *HttpApp) Shutdown(ctx context.Context) error {
 	if !a.running {
 		logger.Log.Info("HTTP server is not running, nothing to shutdown")
+
 		return nil
 	}
 
@@ -85,10 +111,13 @@ func (a *HttpApp) Shutdown(ctx context.Context) error {
 
 	if err := a.Server.Shutdown(ctx); err != nil {
 		logger.Log.Errorf("HTTP server shutdown error: %v", err)
+
 		return err
 	}
 
 	a.running = false
+
 	logger.Log.Info("HTTP server shutdown completed")
+
 	return nil
 }

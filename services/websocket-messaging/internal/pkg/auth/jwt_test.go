@@ -6,6 +6,7 @@ import (
 )
 
 func TestJWTConfiguration(t *testing.T) {
+	t.Parallel()
 	// Test creating a new JWT configuration
 	secretKey := "test-secret"
 	issuer := "test-issuer"
@@ -19,6 +20,7 @@ func TestJWTConfiguration(t *testing.T) {
 }
 
 func TestNewJWTHelper(t *testing.T) {
+	t.Parallel()
 	// Test creating a new JWT helper
 	config := NewJWTConfiguration("test-secret", "test-issuer", 24*time.Hour)
 	helper := NewJWTHelper(config)
@@ -33,6 +35,7 @@ func TestNewJWTHelper(t *testing.T) {
 }
 
 func TestTokenGeneratorAndValidation(t *testing.T) {
+	t.Parallel()
 	// Create a JWT helper with a short expiration time for testing
 	config := NewJWTConfiguration("test-secret", "test-issuer", 2*time.Second)
 	helper := NewJWTHelper(config)
@@ -61,9 +64,11 @@ func TestTokenGeneratorAndValidation(t *testing.T) {
 	if validatedData.ID != tokenData.ID {
 		t.Errorf("Expected ID %d, got %d", tokenData.ID, validatedData.ID)
 	}
+
 	if validatedData.Username != tokenData.Username {
 		t.Errorf("Expected Username %s, got %s", tokenData.Username, validatedData.Username)
 	}
+
 	if validatedData.Hwid != tokenData.Hwid {
 		t.Errorf("Expected Hwid %s, got %s", tokenData.Hwid, validatedData.Hwid)
 	}
@@ -71,6 +76,7 @@ func TestTokenGeneratorAndValidation(t *testing.T) {
 	// Test token expiration
 	t.Run("Token expiration", func(t *testing.T) {
 		// Wait for the token to expire
+		t.Parallel()
 		time.Sleep(3 * time.Second)
 
 		// Try to validate the expired token
@@ -82,6 +88,7 @@ func TestTokenGeneratorAndValidation(t *testing.T) {
 }
 
 func TestValidateTokenWithInvalidToken(t *testing.T) {
+	t.Parallel()
 	// Create a JWT helper
 	config := NewJWTConfiguration("test-secret", "test-issuer", 24*time.Hour)
 	helper := NewJWTHelper(config)
@@ -100,13 +107,17 @@ func TestValidateTokenWithInvalidToken(t *testing.T) {
 			token: "not-a-jwt-token",
 		},
 		{
-			name:  "Wrong signature",
-			token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c",
+			name: "Wrong signature",
+			token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9." +
+				"eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ." +
+				"SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c",
 		},
 	}
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
 			_, err := helper.ValidateToken(tc.token)
 			if err == nil {
 				t.Errorf("Expected error for invalid token, got nil")
@@ -116,6 +127,7 @@ func TestValidateTokenWithInvalidToken(t *testing.T) {
 }
 
 func TestValidateTokenWithWrongIssuer(t *testing.T) {
+	t.Parallel()
 	// Create a JWT helper with a specific issuer
 	config1 := NewJWTConfiguration("test-secret", "issuer1", 24*time.Hour)
 	helper1 := NewJWTHelper(config1)

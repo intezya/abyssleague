@@ -1,12 +1,18 @@
 package websocket
 
 import (
+	"net/http"
+
 	"github.com/gorilla/websocket"
 	"github.com/intezya/abyssleague/services/websocket-messaging/internal/adapters/controller/http/middleware"
 	"github.com/intezya/abyssleague/services/websocket-messaging/internal/adapters/controller/http/routes"
 	"github.com/intezya/abyssleague/services/websocket-messaging/internal/infrastructure/hub"
 	"github.com/intezya/abyssleague/services/websocket-messaging/internal/pkg/auth"
-	"net/http"
+)
+
+const (
+	readBufferSize  = 1024
+	writeBufferSize = 1024
 )
 
 func SetupRoute(
@@ -18,9 +24,14 @@ func SetupRoute(
 	authMiddleware := middleware.NewMiddleware(jwtService)
 
 	upgrader := websocket.Upgrader{
-		ReadBufferSize:  1024,
-		WriteBufferSize: 1024,
-		CheckOrigin:     func(r *http.Request) bool { return true },
+		ReadBufferSize:    readBufferSize,
+		WriteBufferSize:   writeBufferSize,
+		CheckOrigin:       func(r *http.Request) bool { return true },
+		HandshakeTimeout:  0,          // Default (no timeout)
+		WriteBufferPool:   nil,        // Default
+		Subprotocols:      []string{}, // No subprotocols
+		Error:             nil,        // Default error handler
+		EnableCompression: false,      // Compression disabled
 	}
 
 	handler := NewHandler(authMiddleware, upgrader, hub)

@@ -3,11 +3,6 @@ package main
 import (
 	"context"
 	"fmt"
-	"github.com/intezya/abyssleague/services/websocket-messaging/internal/adapters/controller/websocket"
-	"github.com/intezya/abyssleague/services/websocket-messaging/internal/infrastructure/hub"
-	"github.com/intezya/abyssleague/services/websocket-messaging/internal/infrastructure/service"
-	"github.com/intezya/abyssleague/services/websocket-messaging/internal/pkg/auth"
-	"github.com/intezya/pkglib/logger"
 	"os"
 	"os/signal"
 	"sync"
@@ -17,6 +12,11 @@ import (
 	"github.com/intezya/abyssleague/services/websocket-messaging/cmd/app"
 	"github.com/intezya/abyssleague/services/websocket-messaging/internal/adapters/config"
 	"github.com/intezya/abyssleague/services/websocket-messaging/internal/adapters/controller/grpcapi"
+	"github.com/intezya/abyssleague/services/websocket-messaging/internal/adapters/controller/websocket"
+	"github.com/intezya/abyssleague/services/websocket-messaging/internal/infrastructure/hub"
+	"github.com/intezya/abyssleague/services/websocket-messaging/internal/infrastructure/service"
+	"github.com/intezya/abyssleague/services/websocket-messaging/internal/pkg/auth"
+	"github.com/intezya/pkglib/logger"
 )
 
 func main() {
@@ -39,7 +39,7 @@ func main() {
 	shutdownReason := waitForShutdownSignal(sigCh, httpErrCh)
 	logger.Log.Infof("Shutting down application: %s", shutdownReason)
 
-	gracefulShutdown(ctx, cancel, httpApp, gRPCApps, hubs)
+	gracefulShutdown(cancel, httpApp, gRPCApps, hubs)
 }
 
 func setupHubs(
@@ -58,6 +58,7 @@ func setupHubs(
 
 		newHub := hub.NewHub(hubName)
 		hubs = append(hubs, newHub)
+
 		go newHub.Run()
 
 		websocket.SetupRoute(httpApp.Mux, newHub, hubName, jwtService)
@@ -69,6 +70,7 @@ func setupHubs(
 		gRPCApps = append(gRPCApps, gRPCApp)
 
 		wg.Add(1)
+
 		go startGRPCServer(ctx, gRPCApp, &wg)
 	}
 
@@ -77,6 +79,7 @@ func setupHubs(
 
 func startGRPCServer(ctx context.Context, app *app.GRPCApp, wg *sync.WaitGroup) {
 	defer wg.Done()
+
 	if err := app.Start(ctx); err != nil {
 		logger.Log.Errorf("gRPC server error: %v", err)
 	}
@@ -88,8 +91,10 @@ func startHTTPServer(ctx context.Context, httpApp *app.HttpApp) chan error {
 		if err := httpApp.Start(ctx); err != nil {
 			httpErrCh <- err
 		}
+
 		close(httpErrCh)
 	}()
+
 	return httpErrCh
 }
 
@@ -101,12 +106,12 @@ func waitForShutdownSignal(sigCh chan os.Signal, httpErrCh chan error) string {
 		if err != nil {
 			return fmt.Sprintf("HTTP server error: %v", err)
 		}
+
 		return "HTTP server stopped unexpectedly"
 	}
 }
 
 func gracefulShutdown(
-	ctx context.Context,
 	cancel context.CancelFunc,
 	httpApp *app.HttpApp,
 	gRPCApps []*app.GRPCApp,
@@ -137,8 +142,10 @@ func shutdownGRPCServers(ctx context.Context, gRPCApps []*app.GRPCApp) {
 
 	for _, grpcApp := range gRPCApps {
 		wg.Add(1)
+
 		go func(a *app.GRPCApp) {
 			defer wg.Done()
+
 			if err := a.Shutdown(ctx); err != nil {
 				logger.Log.Errorf("Error during gRPC server shutdown: %v", err)
 			}
