@@ -1,16 +1,19 @@
 package middleware
 
 import (
-	"github.com/intezya/abyssleague/services/websocket-messaging/internal/domain/entity"
-	"github.com/intezya/abyssleague/services/websocket-messaging/internal/pkg/auth"
-	"github.com/intezya/pkglib/logger"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 	"time"
+
+	"github.com/intezya/abyssleague/services/websocket-messaging/internal/domain/entity"
+	"github.com/intezya/abyssleague/services/websocket-messaging/internal/pkg/auth"
+	"github.com/intezya/pkglib/logger"
 )
 
 func TestNewMiddleware(t *testing.T) {
+	t.Parallel()
+
 	// Create a real JWT helper with test configuration
 	jwtConfig := auth.NewJWTConfiguration("test-secret", "test-issuer", 24*time.Hour)
 	jwtHelper := auth.NewJWTHelper(jwtConfig)
@@ -18,18 +21,20 @@ func TestNewMiddleware(t *testing.T) {
 	// Create the middleware
 	middleware := NewMiddleware(jwtHelper)
 
-	// Verify that the middleware is not nil
+	// Verify that the middleware is created correctly
 	if middleware == nil {
-		t.Error("Expected non-nil middleware")
+		t.Fatal("Expected non-nil middleware")
 	}
 
-	// Verify that the middleware has the correct JWT service
+	// Since we've verified middleware is not nil, we can safely check jwtService
 	if middleware.jwtService == nil {
 		t.Error("Expected non-nil jwtService")
 	}
 }
 
 func TestJwtAuth(t *testing.T) {
+	t.Parallel()
+
 	// Initialize the logger
 	_, err := logger.New(logger.WithDebug(true))
 	if err != nil {
@@ -81,12 +86,17 @@ func TestJwtAuth(t *testing.T) {
 	}
 
 	for _, tt := range tests {
+		// Capture range variable
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
 			// Create the middleware
 			middleware := NewMiddleware(jwtHelper)
 
-			// Create a test request
-			req, err := http.NewRequest("GET", "/test", nil)
+			// Create a test request with context
+			ctx := t.Context()
+
+			req, err := http.NewRequestWithContext(ctx, http.MethodGet, "/test", nil)
 			if err != nil {
 				t.Fatalf("Failed to create request: %v", err)
 			}
@@ -97,41 +107,60 @@ func TestJwtAuth(t *testing.T) {
 			}
 
 			// Create a test response recorder
-			rr := httptest.NewRecorder()
+			recorder := httptest.NewRecorder()
 
 			// Call the middleware
-			authData := middleware.JwtAuth(rr, req)
+			authData := middleware.JwtAuth(recorder, req)
 
 			// Check the status code
-			if rr.Code != tt.expectedStatusCode {
-				t.Errorf("Expected status code %d, got %d", tt.expectedStatusCode, rr.Code)
+			if recorder.Code != tt.expectedStatusCode {
+				t.Errorf("Expected status code %d, got %d", tt.expectedStatusCode, recorder.Code)
 			}
 
 			// Check the authentication data
-			if tt.expectedAuthData == nil {
-				if authData != nil {
-					t.Errorf("Expected nil auth data, got %v", authData)
-				}
-			} else {
-				if authData == nil {
-					t.Error("Expected non-nil auth data, got nil")
-				} else {
-					if authData.ID() != tt.expectedAuthData.ID() {
-						t.Errorf("Expected auth data ID %d, got %d", tt.expectedAuthData.ID(), authData.ID())
-					}
-					if authData.Username() != tt.expectedAuthData.Username() {
-						t.Errorf("Expected auth data Username %s, got %s", tt.expectedAuthData.Username(), authData.Username())
-					}
-					if authData.HardwareID() != tt.expectedAuthData.HardwareID() {
-						t.Errorf("Expected auth data HardwareID %s, got %s", tt.expectedAuthData.HardwareID(), authData.HardwareID())
-					}
-				}
-			}
+			verifyAuthData(t, authData, tt.expectedAuthData)
 		})
 	}
 }
 
+// Helper function to verify authentication data.
+func verifyAuthData(t *testing.T, actual, expected *entity.AuthenticationData) {
+	t.Helper()
+
+	if expected == nil {
+		if actual != nil {
+			t.Errorf("Expected nil auth data, got %v", actual)
+		}
+
+		return
+	}
+
+	if actual == nil {
+		t.Error("Expected non-nil auth data, got nil")
+
+		return
+	}
+
+	if actual.ID() != expected.ID() {
+		t.Errorf("Expected auth data ID %d, got %d", expected.ID(), actual.ID())
+	}
+
+	if actual.Username() != expected.Username() {
+		t.Errorf("Expected auth data Username %s, got %s", expected.Username(), actual.Username())
+	}
+
+	if actual.HardwareID() != expected.HardwareID() {
+		t.Errorf(
+			"Expected auth data HardwareID %s, got %s",
+			expected.HardwareID(),
+			actual.HardwareID(),
+		)
+	}
+}
+
 func TestSoftExtractTokenFromHeader(t *testing.T) {
+	t.Parallel()
+
 	tests := []struct {
 		name           string
 		tokenString    string
@@ -165,7 +194,10 @@ func TestSoftExtractTokenFromHeader(t *testing.T) {
 	}
 
 	for _, tt := range tests {
+		// Capture range variable
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
 			result := softExtractTokenFromHeader(tt.tokenString, tt.prefixes...)
 			if result != tt.expectedResult {
 				t.Errorf("Expected result '%s', got '%s'", tt.expectedResult, result)

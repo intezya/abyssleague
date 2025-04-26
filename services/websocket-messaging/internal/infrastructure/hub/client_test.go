@@ -28,7 +28,7 @@ func TestGetAuthentication(t *testing.T) {
 	authData := entity.NewAuthenticationData(1, "testuser", "testhwid")
 
 	// Create a client with nil connection (we're not using it in this test)
-	client := &Client{ //nolint:exhaustruct
+	client := &Client{
 		authentication: authData,
 	}
 
@@ -43,7 +43,7 @@ func TestGetAuthentication(t *testing.T) {
 func TestNewClient(t *testing.T) {
 	t.Parallel()
 	// Create test data
-	hub := &Hub{} //nolint:exhaustruct
+	hub := &Hub{}
 	authData := entity.NewAuthenticationData(1, "testuser", "testhwid")
 	conn := &websocket.Conn{} // Using a nil connection is fine for this test
 

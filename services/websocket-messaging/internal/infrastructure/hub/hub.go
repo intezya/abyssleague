@@ -12,7 +12,7 @@ import (
 const (
 	writeWaitTimeout     = 5 * time.Second
 	connectionTimeout    = 10 * time.Second
-	connectionPingPeriod = (connectionTimeout * 9) / 10
+	connectionPingPeriod = (connectionTimeout * 9) / 10 //nolint:mnd // that's ok
 	maxMessageSize       = 1024
 )
 
@@ -121,7 +121,9 @@ func (hub *Hub) Stop() {
 
 	close(hub.done)
 
-	time.Sleep(100 * time.Millisecond)
+	const waitForClosingTime = 100 * time.Millisecond
+
+	time.Sleep(waitForClosingTime)
 
 	hub.mu.Lock()
 	defer hub.mu.Unlock()

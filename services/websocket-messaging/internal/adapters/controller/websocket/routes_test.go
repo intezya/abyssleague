@@ -34,10 +34,25 @@ func TestSetupRoute(t *testing.T) {
 	// Test that the route was registered by making a request
 	// Note: We don't expect a successful websocket connection here,
 	// just verifying that the route handler was registered
-	resp, err := http.Get(server.URL + routes.WebsocketPathPrefix + "/test-hub")
+	ctx := t.Context()
+
+	req, err := http.NewRequestWithContext(
+		ctx,
+		http.MethodGet,
+		server.URL+routes.WebsocketPathPrefix+"/test-hub",
+		nil,
+	)
+	if err != nil {
+		t.Fatalf("Failed to create request: %v", err)
+	}
+
+	client := &http.Client{}
+
+	resp, err := client.Do(req)
 	if err != nil {
 		t.Fatalf("Failed to send request: %v", err)
 	}
+
 	defer func(Body io.ReadCloser) {
 		_ = Body.Close()
 	}(resp.Body)

@@ -10,10 +10,23 @@ import (
 	"github.com/intezya/pkglib/logger"
 )
 
+// SystemMessages contains predefined system messages.
+type SystemMessages struct {
+	Welcome map[string]string
+}
+
+// NewSystemMessages creates a new instance of SystemMessages.
+func NewSystemMessages() *SystemMessages {
+	return &SystemMessages{
+		Welcome: map[string]string{"message": "Welcome!"},
+	}
+}
+
 type Handler struct {
 	authMiddleware *middleware.SecurityMiddleware
 	upgrader       websocket.Upgrader
 	hub            *hub.Hub
+	systemMessages *SystemMessages
 }
 
 func NewHandler(
@@ -25,6 +38,7 @@ func NewHandler(
 		authMiddleware: authMiddleware,
 		upgrader:       upgrader,
 		hub:            hub,
+		systemMessages: NewSystemMessages(),
 	}
 }
 
@@ -48,8 +62,9 @@ func (h *Handler) GetHandler() http.HandlerFunc {
 		client := hub.NewClient(h.hub, authData, conn)
 		client.Hub.RegisterClient(client)
 
-		// TODO: use system-like messages as variables of struct package
-		welcomeMsg := map[string]string{"message": "Welcome!", "user": authData.Username()}
+		// Use system welcome message with user information
+		welcomeMsg := h.systemMessages.Welcome
+		welcomeMsg["user"] = authData.Username()
 		msgBytes, _ := json.Marshal(welcomeMsg)
 		client.Send <- msgBytes
 

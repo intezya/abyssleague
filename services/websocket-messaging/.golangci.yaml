@@ -12,6 +12,7 @@ linters:
     - errname # not configurable (canonical custom http-like errors must be excluded)
     - depguard
     - testpackage
+    - bodyclose
     # Must be turned on after
     - revive
 
@@ -79,7 +80,9 @@ linters:
       - path: internal/common/errors # custom application errors
         linters:
           - err113
-
+      - path: .*_test\.go$
+        linters:
+          - exhaustruct
 formatters:
   enable:
     - gci

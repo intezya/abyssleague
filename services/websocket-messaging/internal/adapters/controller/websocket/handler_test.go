@@ -92,11 +92,21 @@ func TestGetHandler(t *testing.T) {
 			)
 			defer server.Close()
 
-			// Make a request to the test server
-			resp, err := http.Get(server.URL)
+			// Make a request to the test server with context
+			ctx := t.Context()
+
+			req, err := http.NewRequestWithContext(ctx, http.MethodGet, server.URL, nil)
+			if err != nil {
+				t.Fatalf("Failed to create request: %v", err)
+			}
+
+			client := &http.Client{}
+
+			resp, err := client.Do(req)
 			if err != nil {
 				t.Fatalf("Failed to send request: %v", err)
 			}
+
 			defer func(Body io.ReadCloser) {
 				_ = Body.Close()
 			}(resp.Body)
@@ -118,24 +128,25 @@ func TestGetHandler(t *testing.T) {
 func TestNewHandlerCreation(t *testing.T) {
 	t.Parallel()
 	// Create a mock auth middleware
-	mockAuth := &MockAuthMiddleware{} //nolint:exhaustruct
+	mockAuth := &MockAuthMiddleware{}
 
 	// In a real test, we would create an upgrader and use it
 	// But for this simplified test, we don't need it
 
 	// Create a mock hub
-	mockHub := &MockHub{} //nolint:exhaustruct
+	mockHub := &MockHub{}
 
 	// We can't directly use our mocks with the real NewHandler function
 	// due to type mismatches, so we'll just verify that our mocks work as expected
 
 	// Verify that the mock auth middleware works
-	req, _ := http.NewRequest(http.MethodGet, "/test", nil)
-	rr := httptest.NewRecorder()
+	ctx := t.Context()
+	req, _ := http.NewRequestWithContext(ctx, http.MethodGet, "/test", nil)
+	recorder := httptest.NewRecorder()
 
 	mockAuth.AuthResult = entity.NewAuthenticationData(1, "testuser", "testhwid")
 
-	authData := mockAuth.JwtAuth(rr, req)
+	authData := mockAuth.JwtAuth(recorder, req)
 	if authData == nil {
 		t.Errorf("Expected non-nil auth data")
 	}

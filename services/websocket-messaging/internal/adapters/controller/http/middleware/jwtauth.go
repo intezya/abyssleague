@@ -30,7 +30,7 @@ func (m *SecurityMiddleware) JwtAuth(
 		return authenticationData
 	}
 
-	token := SoftExtractTokenFromHeader(authHeader, "Bearer ", "Token ")
+	token := softExtractTokenFromHeader(authHeader, "Bearer ", "Token ")
 
 	tokenData, err := m.jwtService.ValidateToken(token)
 	if err != nil {
@@ -52,7 +52,7 @@ func (m *SecurityMiddleware) JwtAuth(
 	return authenticationData
 }
 
-func SoftExtractTokenFromHeader(tokenString string, availablePrefixes ...string) string {
+func softExtractTokenFromHeader(tokenString string, availablePrefixes ...string) string {
 	for _, prefix := range availablePrefixes {
 		if token, found := strings.CutPrefix(tokenString, prefix); found {
 			return token

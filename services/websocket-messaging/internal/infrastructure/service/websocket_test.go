@@ -68,7 +68,7 @@ func TestGetOnline(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			mockHub := &MockHub{ //nolint:exhaustruct
+			mockHub := &MockHub{
 				GetClientsFunc: tt.mockGetClients,
 			}
 			service := newTestWebsocketService(mockHub)
@@ -120,7 +120,7 @@ func TestGetOnlineUsers(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			mockHub := &MockHub{ //nolint:exhaustruct
+			mockHub := &MockHub{
 				GetClientsFunc: tt.mockGetClients,
 			}
 			service := newTestWebsocketService(mockHub)
@@ -182,7 +182,7 @@ func TestSendToUser(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			mockHub := &MockHub{ //nolint:exhaustruct
+			mockHub := &MockHub{
 				SendToUserFunc: tt.mockSendToUser,
 			}
 			service := newTestWebsocketService(mockHub)
@@ -206,7 +206,7 @@ func TestBroadcast(t *testing.T) {
 	t.Parallel()
 
 	broadcastCalled := false
-	mockHub := &MockHub{ //nolint:exhaustruct
+	mockHub := &MockHub{
 		BroadcastFunc: func(ctx context.Context, jsonPayload []byte) {
 			broadcastCalled = true
 		},

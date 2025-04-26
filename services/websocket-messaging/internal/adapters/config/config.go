@@ -138,6 +138,8 @@ func Setup() *Config {
 }
 
 func parseLokiLabels(labelsStr string) map[string]string {
+	const resultPartsCount = 2
+
 	labels := make(map[string]string)
 	if labelsStr == "" {
 		return labels
@@ -145,8 +147,8 @@ func parseLokiLabels(labelsStr string) map[string]string {
 
 	pairs := strings.Split(labelsStr, ",")
 	for _, pair := range pairs {
-		parts := strings.SplitN(pair, "=", 2)
-		if len(parts) == 2 {
+		parts := strings.SplitN(pair, "=", resultPartsCount)
+		if len(parts) == resultPartsCount {
 			key := strings.TrimSpace(parts[0])
 			value := strings.TrimSpace(parts[1])
 			labels[key] = value

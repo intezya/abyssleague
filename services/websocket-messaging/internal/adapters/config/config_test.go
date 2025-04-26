@@ -167,10 +167,7 @@ func TestGetEnvBool(t *testing.T) {
 			t.Parallel()
 
 			if tt.value != "" {
-				os.Setenv(tt.key, tt.value)
-				defer os.Unsetenv(tt.key)
-			} else {
-				os.Unsetenv(tt.key)
+				t.Setenv(tt.key, tt.value)
 			}
 
 			if got := getEnvBool(tt.key, tt.fallback); got != tt.expected {
@@ -195,28 +192,30 @@ func TestConfigure(t *testing.T) {
 	}
 
 	// Restore environment variables after test
-	defer func() {
+	t.Cleanup(func() {
 		for key := range origEnv {
-			os.Unsetenv(key)
+			_ = os.Unsetenv(key)
 		}
 
 		for key, val := range origEnv {
-			os.Setenv(key, val)
+			t.Setenv(key, val)
 		}
-	}()
+	})
 
 	// Set test environment variables
-	os.Setenv("ENV_TYPE", "test")
-	os.Setenv("DEBUG", "true")
-	os.Setenv("GRPC_SERVER_PORTS", "50051,50052")
-	os.Setenv("WEBSOCKET_HUBS", "hub1,hub2")
-	os.Setenv("JWT_SECRET", "test-secret")
-	os.Setenv("JWT_ISSUER", "test-issuer")
-	os.Setenv("HTTP_PORT", "8080")
+	t.Setenv("ENV_TYPE", "test")
+	t.Setenv("DEBUG", "true")
+	t.Setenv("GRPC_SERVER_PORTS", "50051,50052")
+	t.Setenv("WEBSOCKET_HUBS", "hub1,hub2")
+	t.Setenv("JWT_SECRET", "test-secret")
+	t.Setenv("JWT_ISSUER", "test-issuer")
+	t.Setenv("HTTP_PORT", "8080")
 
 	// This test might not work well in CI environments due to logger initialization
 	// We're focusing on the parts we can reliably test
 	t.Run("Configure with custom environment", func(t *testing.T) {
+		t.Parallel()
+
 		// This might panic due to logger initialization in CI
 		// We'll use a recovery mechanism to handle potential panics
 		defer func() {

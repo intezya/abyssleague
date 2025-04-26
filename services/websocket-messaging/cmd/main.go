@@ -19,6 +19,8 @@ import (
 	"github.com/intezya/pkglib/logger"
 )
 
+const gracefulShutdownTimeout = 10 * time.Second
+
 func main() {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
@@ -117,7 +119,10 @@ func gracefulShutdown(
 	gRPCApps []*app.GRPCApp,
 	hubs []*hub.Hub,
 ) {
-	shutdownCtx, shutdownCancel := context.WithTimeout(context.Background(), 10*time.Second)
+	shutdownCtx, shutdownCancel := context.WithTimeout(
+		context.Background(),
+		gracefulShutdownTimeout,
+	)
 
 	defer shutdownCancel()
 	cancel()

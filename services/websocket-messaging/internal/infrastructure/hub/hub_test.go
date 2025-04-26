@@ -82,7 +82,7 @@ func TestRegisterAndGetClients(t *testing.T) {
 
 	// Create a test client
 	authData := entity.NewAuthenticationData(1, "testuser", "testhwid")
-	client := &Client{ //nolint:exhaustruct
+	client := &Client{
 		Hub:            hub,
 		authentication: authData,
 		Send:           make(chan []byte, 256),
@@ -131,7 +131,7 @@ func TestUnregisterClient(t *testing.T) {
 
 	// Create a test client
 	authData := entity.NewAuthenticationData(1, "testuser", "testhwid")
-	client := &Client{ //nolint:exhaustruct
+	client := &Client{
 		Hub:            hub,
 		authentication: authData,
 		Send:           make(chan []byte, 256),
@@ -174,7 +174,7 @@ func TestSendToUser(t *testing.T) {
 
 	// Create a test client
 	authData := entity.NewAuthenticationData(1, "testuser", "testhwid")
-	client := &Client{ //nolint:exhaustruct
+	client := &Client{
 		Hub:            hub,
 		authentication: authData,
 		Send:           make(chan []byte, 256),
