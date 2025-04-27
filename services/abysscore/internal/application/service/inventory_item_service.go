@@ -2,6 +2,9 @@ package applicationservice
 
 import (
 	"context"
+	"github.com/intezya/abyssleague/services/abysscore/internal/domain/event"
+	eventlib "github.com/intezya/abyssleague/services/abysscore/pkg/event"
+	"github.com/intezya/abyssleague/services/abysscore/pkg/optional"
 
 	"github.com/intezya/abyssleague/services/abysscore/internal/domain/dto"
 	repositoryports "github.com/intezya/abyssleague/services/abysscore/internal/domain/repository"
@@ -11,15 +14,18 @@ import (
 type InventoryItemService struct {
 	inventoryItemRepository repositoryports.InventoryItemRepository
 	userRepository          repositoryports.UserRepository
+	eventPublisher          eventlib.Publisher
 }
 
 func NewInventoryItemService(
 	repository repositoryports.InventoryItemRepository,
 	userRepository repositoryports.UserRepository,
+	eventPublisher eventlib.Publisher,
 ) *InventoryItemService {
 	return &InventoryItemService{
 		inventoryItemRepository: repository,
 		userRepository:          userRepository,
+		eventPublisher:          eventPublisher,
 	}
 }
 
@@ -46,7 +52,12 @@ func (i *InventoryItemService) GrantToUserByAdmin(
 		return nil, err
 	}
 
-	// TODO: send notification to user
+	i.eventPublisher.Publish(event.NewInventoryItemObtainedEvent(
+		optional.EmptyOptional[string](),
+		optional.NewOptional(performer),
+		userID,
+		result,
+	))
 
 	return result, nil
 }

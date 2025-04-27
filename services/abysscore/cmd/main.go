@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-
 	"github.com/intezya/abyssleague/services/abysscore/internal/adapters/config"
 	"github.com/intezya/abyssleague/services/abysscore/internal/adapters/controller/grpc/factory"
 	"github.com/intezya/abyssleague/services/abysscore/internal/adapters/controller/grpc/wrapper"
@@ -63,6 +62,8 @@ func main() {
 		auth.NewHashHelper(),
 		auth.NewJWTHelper(appConfig.JWTConfiguration),
 	)
+
+	applicationEventPublisher := applicationservice.NewApplicationEventPublisher()
 
 	handlerDependencies := handlers.NewDependencyProvider(serviceDependencies)
 
