@@ -226,7 +226,8 @@ func initLoggerConfig(envType string) *LoggerConfig {
 // initRedisConfig initializes Redis configuration.
 func initRedisConfig() *rediswrapper.Config {
 	return &rediswrapper.Config{
-		Options: &redis.Options{ //nolint:exhaustruct // here is too many useless fields
+		Options: &redis.Options{
+			//nolint:exhaustruct // here is too many useless fields
 			Addr:     getEnvString("REDIS_ADDR", "localhost:6379"),
 			Password: getEnvString("REDIS_PASSWORD", ""),
 			DB:       getEnvInt("REDIS_DB", 0),

@@ -179,6 +179,30 @@ func (r *UserRepository) SetInventoryItemAsCurrent(
 	return nil
 }
 
+func (r *UserRepository) SetEmailIfNil(ctx context.Context, userID int, email string) (*dto.UserDTO, error) {
+	return withTxResult(
+		ctx, r.client, func(tx *ent.Tx) (*dto.UserDTO, error) {
+			user, err := tx.User.Get(ctx, userID)
+
+			if err != nil {
+				return nil, r.handleQueryError(err)
+			}
+
+			if user.Email != nil {
+				return nil, repositoryerrors.ErrAccountAlreadyHasEmail
+			}
+
+			savedUser, err := tx.User.UpdateOneID(userID).SetEmail(email).Save(ctx)
+
+			if err != nil {
+				return nil, r.handleConstraintError(err) // unexpected
+			}
+
+			return mapper.ToUserDTOFromEnt(savedUser), nil
+		},
+	)
+}
+
 // Helper methods for error handling
 
 // handleQueryError transforms Ent query errors into domain-specific errors.
@@ -222,6 +246,8 @@ func (r *UserRepository) handleConstraintError(err error) error {
 		return repositoryerrors.WrapUserAlreadyExists(err)
 	case strings.Contains(err.Error(), "hardware_id"):
 		return repositoryerrors.WrapUserHwidConflict(err)
+	case strings.Contains(err.Error(), "email"):
+		return repositoryerrors.ErrAccountAlreadyHasEmail
 	default:
 		return repositoryerrors.WrapUnexpectedError(err)
 	}

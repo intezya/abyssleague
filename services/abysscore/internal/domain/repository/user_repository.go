@@ -33,4 +33,5 @@ type UserRepository interface {
 		user *dto.UserDTO,
 		item *dto.InventoryItemDTO,
 	) error
+	SetEmailIfNil(ctx context.Context, userID int, email string) (*dto.UserDTO, error)
 }

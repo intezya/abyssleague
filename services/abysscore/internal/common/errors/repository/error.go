@@ -17,6 +17,11 @@ var (
 	WrapUserAlreadyExists = func(err error) error {
 		return base.NewError(errors.New("user already exists"), err, fiber.StatusConflict)
 	}
+	ErrAccountAlreadyHasEmail = base.NewError(
+		errors.New("account already has linked email"),
+		nil,
+		fiber.StatusConflict,
+	)
 
 	WrapUnexpectedError = func(err error) error {
 		return base.NewError(errors.New("unexpected error"), err, fiber.StatusServiceUnavailable)
@@ -25,7 +30,11 @@ var (
 	WrapGameItemNotFound = func(err error) error {
 		return base.NewError(errors.New("game item not found"), err, fiber.StatusNotFound)
 	}
-	WrapItemNotFoundInInventory = func(wrapped error) error {
-		return base.NewError(errors.New("item not found in inventory"), nil, fiber.StatusNotFound)
+	WrapItemNotFoundInInventory = func(err error) error {
+		return base.NewError(errors.New("item not found in inventory"), err, fiber.StatusNotFound)
+	}
+
+	WrapMailDataNotFound = func(err error) error {
+		return base.NewError(errors.New("mail data not found"), err, fiber.StatusNotFound)
 	}
 )

@@ -5,7 +5,7 @@ import (
 	"errors"
 	"time"
 
-	websocketpb "abyssproto/websocket"
+	websocketpb "github.com/intezya/abyssleague/proto/websocket"
 	"github.com/intezya/abyssleague/services/abysscore/internal/adapters/controller/grpc/factory"
 	"github.com/intezya/pkglib/logger"
 	"google.golang.org/protobuf/types/known/emptypb"

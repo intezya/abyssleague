@@ -7,7 +7,7 @@ import (
 	"sync"
 	"time"
 
-	websocketpb "abyssproto/websocket"
+	websocketpb "github.com/intezya/abyssleague/proto/websocket"
 	"github.com/intezya/pkglib/logger"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/connectivity"
@@ -89,7 +89,8 @@ type GrpcClientFactory struct {
 
 // NewGrpcClientFactory creates a new instance of GrpcClientFactory.
 func NewGrpcClientFactory() *GrpcClientFactory {
-	return &GrpcClientFactory{ //nolint:exhaustruct // mu is "autowired"
+	return &GrpcClientFactory{
+		//nolint:exhaustruct // mu is "autowired"
 		connections: make(map[string]*grpc.ClientConn),
 		clients:     make(map[string]interface{}),
 	}

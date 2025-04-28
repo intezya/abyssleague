@@ -5,7 +5,7 @@ import (
 	"errors"
 	"testing"
 
-	websocketpb "abyssproto/websocket"
+	websocketpb "github.com/intezya/abyssleague/proto/websocket"
 	"github.com/intezya/abyssleague/services/websocket-messaging/internal/infrastructure/service"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -76,53 +76,55 @@ func TestGetOnline(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			t.Parallel()
+		t.Run(
+			tt.name, func(t *testing.T) {
+				t.Parallel()
 
-			mockService := &MockWebsocketService{
-				GetOnlineFunc: tt.mockGetOnline,
-			}
-			handler := NewWebsocketHandler(mockService)
+				mockService := &MockWebsocketService{
+					GetOnlineFunc: tt.mockGetOnline,
+				}
+				handler := NewWebsocketHandler(mockService)
 
-			result, err := handler.GetOnline(t.Context(), &emptypb.Empty{})
+				result, err := handler.GetOnline(t.Context(), &emptypb.Empty{})
 
-			if tt.expectedError != nil {
-				if err == nil {
-					t.Errorf("Expected error %v, got nil", tt.expectedError)
+				if tt.expectedError != nil {
+					if err == nil {
+						t.Errorf("Expected error %v, got nil", tt.expectedError)
+
+						return
+					}
+
+					statusErr, ok := status.FromError(err)
+					if !ok {
+						t.Errorf("Expected gRPC status error, got %v", err)
+
+						return
+					}
+
+					expectedStatusErr, _ := status.FromError(tt.expectedError)
+					if statusErr.Code() != expectedStatusErr.Code() ||
+						statusErr.Message() != expectedStatusErr.Message() {
+						t.Errorf("Expected error %v, got %v", tt.expectedError, err)
+					}
 
 					return
 				}
 
-				statusErr, ok := status.FromError(err)
-				if !ok {
-					t.Errorf("Expected gRPC status error, got %v", err)
+				if err != nil {
+					t.Errorf("Unexpected error: %v", err)
 
 					return
 				}
 
-				expectedStatusErr, _ := status.FromError(tt.expectedError)
-				if statusErr.Code() != expectedStatusErr.Code() ||
-					statusErr.Message() != expectedStatusErr.Message() {
-					t.Errorf("Expected error %v, got %v", tt.expectedError, err)
+				if result.GetOnline() != tt.expectedResult.GetOnline() {
+					t.Errorf(
+						"Expected online count %d, got %d",
+						tt.expectedResult.GetOnline(),
+						result.GetOnline(),
+					)
 				}
-
-				return
-			}
-
-			if err != nil {
-				t.Errorf("Unexpected error: %v", err)
-
-				return
-			}
-
-			if result.GetOnline() != tt.expectedResult.GetOnline() {
-				t.Errorf(
-					"Expected online count %d, got %d",
-					tt.expectedResult.GetOnline(),
-					result.GetOnline(),
-				)
-			}
-		})
+			},
+		)
 	}
 }
 
@@ -166,19 +168,22 @@ func TestGetOnlineUsers(t *testing.T) {
 
 	for _, tt := range tests {
 		// Capture range variable
-		t.Run(tt.name, func(t *testing.T) {
-			t.Parallel()
-			testGetOnlineUsersCase(t, tt)
-		})
+		t.Run(
+			tt.name, func(t *testing.T) {
+				t.Parallel()
+				testGetOnlineUsersCase(t, tt)
+			},
+		)
 	}
 }
 
-func testGetOnlineUsersCase(t *testing.T, tt struct {
-	name               string
-	mockGetOnlineUsers func(ctx context.Context) ([]*service.OnlineUser, error)
-	expectedCount      int
-	expectedError      error
-},
+func testGetOnlineUsersCase(
+	t *testing.T, tt struct {
+		name               string
+		mockGetOnlineUsers func(ctx context.Context) ([]*service.OnlineUser, error)
+		expectedCount      int
+		expectedError      error
+	},
 ) {
 	t.Helper()
 
@@ -306,20 +311,23 @@ func TestSendMessage(t *testing.T) {
 
 	for _, tt := range tests {
 		// Capture range variable
-		t.Run(tt.name, func(t *testing.T) {
-			t.Parallel()
-			testSendMessageCase(t, tt)
-		})
+		t.Run(
+			tt.name, func(t *testing.T) {
+				t.Parallel()
+				testSendMessageCase(t, tt)
+			},
+		)
 	}
 }
 
-func testSendMessageCase(t *testing.T, tt struct {
-	name           string
-	request        *websocketpb.SendMessageRequest
-	mockSendToUser func(ctx context.Context, userID int, jsonPayload []byte) error
-	expectedError  error
-	expectedCode   codes.Code
-},
+func testSendMessageCase(
+	t *testing.T, tt struct {
+		name           string
+		request        *websocketpb.SendMessageRequest
+		mockSendToUser func(ctx context.Context, userID int, jsonPayload []byte) error
+		expectedError  error
+		expectedCode   codes.Code
+	},
 ) {
 	t.Helper()
 
@@ -401,40 +409,42 @@ func TestBroadcast(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			t.Parallel()
+		t.Run(
+			tt.name, func(t *testing.T) {
+				t.Parallel()
 
-			mockService := &MockWebsocketService{
-				BroadcastFunc: tt.mockBroadcast,
-			}
-			handler := NewWebsocketHandler(mockService)
+				mockService := &MockWebsocketService{
+					BroadcastFunc: tt.mockBroadcast,
+				}
+				handler := NewWebsocketHandler(mockService)
 
-			_, err := handler.Broadcast(t.Context(), tt.request)
+				_, err := handler.Broadcast(t.Context(), tt.request)
 
-			if tt.expectedError != nil {
-				if err == nil {
-					t.Errorf("Expected error %v, got nil", tt.expectedError)
+				if tt.expectedError != nil {
+					if err == nil {
+						t.Errorf("Expected error %v, got nil", tt.expectedError)
+
+						return
+					}
+
+					statusErr, ok := status.FromError(err)
+					if !ok {
+						t.Errorf("Expected gRPC status error, got %v", err)
+
+						return
+					}
+
+					if statusErr.Code() != tt.expectedCode {
+						t.Errorf("Expected error code %v, got %v", tt.expectedCode, statusErr.Code())
+					}
 
 					return
 				}
 
-				statusErr, ok := status.FromError(err)
-				if !ok {
-					t.Errorf("Expected gRPC status error, got %v", err)
-
-					return
+				if err != nil {
+					t.Errorf("Unexpected error: %v", err)
 				}
-
-				if statusErr.Code() != tt.expectedCode {
-					t.Errorf("Expected error code %v, got %v", tt.expectedCode, statusErr.Code())
-				}
-
-				return
-			}
-
-			if err != nil {
-				t.Errorf("Unexpected error: %v", err)
-			}
-		})
+			},
+		)
 	}
 }

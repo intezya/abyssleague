@@ -3,16 +3,16 @@ module github.com/intezya/abyssleague/services/abysscore
 go 1.24.2
 
 require (
-	abyssproto v0.0.0
 	entgo.io/ent v0.14.4
 	github.com/go-playground/validator/v10 v10.26.0
 	github.com/gofiber/fiber/v2 v2.52.6
 	github.com/gofiber/swagger v1.1.1
 	github.com/golang-jwt/jwt/v5 v5.2.2
 	github.com/google/uuid v1.6.0
+	github.com/intezya/abyssleague/proto v0.0.0
 	github.com/intezya/pkglib/crypto v0.0.0-20250410075734-66680663f021
 	github.com/intezya/pkglib/itertools v0.1.1
-	github.com/intezya/pkglib/logger v0.1.2
+	github.com/intezya/pkglib/logger v0.1.3
 	github.com/joho/godotenv v1.5.1
 	github.com/json-iterator/go v1.1.12
 	github.com/lib/pq v1.10.9
@@ -29,7 +29,7 @@ require (
 	google.golang.org/protobuf v1.36.6
 )
 
-replace abyssproto => ./../../protos/
+replace github.com/intezya/abyssleague/proto => ./../../protos/
 
 require (
 	ariga.io/atlas v0.31.1-0.20250212144724-069be8033e83 // indirect
@@ -58,6 +58,7 @@ require (
 	github.com/google/go-cmp v0.7.0 // indirect
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.26.1 // indirect
 	github.com/hashicorp/hcl/v2 v2.13.0 // indirect
+	github.com/intezya/pkglib/generate v0.0.0-20250423123611-fb09c2118aaa // indirect
 	github.com/josharian/intern v1.0.0 // indirect
 	github.com/klauspost/compress v1.18.0 // indirect
 	github.com/leodido/go-urn v1.4.0 // indirect

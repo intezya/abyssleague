@@ -3,7 +3,8 @@ package grpcapi
 import (
 	"context"
 
-	websocketpb "abyssproto/websocket"
+	websocketpb "github.com/intezya/abyssleague/proto/websocket"
+
 	"github.com/intezya/abyssleague/services/websocket-messaging/internal/infrastructure/service"
 	"github.com/intezya/pkglib/itertools"
 	"google.golang.org/grpc"

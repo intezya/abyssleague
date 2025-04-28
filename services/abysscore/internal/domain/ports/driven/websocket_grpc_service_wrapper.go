@@ -3,7 +3,7 @@ package drivenports
 import (
 	"context"
 
-	websocketpb "abyssproto/websocket"
+	websocketpb "github.com/intezya/abyssleague/proto/websocket"
 )
 
 type WebsocketService interface {

@@ -63,8 +63,6 @@ func main() {
 		auth.NewJWTHelper(appConfig.JWTConfiguration),
 	)
 
-	applicationEventPublisher := applicationservice.NewApplicationEventPublisher()
-
 	handlerDependencies := handlers.NewDependencyProvider(serviceDependencies)
 
 	serverDependencies := routes.NewDependencyProvider(
