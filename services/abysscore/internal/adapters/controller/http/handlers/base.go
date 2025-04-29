@@ -17,23 +17,27 @@ var wrapInvalidRequestBody = func(wrapped error) error {
 	return adaptererror.UnprocessableEntity(wrapped)
 }
 
-// getRequest parses and validates the request body into the given generic struct T.
+// getAndValidateRequest parses and validates the request body into the given generic struct T.
 // returns the parsed struct or a validation/parsing error.
-func getRequest[T interface{}](c *fiber.Ctx) (*T, error) {
+func getAndValidateRequest[T interface{}](c *fiber.Ctx) (*T, error) {
 	ctx := c.UserContext()
 
 	var request T
 
-	err := tracer.TraceFn(ctx, "c.BodyParser", func(ctx context.Context) error {
-		return c.BodyParser(&request)
-	})
+	err := tracer.TraceFn(
+		ctx, "c.BodyParser", func(ctx context.Context) error {
+			return c.BodyParser(&request)
+		},
+	)
 	if err != nil {
 		return nil, wrapInvalidRequestBody(err)
 	}
 
-	err = tracer.TraceFn(ctx, "validator.ValidateJSON", func(ctx context.Context) error {
-		return validator.ValidateJSON(&request)
-	})
+	err = tracer.TraceFn(
+		ctx, "validator.ValidateJSON", func(ctx context.Context) error {
+			return validator.ValidateJSON(&request)
+		},
+	)
 	if err != nil {
 		return nil, err
 	}
@@ -43,7 +47,7 @@ func getRequest[T interface{}](c *fiber.Ctx) (*T, error) {
 
 // extractUser retrieves the authenticated user from the context.
 // returns an error if the user is missing or has the wrong type.
-func extractUser(ctx context.Context) (*dto.UserDTO, error) {
+func extractUser(ctx context.Context) (*dto.UserDTO, error) { // TODO mustExtractUser
 	user, ok := ctx.Value(middleware.UserCtxKey).(*dto.UserDTO)
 	if !ok {
 		return nil, adaptererror.InternalServerError

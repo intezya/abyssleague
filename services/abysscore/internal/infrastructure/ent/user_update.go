@@ -48,20 +48,6 @@ func (uu *UserUpdate) SetNillableUsername(s *string) *UserUpdate {
 	return uu
 }
 
-// SetLowerUsername sets the "lower_username" field.
-func (uu *UserUpdate) SetLowerUsername(s string) *UserUpdate {
-	uu.mutation.SetLowerUsername(s)
-	return uu
-}
-
-// SetNillableLowerUsername sets the "lower_username" field if the given value is not nil.
-func (uu *UserUpdate) SetNillableLowerUsername(s *string) *UserUpdate {
-	if s != nil {
-		uu.SetLowerUsername(*s)
-	}
-	return uu
-}
-
 // SetEmail sets the "email" field.
 func (uu *UserUpdate) SetEmail(s string) *UserUpdate {
 	uu.mutation.SetEmail(s)
@@ -681,11 +667,6 @@ func (uu *UserUpdate) check() error {
 			return &ValidationError{Name: "username", err: fmt.Errorf(`ent: validator failed for field "User.username": %w`, err)}
 		}
 	}
-	if v, ok := uu.mutation.LowerUsername(); ok {
-		if err := user.LowerUsernameValidator(v); err != nil {
-			return &ValidationError{Name: "lower_username", err: fmt.Errorf(`ent: validator failed for field "User.lower_username": %w`, err)}
-		}
-	}
 	if v, ok := uu.mutation.Password(); ok {
 		if err := user.PasswordValidator(v); err != nil {
 			return &ValidationError{Name: "password", err: fmt.Errorf(`ent: validator failed for field "User.password": %w`, err)}
@@ -718,9 +699,6 @@ func (uu *UserUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if value, ok := uu.mutation.Username(); ok {
 		_spec.SetField(user.FieldUsername, field.TypeString, value)
-	}
-	if value, ok := uu.mutation.LowerUsername(); ok {
-		_spec.SetField(user.FieldLowerUsername, field.TypeString, value)
 	}
 	if value, ok := uu.mutation.Email(); ok {
 		_spec.SetField(user.FieldEmail, field.TypeString, value)
@@ -1148,20 +1126,6 @@ func (uuo *UserUpdateOne) SetUsername(s string) *UserUpdateOne {
 func (uuo *UserUpdateOne) SetNillableUsername(s *string) *UserUpdateOne {
 	if s != nil {
 		uuo.SetUsername(*s)
-	}
-	return uuo
-}
-
-// SetLowerUsername sets the "lower_username" field.
-func (uuo *UserUpdateOne) SetLowerUsername(s string) *UserUpdateOne {
-	uuo.mutation.SetLowerUsername(s)
-	return uuo
-}
-
-// SetNillableLowerUsername sets the "lower_username" field if the given value is not nil.
-func (uuo *UserUpdateOne) SetNillableLowerUsername(s *string) *UserUpdateOne {
-	if s != nil {
-		uuo.SetLowerUsername(*s)
 	}
 	return uuo
 }
@@ -1798,11 +1762,6 @@ func (uuo *UserUpdateOne) check() error {
 			return &ValidationError{Name: "username", err: fmt.Errorf(`ent: validator failed for field "User.username": %w`, err)}
 		}
 	}
-	if v, ok := uuo.mutation.LowerUsername(); ok {
-		if err := user.LowerUsernameValidator(v); err != nil {
-			return &ValidationError{Name: "lower_username", err: fmt.Errorf(`ent: validator failed for field "User.lower_username": %w`, err)}
-		}
-	}
 	if v, ok := uuo.mutation.Password(); ok {
 		if err := user.PasswordValidator(v); err != nil {
 			return &ValidationError{Name: "password", err: fmt.Errorf(`ent: validator failed for field "User.password": %w`, err)}
@@ -1852,9 +1811,6 @@ func (uuo *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) 
 	}
 	if value, ok := uuo.mutation.Username(); ok {
 		_spec.SetField(user.FieldUsername, field.TypeString, value)
-	}
-	if value, ok := uuo.mutation.LowerUsername(); ok {
-		_spec.SetField(user.FieldLowerUsername, field.TypeString, value)
 	}
 	if value, ok := uuo.mutation.Email(); ok {
 		_spec.SetField(user.FieldEmail, field.TypeString, value)

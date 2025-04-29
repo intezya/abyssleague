@@ -3,8 +3,8 @@ package request
 import "github.com/intezya/abyssleague/services/abysscore/internal/domain/dto"
 
 type GrantInventoryItemToUser struct {
-	UserID int `json:"user_id"`
-	ItemID int `json:"item_id"`
+	UserID int `json:"user_id" validate:"required"`
+	ItemID int `json:"item_id" validate:"required"`
 }
 
 func (g *GrantInventoryItemToUser) ToCreateDTO(performerID int) *dto.CreateInventoryItemDTO {
@@ -16,5 +16,5 @@ func (g *GrantInventoryItemToUser) ToCreateDTO(performerID int) *dto.CreateInven
 }
 
 type SetItemAsCurrent struct {
-	InventoryItemID int `json:"inventory_item_id"`
+	InventoryItemID int `json:"inventory_item_id" validate:"required"`
 }

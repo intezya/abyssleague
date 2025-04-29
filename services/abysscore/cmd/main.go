@@ -10,6 +10,7 @@ import (
 	"github.com/intezya/abyssleague/services/abysscore/internal/adapters/controller/http/server/routes"
 	applicationservice "github.com/intezya/abyssleague/services/abysscore/internal/application/service"
 	rediswrapper "github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/cache/redis"
+	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/mail"
 	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/metrics/tracer"
 	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/persistence"
 	"github.com/intezya/abyssleague/services/abysscore/internal/pkg/auth"
@@ -35,6 +36,7 @@ func main() {
 	entClient := persistence.SetupEnt(appConfig.EntConfig)
 	redisClient := rediswrapper.NewClientWrapper(appConfig.RedisConfig)
 	grpcFactory := factory.NewGrpcClientFactory()
+	smtpClient := mail.NewSMTPClientWrapper(appConfig.SMTPConfig)
 
 	logger.Log.Debug("grpcFactory has been initialized")
 
@@ -54,13 +56,14 @@ func main() {
 
 	logger.Log.Debug("grpcDependencies has been initialized")
 
-	repositoryDependencies := persistence.NewDependencyProvider(entClient)
+	repositoryDependencies := persistence.NewDependencyProvider(entClient, redisClient)
 
 	serviceDependencies := applicationservice.NewDependencyProvider(
 		repositoryDependencies,
 		gRPCDependencies,
 		auth.NewHashHelper(),
 		auth.NewJWTHelper(appConfig.JWTConfiguration),
+		smtpClient,
 	)
 
 	handlerDependencies := handlers.NewDependencyProvider(serviceDependencies)

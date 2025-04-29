@@ -33,7 +33,6 @@ func (r *UserRepository) Create(
 	user, err := r.client.User.
 		Create().
 		SetUsername(credentials.Username).
-		SetLowerUsername(strings.ToLower(credentials.Username)).
 		SetPassword(credentials.Password).
 		SetHardwareID(credentials.HardwareID).
 		Save(ctx)
@@ -86,13 +85,21 @@ func (r *UserRepository) FindAuthenticationByLowerUsername(
 ) {
 	user, err := r.client.User.
 		Query().
-		Where(entUser.LowerUsernameEQ(lowerUsername)).
+		Where(entUser.UsernameEqualFold(lowerUsername)).
 		Only(ctx)
 	if err != nil {
 		return nil, r.handleQueryError(err)
 	}
 
 	return mapper.ToAuthenticationDataFromEnt(user), nil
+}
+
+func (r *UserRepository) ExistsByEmail(ctx context.Context, email string) bool {
+	exists, _ := r.client.User.
+		Query().Where(entUser.EmailEqualFold(email)).
+		Exist(ctx)
+
+	return exists
 }
 
 // UpdateHWIDByID updates a user's hardware ID.

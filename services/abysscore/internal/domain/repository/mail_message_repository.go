@@ -6,7 +6,7 @@ import (
 )
 
 type MailMessageRepository interface {
-	SaveLinkMailCodeData(ctx context.Context, message *mailmessage.LinkEmailCodeData)
+	SaveLinkMailCodeData(ctx context.Context, message *mailmessage.LinkEmailCodeData, expireMinutes int)
 
 	GetLinkMailCodeData(
 		ctx context.Context,

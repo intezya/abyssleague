@@ -23,8 +23,6 @@ type User struct {
 	ID int `json:"id,omitempty"`
 	// Username holds the value of the "username" field.
 	Username string `json:"username,omitempty"`
-	// LowerUsername holds the value of the "lower_username" field.
-	LowerUsername string `json:"lower_username,omitempty"`
 	// Email holds the value of the "email" field.
 	Email *string `json:"email,omitempty"`
 	// Password holds the value of the "password" field.
@@ -181,7 +179,7 @@ func (*User) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullBool)
 		case user.FieldID, user.FieldCurrentMatchID, user.FieldCurrentItemInProfileID, user.FieldLoginStreak, user.FieldSearchBlockedLevel, user.FieldAccountBlockedLevel:
 			values[i] = new(sql.NullInt64)
-		case user.FieldUsername, user.FieldLowerUsername, user.FieldEmail, user.FieldPassword, user.FieldHardwareID, user.FieldGenshinUID, user.FieldHoyolabLogin, user.FieldAvatarURL, user.FieldSearchBlockReason, user.FieldAccountBlockReason:
+		case user.FieldUsername, user.FieldEmail, user.FieldPassword, user.FieldHardwareID, user.FieldGenshinUID, user.FieldHoyolabLogin, user.FieldAvatarURL, user.FieldSearchBlockReason, user.FieldAccountBlockReason:
 			values[i] = new(sql.NullString)
 		case user.FieldLoginAt, user.FieldCreatedAt, user.FieldSearchBlockedUntil, user.FieldAccountBlockedUntil:
 			values[i] = new(sql.NullTime)
@@ -211,12 +209,6 @@ func (u *User) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field username", values[i])
 			} else if value.Valid {
 				u.Username = value.String
-			}
-		case user.FieldLowerUsername:
-			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field lower_username", values[i])
-			} else if value.Valid {
-				u.LowerUsername = value.String
 			}
 		case user.FieldEmail:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -421,9 +413,6 @@ func (u *User) String() string {
 	builder.WriteString(fmt.Sprintf("id=%v, ", u.ID))
 	builder.WriteString("username=")
 	builder.WriteString(u.Username)
-	builder.WriteString(", ")
-	builder.WriteString("lower_username=")
-	builder.WriteString(u.LowerUsername)
 	builder.WriteString(", ")
 	if v := u.Email; v != nil {
 		builder.WriteString("email=")

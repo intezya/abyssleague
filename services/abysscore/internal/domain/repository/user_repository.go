@@ -18,6 +18,8 @@ type UserRepository interface {
 		lowerUsername string,
 	) (*entity.AuthenticationData, error)
 
+	ExistsByEmail(ctx context.Context, email string) bool
+
 	UpdateHWIDByID(ctx context.Context, id int, hwid string) error
 	UpdatePasswordByID(ctx context.Context, id int, password string) (*dto.UserFullDTO, error)
 	UpdateLoginStreakLoginAtByID(

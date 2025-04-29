@@ -18,7 +18,6 @@ func (User) Fields() []ent.Field {
 		field.Int("id").Unique().Immutable(),
 
 		field.String("username").NotEmpty().Unique(),
-		field.String("lower_username").NotEmpty().Unique(),
 		field.String("email").Nillable().Optional().Unique(),
 		field.String("password").NotEmpty().Sensitive(),
 		field.String("hardware_id").Nillable().Optional().Unique().Sensitive(),

@@ -9,7 +9,6 @@ import (
 type UserDTO struct {
 	ID                     int                      `json:"id"`
 	Username               string                   `json:"username"`
-	LowerUsername          string                   `json:"-"`
 	Email                  *string                  `json:"email"`
 	AccessLevel            access_level.AccessLevel `json:"-"`
 	GenshinUID             *string                  `json:"genshin_uid"`
