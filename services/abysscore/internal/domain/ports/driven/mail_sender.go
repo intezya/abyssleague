@@ -1,8 +1,8 @@
 package drivenports
 
 import (
-	"context"
 	"errors"
+	"github.com/intezya/abyssleague/services/abysscore/internal/domain/entity/mailmessage"
 	"regexp"
 )
 
@@ -25,5 +25,6 @@ func (e Email) String() string {
 }
 
 type MailSender interface {
-	Send(ctx context.Context, receiver Email, data interface{}) error
+	Send(message *mailmessage.Message, receiver ...string) error
+	SendS(sender string, message *mailmessage.Message, receiver ...string) error
 }

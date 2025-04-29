@@ -10,13 +10,25 @@ import (
 	repositoryports "github.com/intezya/abyssleague/services/abysscore/internal/domain/repository"
 )
 
-type UserService struct {
+type AccountService struct {
 	userRepository        repositoryports.UserRepository
 	mailSender            drivenports.MailSender
 	mailMessageRepository repositoryports.MailMessageRepository
 }
 
-func (s *UserService) SendCodeForEmailLink(
+func NewAccountService(
+	userRepository repositoryports.UserRepository,
+	mailSender drivenports.MailSender,
+	mailMessageRepository repositoryports.MailMessageRepository,
+) *AccountService {
+	return &AccountService{
+		userRepository:        userRepository,
+		mailSender:            mailSender,
+		mailMessageRepository: mailMessageRepository,
+	}
+}
+
+func (s *AccountService) SendCodeForEmailLink(
 	ctx context.Context,
 	user *dto.UserDTO,
 	email string,
@@ -31,10 +43,23 @@ func (s *UserService) SendCodeForEmailLink(
 		return adaptererror.BadRequestFunc(err)
 	}
 
-	mailMessage := mailmessage.NewLinkEmailCodeMail(user.ID, email)
+	exists := s.userRepository.ExistsByEmail(ctx, email)
 
-	s.mailMessageRepository.SaveLinkMailCodeData(ctx, mailMessage)
-	err = s.mailSender.Send(ctx, typedEmail, mailMessage)
+	if exists {
+		return applicationerror.ErrEmailConflict
+	}
+
+	const newLinkEmailCodeExpireMinutes = 5
+	mailMessage := mailmessage.NewLinkEmailCodeMail(user.ID, email, newLinkEmailCodeExpireMinutes)
+
+	sentMailMessage, err := s.mailMessageRepository.GetLinkMailCodeData(ctx, user.ID)
+
+	if err == nil && sentMailMessage != nil {
+		return applicationerror.TooManyEmailLinkRequests // if already sent
+	}
+
+	go s.mailMessageRepository.SaveLinkMailCodeData(ctx, mailMessage, newLinkEmailCodeExpireMinutes)
+	err = s.mailSender.Send(mailMessage.Message, typedEmail.String())
 
 	if err != nil {
 		return applicationerror.WrapServiceUnavailable(err)
@@ -43,7 +68,7 @@ func (s *UserService) SendCodeForEmailLink(
 	return nil
 }
 
-func (s *UserService) EnterCodeForEmailLink(
+func (s *AccountService) EnterCodeForEmailLink(
 	ctx context.Context,
 	user *dto.UserDTO,
 	verificationCode string,
@@ -54,7 +79,7 @@ func (s *UserService) EnterCodeForEmailLink(
 	mailMessageData, err := s.mailMessageRepository.GetLinkMailCodeData(ctx, user.ID)
 
 	if err != nil {
-		return nil, err
+		return nil, applicationerror.WrapWrongVerificationCodeForEmailLink(err)
 	}
 
 	if mailMessageData.VerificationCode != verificationCode {

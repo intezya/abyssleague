@@ -74,7 +74,7 @@ func (h *GameItemHandler) Create(c *fiber.Ctx) error {
 		return handleError(err, c)
 	}
 
-	req, err := getRequest[request.CreateUpdateGameItem](c)
+	req, err := getAndValidateRequest[request.CreateUpdateGameItem](c)
 	if err != nil {
 		return handleError(err, c)
 	}
@@ -189,7 +189,7 @@ func (h *GameItemHandler) Update(c *fiber.Ctx) error {
 		return handleError(err, c)
 	}
 
-	req, err := getRequest[request.CreateUpdateGameItem](c)
+	req, err := getAndValidateRequest[request.CreateUpdateGameItem](c)
 	if err != nil {
 		return handleError(err, c)
 	}

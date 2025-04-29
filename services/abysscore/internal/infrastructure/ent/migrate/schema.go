@@ -195,7 +195,6 @@ var (
 	UsersColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
 		{Name: "username", Type: field.TypeString, Unique: true},
-		{Name: "lower_username", Type: field.TypeString, Unique: true},
 		{Name: "email", Type: field.TypeString, Unique: true, Nullable: true},
 		{Name: "password", Type: field.TypeString},
 		{Name: "hardware_id", Type: field.TypeString, Unique: true, Nullable: true},
@@ -224,13 +223,13 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "users_inventory_items_current_item",
-				Columns:    []*schema.Column{UsersColumns[20]},
+				Columns:    []*schema.Column{UsersColumns[19]},
 				RefColumns: []*schema.Column{InventoryItemsColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 			{
 				Symbol:     "users_matches_current_match",
-				Columns:    []*schema.Column{UsersColumns[21]},
+				Columns:    []*schema.Column{UsersColumns[20]},
 				RefColumns: []*schema.Column{MatchesColumns[0]},
 				OnDelete:   schema.SetNull,
 			},

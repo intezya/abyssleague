@@ -14,7 +14,7 @@ import (
 
 type entry struct {
 	key           string
-	expireSeconds int
+	expireMinutes int
 	data          interface{}
 }
 
@@ -49,7 +49,7 @@ func (s *MailMessageRepository) saveWorker() {
 				ctx,
 				data.key,
 				data.data,
-				time.Duration(data.expireSeconds)*time.Second,
+				time.Duration(data.expireMinutes)*time.Minute,
 			).Err()
 
 			if err != nil {
@@ -65,14 +65,16 @@ func (s *MailMessageRepository) linkMailCodeKey(userID int) string {
 	return fmt.Sprintf("%s:%d", key, userID)
 }
 
-func (s *MailMessageRepository) SaveLinkMailCodeData(ctx context.Context, message *mailmessage.LinkEmailCodeData) {
-	const linkMailCodeExpireSeconds = 120
-
+func (s *MailMessageRepository) SaveLinkMailCodeData(
+	ctx context.Context,
+	message *mailmessage.LinkEmailCodeData,
+	expireMinutes int,
+) {
 	key := s.linkMailCodeKey(message.UserID)
 
 	data := entry{
 		key:           key,
-		expireSeconds: linkMailCodeExpireSeconds,
+		expireMinutes: expireMinutes,
 		data:          message,
 	}
 

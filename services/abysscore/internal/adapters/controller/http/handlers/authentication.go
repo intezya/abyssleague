@@ -39,7 +39,7 @@ func NewAuthenticationHandler(
 func (h *AuthenticationHandler) Register(c *fiber.Ctx) error {
 	ctx := c.UserContext()
 
-	req, err := getRequest[request.AuthenticationRequest](c)
+	req, err := getAndValidateRequest[request.AuthenticationRequest](c)
 	if err != nil {
 		return handleError(err, c)
 	}
@@ -79,7 +79,7 @@ func (h *AuthenticationHandler) Register(c *fiber.Ctx) error {
 func (h *AuthenticationHandler) Login(c *fiber.Ctx) error {
 	ctx := c.UserContext()
 
-	req, err := getRequest[request.AuthenticationRequest](c)
+	req, err := getAndValidateRequest[request.AuthenticationRequest](c)
 	if err != nil {
 		return handleError(err, c)
 	}
@@ -116,7 +116,7 @@ func (h *AuthenticationHandler) Login(c *fiber.Ctx) error {
 func (h *AuthenticationHandler) ChangePassword(c *fiber.Ctx) error {
 	ctx := c.UserContext()
 
-	req, err := getRequest[request.PasswordChangeRequest](c)
+	req, err := getAndValidateRequest[request.PasswordChangeRequest](c)
 	if err != nil {
 		return handleError(err, c)
 	}

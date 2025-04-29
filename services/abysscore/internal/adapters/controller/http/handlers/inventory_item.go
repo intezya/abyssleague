@@ -202,7 +202,7 @@ func (h *InventoryItemHandler) SetInventoryItem(c *fiber.Ctx) error {
 		return handleError(err, c)
 	}
 
-	req, err := getRequest[request.SetItemAsCurrent](c)
+	req, err := getAndValidateRequest[request.SetItemAsCurrent](c)
 	if err != nil {
 		return handleError(err, c)
 	}

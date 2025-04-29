@@ -37,11 +37,28 @@ var (
 			fiber.StatusForbidden,
 		)
 	}
-	ErrAccountAlreadyHasEmail            = repositoryerrors.ErrAccountAlreadyHasEmail
+	ErrAccountAlreadyHasEmail = repositoryerrors.ErrAccountAlreadyHasEmail
+	ErrEmailConflict          = base.NewError(
+		errors.New("email conflict"),
+		nil,
+		fiber.StatusConflict,
+	)
 	ErrWrongVerificationCodeForEmailLink = base.NewError(
 		errors.New("wrong verification code"),
 		nil,
 		fiber.StatusBadRequest,
+	)
+	WrapWrongVerificationCodeForEmailLink = func(err error) *base.Error {
+		return base.NewError(
+			errors.New("wrong verification code"),
+			err,
+			fiber.StatusBadRequest,
+		)
+	}
+	TooManyEmailLinkRequests = base.NewError(
+		errors.New("too many email link requests"),
+		nil,
+		fiber.StatusTooManyRequests,
 	)
 
 	WrapServiceUnavailable = func(err error) *base.Error {

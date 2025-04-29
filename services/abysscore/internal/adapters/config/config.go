@@ -81,6 +81,7 @@ type Config struct {
 	JWTConfiguration *auth.JWTConfiguration
 	TracerConfig     *tracer.Config
 	GRPCConfig       *factory.GRPCConfig
+	SMTPConfig       *SMTPConfig
 }
 
 // Validate validates the rate limit configuration.
@@ -139,6 +140,7 @@ func LoadConfig() *Config {
 		),
 		TracerConfig: initTracerConfig(envType),
 		GRPCConfig:   initGRPCConfig(),
+		SMTPConfig:   initSMTPConfig(),
 	}
 
 	// Set specific Fiber middleware configurations

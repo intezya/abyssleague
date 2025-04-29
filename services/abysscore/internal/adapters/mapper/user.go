@@ -10,7 +10,6 @@ func ToUserDTOFromEnt(user *ent.User) *dto.UserDTO {
 	return &dto.UserDTO{
 		ID:                     user.ID,
 		Username:               user.Username,
-		LowerUsername:          user.LowerUsername,
 		Email:                  user.Email,
 		AccessLevel:            user.AccessLevel,
 		GenshinUID:             user.GenshinUID,

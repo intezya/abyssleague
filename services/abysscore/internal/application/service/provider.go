@@ -2,6 +2,7 @@ package applicationservice
 
 import (
 	"github.com/intezya/abyssleague/services/abysscore/internal/adapters/controller/grpc/wrapper"
+	drivenports "github.com/intezya/abyssleague/services/abysscore/internal/domain/ports/driven"
 	domainservice "github.com/intezya/abyssleague/services/abysscore/internal/domain/service"
 	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/persistence"
 	eventlib "github.com/intezya/abyssleague/services/abysscore/pkg/event"
@@ -13,11 +14,14 @@ type DependencyProvider struct {
 	passwordHelper               domainservice.CredentialsHelper
 	tokenHelper                  domainservice.TokenHelper
 
+	mailSender drivenports.MailSender
+
 	EventPublisher eventlib.Publisher
 
 	AuthenticationService domainservice.AuthenticationService
 	GameItemService       domainservice.GameItemService
 	InventoryItemService  domainservice.InventoryItemService
+	AccountService        domainservice.AccountService
 }
 
 func NewDependencyProvider(
@@ -25,6 +29,7 @@ func NewDependencyProvider(
 	gRPCDependencyProvider *wrapper.DependencyProvider,
 	passwordHelper domainservice.CredentialsHelper,
 	tokenHelper domainservice.TokenHelper,
+	mailSender drivenports.MailSender,
 ) *DependencyProvider {
 	mainClientNotificationService := NewNotificationService(gRPCDependencyProvider.MainWebsocketService)
 	//draftClientNotificationService := NewNotificationService(gRPCDependencyProvider.DraftWebsocketService)
@@ -50,6 +55,11 @@ func NewDependencyProvider(
 			repositoryDependencyProvider.InventoryItemRepository,
 			repositoryDependencyProvider.UserRepository,
 			eventPublisher,
+		),
+		AccountService: NewAccountService(
+			repositoryDependencyProvider.UserRepository,
+			mailSender,
+			repositoryDependencyProvider.MailMessageRepository,
 		),
 	}
 }

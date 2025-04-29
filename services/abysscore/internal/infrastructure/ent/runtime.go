@@ -231,42 +231,38 @@ func init() {
 	userDescUsername := userFields[1].Descriptor()
 	// user.UsernameValidator is a validator for the "username" field. It is called by the builders before save.
 	user.UsernameValidator = userDescUsername.Validators[0].(func(string) error)
-	// userDescLowerUsername is the schema descriptor for lower_username field.
-	userDescLowerUsername := userFields[2].Descriptor()
-	// user.LowerUsernameValidator is a validator for the "lower_username" field. It is called by the builders before save.
-	user.LowerUsernameValidator = userDescLowerUsername.Validators[0].(func(string) error)
 	// userDescPassword is the schema descriptor for password field.
-	userDescPassword := userFields[4].Descriptor()
+	userDescPassword := userFields[3].Descriptor()
 	// user.PasswordValidator is a validator for the "password" field. It is called by the builders before save.
 	user.PasswordValidator = userDescPassword.Validators[0].(func(string) error)
 	// userDescAccessLevel is the schema descriptor for access_level field.
-	userDescAccessLevel := userFields[6].Descriptor()
+	userDescAccessLevel := userFields[5].Descriptor()
 	// user.DefaultAccessLevel holds the default value on creation for the access_level field.
 	user.DefaultAccessLevel = userDescAccessLevel.Default.(func() access_level.AccessLevel)
 	// userDescInvitesEnabled is the schema descriptor for invites_enabled field.
-	userDescInvitesEnabled := userFields[12].Descriptor()
+	userDescInvitesEnabled := userFields[11].Descriptor()
 	// user.DefaultInvitesEnabled holds the default value on creation for the invites_enabled field.
 	user.DefaultInvitesEnabled = userDescInvitesEnabled.Default.(bool)
 	// userDescLoginAt is the schema descriptor for login_at field.
-	userDescLoginAt := userFields[13].Descriptor()
+	userDescLoginAt := userFields[12].Descriptor()
 	// user.DefaultLoginAt holds the default value on creation for the login_at field.
 	user.DefaultLoginAt = userDescLoginAt.Default.(func() time.Time)
 	// userDescLoginStreak is the schema descriptor for login_streak field.
-	userDescLoginStreak := userFields[14].Descriptor()
+	userDescLoginStreak := userFields[13].Descriptor()
 	// user.DefaultLoginStreak holds the default value on creation for the login_streak field.
 	user.DefaultLoginStreak = userDescLoginStreak.Default.(int)
 	// userDescCreatedAt is the schema descriptor for created_at field.
-	userDescCreatedAt := userFields[15].Descriptor()
+	userDescCreatedAt := userFields[14].Descriptor()
 	// user.DefaultCreatedAt holds the default value on creation for the created_at field.
 	user.DefaultCreatedAt = userDescCreatedAt.Default.(func() time.Time)
 	// userDescSearchBlockedLevel is the schema descriptor for search_blocked_level field.
-	userDescSearchBlockedLevel := userFields[18].Descriptor()
+	userDescSearchBlockedLevel := userFields[17].Descriptor()
 	// user.DefaultSearchBlockedLevel holds the default value on creation for the search_blocked_level field.
 	user.DefaultSearchBlockedLevel = userDescSearchBlockedLevel.Default.(int)
 	// user.SearchBlockedLevelValidator is a validator for the "search_blocked_level" field. It is called by the builders before save.
 	user.SearchBlockedLevelValidator = userDescSearchBlockedLevel.Validators[0].(func(int) error)
 	// userDescAccountBlockedLevel is the schema descriptor for account_blocked_level field.
-	userDescAccountBlockedLevel := userFields[21].Descriptor()
+	userDescAccountBlockedLevel := userFields[20].Descriptor()
 	// user.DefaultAccountBlockedLevel holds the default value on creation for the account_blocked_level field.
 	user.DefaultAccountBlockedLevel = userDescAccountBlockedLevel.Default.(int)
 	// user.AccountBlockedLevelValidator is a validator for the "account_blocked_level" field. It is called by the builders before save.

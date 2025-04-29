@@ -61,11 +61,6 @@ func Username(v string) predicate.User {
 	return predicate.User(sql.FieldEQ(FieldUsername, v))
 }
 
-// LowerUsername applies equality check predicate on the "lower_username" field. It's identical to LowerUsernameEQ.
-func LowerUsername(v string) predicate.User {
-	return predicate.User(sql.FieldEQ(FieldLowerUsername, v))
-}
-
 // Email applies equality check predicate on the "email" field. It's identical to EmailEQ.
 func Email(v string) predicate.User {
 	return predicate.User(sql.FieldEQ(FieldEmail, v))
@@ -224,71 +219,6 @@ func UsernameEqualFold(v string) predicate.User {
 // UsernameContainsFold applies the ContainsFold predicate on the "username" field.
 func UsernameContainsFold(v string) predicate.User {
 	return predicate.User(sql.FieldContainsFold(FieldUsername, v))
-}
-
-// LowerUsernameEQ applies the EQ predicate on the "lower_username" field.
-func LowerUsernameEQ(v string) predicate.User {
-	return predicate.User(sql.FieldEQ(FieldLowerUsername, v))
-}
-
-// LowerUsernameNEQ applies the NEQ predicate on the "lower_username" field.
-func LowerUsernameNEQ(v string) predicate.User {
-	return predicate.User(sql.FieldNEQ(FieldLowerUsername, v))
-}
-
-// LowerUsernameIn applies the In predicate on the "lower_username" field.
-func LowerUsernameIn(vs ...string) predicate.User {
-	return predicate.User(sql.FieldIn(FieldLowerUsername, vs...))
-}
-
-// LowerUsernameNotIn applies the NotIn predicate on the "lower_username" field.
-func LowerUsernameNotIn(vs ...string) predicate.User {
-	return predicate.User(sql.FieldNotIn(FieldLowerUsername, vs...))
-}
-
-// LowerUsernameGT applies the GT predicate on the "lower_username" field.
-func LowerUsernameGT(v string) predicate.User {
-	return predicate.User(sql.FieldGT(FieldLowerUsername, v))
-}
-
-// LowerUsernameGTE applies the GTE predicate on the "lower_username" field.
-func LowerUsernameGTE(v string) predicate.User {
-	return predicate.User(sql.FieldGTE(FieldLowerUsername, v))
-}
-
-// LowerUsernameLT applies the LT predicate on the "lower_username" field.
-func LowerUsernameLT(v string) predicate.User {
-	return predicate.User(sql.FieldLT(FieldLowerUsername, v))
-}
-
-// LowerUsernameLTE applies the LTE predicate on the "lower_username" field.
-func LowerUsernameLTE(v string) predicate.User {
-	return predicate.User(sql.FieldLTE(FieldLowerUsername, v))
-}
-
-// LowerUsernameContains applies the Contains predicate on the "lower_username" field.
-func LowerUsernameContains(v string) predicate.User {
-	return predicate.User(sql.FieldContains(FieldLowerUsername, v))
-}
-
-// LowerUsernameHasPrefix applies the HasPrefix predicate on the "lower_username" field.
-func LowerUsernameHasPrefix(v string) predicate.User {
-	return predicate.User(sql.FieldHasPrefix(FieldLowerUsername, v))
-}
-
-// LowerUsernameHasSuffix applies the HasSuffix predicate on the "lower_username" field.
-func LowerUsernameHasSuffix(v string) predicate.User {
-	return predicate.User(sql.FieldHasSuffix(FieldLowerUsername, v))
-}
-
-// LowerUsernameEqualFold applies the EqualFold predicate on the "lower_username" field.
-func LowerUsernameEqualFold(v string) predicate.User {
-	return predicate.User(sql.FieldEqualFold(FieldLowerUsername, v))
-}
-
-// LowerUsernameContainsFold applies the ContainsFold predicate on the "lower_username" field.
-func LowerUsernameContainsFold(v string) predicate.User {
-	return predicate.User(sql.FieldContainsFold(FieldLowerUsername, v))
 }
 
 // EmailEQ applies the EQ predicate on the "email" field.

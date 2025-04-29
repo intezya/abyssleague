@@ -5765,7 +5765,6 @@ type UserMutation struct {
 	typ                             string
 	id                              *int
 	username                        *string
-	lower_username                  *string
 	email                           *string
 	password                        *string
 	hardware_id                     *string
@@ -5951,42 +5950,6 @@ func (m *UserMutation) OldUsername(ctx context.Context) (v string, err error) {
 // ResetUsername resets all changes to the "username" field.
 func (m *UserMutation) ResetUsername() {
 	m.username = nil
-}
-
-// SetLowerUsername sets the "lower_username" field.
-func (m *UserMutation) SetLowerUsername(s string) {
-	m.lower_username = &s
-}
-
-// LowerUsername returns the value of the "lower_username" field in the mutation.
-func (m *UserMutation) LowerUsername() (r string, exists bool) {
-	v := m.lower_username
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldLowerUsername returns the old "lower_username" field's value of the User entity.
-// If the User object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *UserMutation) OldLowerUsername(ctx context.Context) (v string, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldLowerUsername is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldLowerUsername requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldLowerUsername: %w", err)
-	}
-	return oldValue.LowerUsername, nil
-}
-
-// ResetLowerUsername resets all changes to the "lower_username" field.
-func (m *UserMutation) ResetLowerUsername() {
-	m.lower_username = nil
 }
 
 // SetEmail sets the "email" field.
@@ -7286,12 +7249,9 @@ func (m *UserMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *UserMutation) Fields() []string {
-	fields := make([]string, 0, 21)
+	fields := make([]string, 0, 20)
 	if m.username != nil {
 		fields = append(fields, user.FieldUsername)
-	}
-	if m.lower_username != nil {
-		fields = append(fields, user.FieldLowerUsername)
 	}
 	if m.email != nil {
 		fields = append(fields, user.FieldEmail)
@@ -7360,8 +7320,6 @@ func (m *UserMutation) Field(name string) (ent.Value, bool) {
 	switch name {
 	case user.FieldUsername:
 		return m.Username()
-	case user.FieldLowerUsername:
-		return m.LowerUsername()
 	case user.FieldEmail:
 		return m.Email()
 	case user.FieldPassword:
@@ -7411,8 +7369,6 @@ func (m *UserMutation) OldField(ctx context.Context, name string) (ent.Value, er
 	switch name {
 	case user.FieldUsername:
 		return m.OldUsername(ctx)
-	case user.FieldLowerUsername:
-		return m.OldLowerUsername(ctx)
 	case user.FieldEmail:
 		return m.OldEmail(ctx)
 	case user.FieldPassword:
@@ -7466,13 +7422,6 @@ func (m *UserMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetUsername(v)
-		return nil
-	case user.FieldLowerUsername:
-		v, ok := value.(string)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetLowerUsername(v)
 		return nil
 	case user.FieldEmail:
 		v, ok := value.(string)
@@ -7766,9 +7715,6 @@ func (m *UserMutation) ResetField(name string) error {
 	switch name {
 	case user.FieldUsername:
 		m.ResetUsername()
-		return nil
-	case user.FieldLowerUsername:
-		m.ResetLowerUsername()
 		return nil
 	case user.FieldEmail:
 		m.ResetEmail()

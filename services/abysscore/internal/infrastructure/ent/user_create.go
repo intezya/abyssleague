@@ -32,12 +32,6 @@ func (uc *UserCreate) SetUsername(s string) *UserCreate {
 	return uc
 }
 
-// SetLowerUsername sets the "lower_username" field.
-func (uc *UserCreate) SetLowerUsername(s string) *UserCreate {
-	uc.mutation.SetLowerUsername(s)
-	return uc
-}
-
 // SetEmail sets the "email" field.
 func (uc *UserCreate) SetEmail(s string) *UserCreate {
 	uc.mutation.SetEmail(s)
@@ -495,14 +489,6 @@ func (uc *UserCreate) check() error {
 			return &ValidationError{Name: "username", err: fmt.Errorf(`ent: validator failed for field "User.username": %w`, err)}
 		}
 	}
-	if _, ok := uc.mutation.LowerUsername(); !ok {
-		return &ValidationError{Name: "lower_username", err: errors.New(`ent: missing required field "User.lower_username"`)}
-	}
-	if v, ok := uc.mutation.LowerUsername(); ok {
-		if err := user.LowerUsernameValidator(v); err != nil {
-			return &ValidationError{Name: "lower_username", err: fmt.Errorf(`ent: validator failed for field "User.lower_username": %w`, err)}
-		}
-	}
 	if _, ok := uc.mutation.Password(); !ok {
 		return &ValidationError{Name: "password", err: errors.New(`ent: missing required field "User.password"`)}
 	}
@@ -577,10 +563,6 @@ func (uc *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 	if value, ok := uc.mutation.Username(); ok {
 		_spec.SetField(user.FieldUsername, field.TypeString, value)
 		_node.Username = value
-	}
-	if value, ok := uc.mutation.LowerUsername(); ok {
-		_spec.SetField(user.FieldLowerUsername, field.TypeString, value)
-		_node.LowerUsername = value
 	}
 	if value, ok := uc.mutation.Email(); ok {
 		_spec.SetField(user.FieldEmail, field.TypeString, value)

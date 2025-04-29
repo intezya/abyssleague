@@ -17,8 +17,6 @@ const (
 	FieldID = "id"
 	// FieldUsername holds the string denoting the username field in the database.
 	FieldUsername = "username"
-	// FieldLowerUsername holds the string denoting the lower_username field in the database.
-	FieldLowerUsername = "lower_username"
 	// FieldEmail holds the string denoting the email field in the database.
 	FieldEmail = "email"
 	// FieldPassword holds the string denoting the password field in the database.
@@ -132,7 +130,6 @@ const (
 var Columns = []string{
 	FieldID,
 	FieldUsername,
-	FieldLowerUsername,
 	FieldEmail,
 	FieldPassword,
 	FieldHardwareID,
@@ -173,8 +170,6 @@ func ValidColumn(column string) bool {
 var (
 	// UsernameValidator is a validator for the "username" field. It is called by the builders before save.
 	UsernameValidator func(string) error
-	// LowerUsernameValidator is a validator for the "lower_username" field. It is called by the builders before save.
-	LowerUsernameValidator func(string) error
 	// PasswordValidator is a validator for the "password" field. It is called by the builders before save.
 	PasswordValidator func(string) error
 	// DefaultAccessLevel holds the default value on creation for the "access_level" field.
@@ -208,11 +203,6 @@ func ByID(opts ...sql.OrderTermOption) OrderOption {
 // ByUsername orders the results by the username field.
 func ByUsername(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldUsername, opts...).ToFunc()
-}
-
-// ByLowerUsername orders the results by the lower_username field.
-func ByLowerUsername(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldLowerUsername, opts...).ToFunc()
 }
 
 // ByEmail orders the results by the email field.
