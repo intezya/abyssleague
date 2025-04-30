@@ -3,7 +3,6 @@ package persistence
 import (
 	"context"
 	"errors"
-	"fmt"
 	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/ent/migrate"
 	"time"
 
@@ -46,22 +45,31 @@ func SetupEnt(config *EntConfig) *ent.Client {
 	maxRetries := gt0(config.maxRetries, defaultEntReconnectMaxRetries)
 	retryDelay := gt0(config.retryDelay, defaultEntReconnectDelay)
 
-	var entClient *ent.Client
+	entClient, err := ent.Open(config.driverName, config.source)
 
-	var err error
+	if err != nil {
+		logger.Log.Fatal(err) // invalid driver
+	}
+
+	if config.debug {
+		entClient = entClient.Debug()
+	}
 
 	// Retry connecting to the database if it fails
 	for attempt := 1; attempt <= maxRetries; attempt++ {
-		entClient, err = ent.Open(config.driverName, config.source)
-
+		err = entClient.Schema.Create(
+			context.Background(),
+			migrate.WithDropIndex(true),
+			migrate.WithDropColumn(true),
+		)
 		if err == nil {
-			logger.Log.Infof("Database connection succeeded on attempt %d", attempt)
+			logger.Log.Infof("Database migrations runned success on attempt %d", attempt)
 
 			break
 		}
 
 		logger.Log.Warnf(
-			"Attempt %d of %d: Failed to connect to database: %v",
+			"Attempt %d of %d: Failed to run migrations for database: %v",
 			attempt,
 			maxRetries,
 			err,
@@ -72,21 +80,8 @@ func SetupEnt(config *EntConfig) *ent.Client {
 		}
 	}
 
-	if entClient == nil {
-		panic(errAllConnectionAttemptsFailed)
-	}
-
-	if config.debug {
-		entClient = entClient.Debug()
-	}
-
-	err = entClient.Schema.Create(
-		context.Background(),
-		migrate.WithDropIndex(true),
-		migrate.WithDropColumn(true),
-	)
 	if err != nil {
-		panic(fmt.Errorf("failed to create schema: %w", err))
+		logger.Log.Fatalf("failed to create schema (all attempts are over)")
 	}
 
 	return entClient
