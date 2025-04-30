@@ -15,6 +15,129 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/api/account/email/enter_code": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Verifies sent code and links email to account",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Account"
+                ],
+                "summary": "Verify sent code",
+                "parameters": [
+                    {
+                        "description": "Verification code from email",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.EnterCodeForEmailLinkRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Email successfully linked",
+                        "schema": {
+                            "$ref": "#/definitions/dto.UserDTO"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request - wrong verification code",
+                        "schema": {
+                            "$ref": "#/definitions/examples.BadRequestResponse"
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict - user already has linked email",
+                        "schema": {
+                            "$ref": "#/definitions/examples.AccountAlreadyHasLinkedEmail"
+                        }
+                    },
+                    "422": {
+                        "description": "Unprocessable entity - invalid request types",
+                        "schema": {
+                            "$ref": "#/definitions/examples.UnprocessableEntityResponse"
+                        }
+                    },
+                    "429": {
+                        "description": "Too many requests - received too many requests",
+                        "schema": {
+                            "$ref": "#/definitions/examples.TooManyRequestsResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/account/email/get_code": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Sends verification code for email linking",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Account"
+                ],
+                "summary": "Send email verification code",
+                "parameters": [
+                    {
+                        "description": "Email for linking",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.LinkEmailRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Code successfully sent"
+                    },
+                    "400": {
+                        "description": "Bad request - missed request fields",
+                        "schema": {
+                            "$ref": "#/definitions/examples.BadRequestResponse"
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict - someone already has this email as linked",
+                        "schema": {
+                            "$ref": "#/definitions/examples.EmailConflict"
+                        }
+                    },
+                    "422": {
+                        "description": "Unprocessable entity - invalid request types",
+                        "schema": {
+                            "$ref": "#/definitions/examples.UnprocessableEntityResponse"
+                        }
+                    },
+                    "429": {
+                        "description": "Too many requests - received too many requests",
+                        "schema": {
+                            "$ref": "#/definitions/examples.TooManyRequestsResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/api/auth/change_password": {
             "post": {
                 "description": "Changes the password for an existing user",
@@ -870,6 +993,25 @@ const docTemplate = `{
                 }
             }
         },
+        "examples.AccountAlreadyHasLinkedEmail": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "integer",
+                    "example": 409
+                },
+                "detail": {
+                    "type": "string"
+                },
+                "message": {
+                    "type": "string",
+                    "example": "account already has linked email"
+                },
+                "path": {
+                    "type": "string"
+                }
+            }
+        },
         "examples.AuthenticationSuccessResponse": {
             "type": "object",
             "properties": {
@@ -927,6 +1069,25 @@ const docTemplate = `{
                 "message": {
                     "type": "string",
                     "example": "success"
+                },
+                "path": {
+                    "type": "string"
+                }
+            }
+        },
+        "examples.EmailConflict": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "integer",
+                    "example": 409
+                },
+                "detail": {
+                    "type": "string"
+                },
+                "message": {
+                    "type": "string",
+                    "example": "email conflict"
                 },
                 "path": {
                     "type": "string"
@@ -1260,6 +1421,31 @@ const docTemplate = `{
                 }
             }
         },
+        "request.EnterCodeForEmailLinkRequest": {
+            "type": "object",
+            "required": [
+                "verification_code"
+            ],
+            "properties": {
+                "verification_code": {
+                    "type": "string",
+                    "example": "Q2JV01"
+                }
+            }
+        },
+        "request.LinkEmailRequest": {
+            "type": "object",
+            "required": [
+                "email"
+            ],
+            "properties": {
+                "email": {
+                    "description": "TODO: validate: email",
+                    "type": "string",
+                    "example": "intezya@gmail.com"
+                }
+            }
+        },
         "request.PasswordChangeRequest": {
             "type": "object",
             "required": [
@@ -1284,6 +1470,9 @@ const docTemplate = `{
         },
         "request.SetItemAsCurrent": {
             "type": "object",
+            "required": [
+                "inventory_item_id"
+            ],
             "properties": {
                 "inventory_item_id": {
                     "type": "integer"
@@ -1300,7 +1489,7 @@ const docTemplate = `{
     }
 }`
 
-// SwaggerInfo holds exported Swagger Info so clients can modify it.
+// SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = &swag.Spec{
 	Version:          "1.0",
 	Host:             "localhost:8080",

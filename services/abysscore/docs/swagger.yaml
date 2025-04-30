@@ -99,6 +99,19 @@ definitions:
       username:
         type: string
     type: object
+  examples.AccountAlreadyHasLinkedEmail:
+    properties:
+      code:
+        example: 409
+        type: integer
+      detail:
+        type: string
+      message:
+        example: account already has linked email
+        type: string
+      path:
+        type: string
+    type: object
   examples.AuthenticationSuccessResponse:
     properties:
       code:
@@ -138,6 +151,19 @@ definitions:
         $ref: '#/definitions/dto.GameItemDTO'
       message:
         example: success
+        type: string
+      path:
+        type: string
+    type: object
+  examples.EmailConflict:
+    properties:
+      code:
+        example: 409
+        type: integer
+      detail:
+        type: string
+      message:
+        example: email conflict
         type: string
       path:
         type: string
@@ -348,9 +374,9 @@ definitions:
         example: my_legendary_username
         type: string
     required:
-      - hardware_id
-      - password
-      - username
+    - hardware_id
+    - password
+    - username
     type: object
   request.CreateUpdateGameItem:
     properties:
@@ -363,10 +389,27 @@ definitions:
       type:
         type: integer
     required:
-      - collection
-      - name
-      - rarity
-      - type
+    - collection
+    - name
+    - rarity
+    - type
+    type: object
+  request.EnterCodeForEmailLinkRequest:
+    properties:
+      verification_code:
+        example: Q2JV01
+        type: string
+    required:
+    - verification_code
+    type: object
+  request.LinkEmailRequest:
+    properties:
+      email:
+        description: 'TODO: validate: email'
+        example: intezya@gmail.com
+        type: string
+    required:
+    - email
     type: object
   request.PasswordChangeRequest:
     properties:
@@ -380,36 +423,116 @@ definitions:
         example: my_legendary_username
         type: string
     required:
-      - new_password
-      - old_password
-      - username
+    - new_password
+    - old_password
+    - username
     type: object
   request.SetItemAsCurrent:
     properties:
       inventory_item_id:
         type: integer
+    required:
+    - inventory_item_id
     type: object
 host: localhost:8080
 info:
-  contact: { }
+  contact: {}
   description: API of AbyssCore server
   title: AbyssCore API
   version: "1.0"
 paths:
+  /api/account/email/enter_code:
+    post:
+      consumes:
+      - application/json
+      description: Verifies sent code and links email to account
+      parameters:
+      - description: Verification code from email
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/request.EnterCodeForEmailLinkRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Email successfully linked
+          schema:
+            $ref: '#/definitions/dto.UserDTO'
+        "400":
+          description: Bad request - wrong verification code
+          schema:
+            $ref: '#/definitions/examples.BadRequestResponse'
+        "409":
+          description: Conflict - user already has linked email
+          schema:
+            $ref: '#/definitions/examples.AccountAlreadyHasLinkedEmail'
+        "422":
+          description: Unprocessable entity - invalid request types
+          schema:
+            $ref: '#/definitions/examples.UnprocessableEntityResponse'
+        "429":
+          description: Too many requests - received too many requests
+          schema:
+            $ref: '#/definitions/examples.TooManyRequestsResponse'
+      security:
+      - BearerAuth: []
+      summary: Verify sent code
+      tags:
+      - Account
+  /api/account/email/get_code:
+    post:
+      consumes:
+      - application/json
+      description: Sends verification code for email linking
+      parameters:
+      - description: Email for linking
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/request.LinkEmailRequest'
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: Code successfully sent
+        "400":
+          description: Bad request - missed request fields
+          schema:
+            $ref: '#/definitions/examples.BadRequestResponse'
+        "409":
+          description: Conflict - someone already has this email as linked
+          schema:
+            $ref: '#/definitions/examples.EmailConflict'
+        "422":
+          description: Unprocessable entity - invalid request types
+          schema:
+            $ref: '#/definitions/examples.UnprocessableEntityResponse'
+        "429":
+          description: Too many requests - received too many requests
+          schema:
+            $ref: '#/definitions/examples.TooManyRequestsResponse'
+      security:
+      - BearerAuth: []
+      summary: Send email verification code
+      tags:
+      - Account
   /api/auth/change_password:
     post:
       consumes:
-        - application/json
+      - application/json
       description: Changes the password for an existing user
       parameters:
-        - description: Password change details
-          in: body
-          name: request
-          required: true
-          schema:
-            $ref: '#/definitions/request.PasswordChangeRequest'
+      - description: Password change details
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/request.PasswordChangeRequest'
       produces:
-        - application/json
+      - application/json
       responses:
         "200":
           description: Password successfully changed
@@ -437,21 +560,21 @@ paths:
             $ref: '#/definitions/examples.TooManyRequestsResponse'
       summary: Change user password
       tags:
-        - Authentication
+      - Authentication
   /api/auth/login:
     post:
       consumes:
-        - application/json
+      - application/json
       description: Authenticates a user with username and password
       parameters:
-        - description: User login credentials
-          in: body
-          name: request
-          required: true
-          schema:
-            $ref: '#/definitions/request.AuthenticationRequest'
+      - description: User login credentials
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/request.AuthenticationRequest'
       produces:
-        - application/json
+      - application/json
       responses:
         "200":
           description: Successfully authenticated
@@ -483,21 +606,21 @@ paths:
             $ref: '#/definitions/examples.TooManyRequestsResponse'
       summary: Authenticate user
       tags:
-        - Authentication
+      - Authentication
   /api/auth/register:
     post:
       consumes:
-        - application/json
+      - application/json
       description: Creates a new user account with the provided credentials
       parameters:
-        - description: User registration details
-          in: body
-          name: request
-          required: true
-          schema:
-            $ref: '#/definitions/request.AuthenticationRequest'
+      - description: User registration details
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/request.AuthenticationRequest'
       produces:
-        - application/json
+      - application/json
       responses:
         "200":
           description: User successfully registered
@@ -521,38 +644,38 @@ paths:
             $ref: '#/definitions/examples.TooManyRequestsResponse'
       summary: Register a new user
       tags:
-        - Authentication
+      - Authentication
   /api/items:
     get:
       description: Returns a paginated list of game items with sorting
       parameters:
-        - description: 'Page number (default: 1)'
-          in: query
-          name: page
-          type: integer
-        - description: 'Page size (default: 10)'
-          in: query
-          name: size
-          type: integer
-        - description: Field to sort by
-          enum:
-            - created_at
-            - name
-            - collection
-            - type
-            - rarity
-          in: query
-          name: order_by
-          type: string
-        - description: Sort order
-          enum:
-            - asc
-            - desc
-          in: query
-          name: order_type
-          type: string
+      - description: 'Page number (default: 1)'
+        in: query
+        name: page
+        type: integer
+      - description: 'Page size (default: 10)'
+        in: query
+        name: size
+        type: integer
+      - description: Field to sort by
+        enum:
+        - created_at
+        - name
+        - collection
+        - type
+        - rarity
+        in: query
+        name: order_by
+        type: string
+      - description: Sort order
+        enum:
+        - asc
+        - desc
+        in: query
+        name: order_type
+        type: string
       produces:
-        - application/json
+      - application/json
       responses:
         "200":
           description: Paginated list of game items
@@ -564,20 +687,20 @@ paths:
             $ref: '#/definitions/examples.BadRequestResponse'
       summary: List game items
       tags:
-        - Game Items
+      - Game Items
     post:
       consumes:
-        - application/json
+      - application/json
       description: Admin creates a new game item
       parameters:
-        - description: Game item data
-          in: body
-          name: request
-          required: true
-          schema:
-            $ref: '#/definitions/request.CreateUpdateGameItem'
+      - description: Game item data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/request.CreateUpdateGameItem'
       produces:
-        - application/json
+      - application/json
       responses:
         "200":
           description: Created game item
@@ -596,21 +719,21 @@ paths:
           schema:
             $ref: '#/definitions/examples.UnprocessableEntityResponse'
       security:
-        - BearerAuth: [ ]
+      - BearerAuth: []
       summary: Create game item
       tags:
-        - Game Items
+      - Game Items
   /api/items/{id}:
     delete:
       description: Admin deletes a game item by ID
       parameters:
-        - description: Game item ID
-          in: path
-          name: id
-          required: true
-          type: integer
+      - description: Game item ID
+        in: path
+        name: id
+        required: true
+        type: integer
       produces:
-        - application/json
+      - application/json
       responses:
         "204":
           description: Game item deleted
@@ -627,20 +750,20 @@ paths:
           schema:
             $ref: '#/definitions/examples.UnprocessableEntityResponse'
       security:
-        - BearerAuth: [ ]
+      - BearerAuth: []
       summary: Delete game item
       tags:
-        - Game Items
+      - Game Items
     get:
       description: Returns game item by its ID
       parameters:
-        - description: Game item ID
-          in: path
-          name: id
-          required: true
-          type: integer
+      - description: Game item ID
+        in: path
+        name: id
+        required: true
+        type: integer
       produces:
-        - application/json
+      - application/json
       responses:
         "200":
           description: Game item
@@ -656,25 +779,25 @@ paths:
             $ref: '#/definitions/examples.GameItemNotFound'
       summary: Get game item by ID
       tags:
-        - Game Items
+      - Game Items
     put:
       consumes:
-        - application/json
+      - application/json
       description: Admin updates a game item by ID
       parameters:
-        - description: Game item ID
-          in: path
-          name: id
-          required: true
-          type: integer
-        - description: Updated game item data
-          in: body
-          name: request
-          required: true
-          schema:
-            $ref: '#/definitions/request.CreateUpdateGameItem'
+      - description: Game item ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Updated game item data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/request.CreateUpdateGameItem'
       produces:
-        - application/json
+      - application/json
       responses:
         "204":
           description: Game item updated
@@ -691,21 +814,21 @@ paths:
           schema:
             $ref: '#/definitions/examples.UnprocessableEntityResponse'
       security:
-        - BearerAuth: [ ]
+      - BearerAuth: []
       summary: Update game item
       tags:
-        - Game Items
+      - Game Items
   /api/users/{user_id}/inventory:
     get:
       description: Admin retrieves all inventory items for a specified user
       parameters:
-        - description: User ID
-          in: path
-          name: user_id
-          required: true
-          type: integer
+      - description: User ID
+        in: path
+        name: user_id
+        required: true
+        type: integer
       produces:
-        - application/json
+      - application/json
       responses:
         "200":
           description: List of user's inventory items
@@ -726,25 +849,25 @@ paths:
           schema:
             $ref: '#/definitions/examples.UserNotFoundResponse'
       security:
-        - BearerAuth: [ ]
+      - BearerAuth: []
       summary: Get user's inventory
       tags:
-        - Inventory Items
+      - Inventory Items
     post:
       description: Admin grants a game item to a specific user
       parameters:
-        - description: User ID
-          in: path
-          name: user_id
-          required: true
-          type: integer
-        - description: Item ID
-          in: path
-          name: item_id
-          required: true
-          type: integer
+      - description: User ID
+        in: path
+        name: user_id
+        required: true
+        type: integer
+      - description: Item ID
+        in: path
+        name: item_id
+        required: true
+        type: integer
       produces:
-        - application/json
+      - application/json
       responses:
         "200":
           description: Granted inventory item
@@ -763,26 +886,26 @@ paths:
           schema:
             $ref: '#/definitions/examples.GameItemNotFound'
       security:
-        - BearerAuth: [ ]
+      - BearerAuth: []
       summary: Grant item to user
       tags:
-        - Inventory Items
+      - Inventory Items
   /api/users/{user_id}/inventory/{item_id}:
     delete:
       description: Admin revokes a game item from a specific user
       parameters:
-        - description: User ID
-          in: path
-          name: user_id
-          required: true
-          type: integer
-        - description: Item ID
-          in: path
-          name: item_id
-          required: true
-          type: integer
+      - description: User ID
+        in: path
+        name: user_id
+        required: true
+        type: integer
+      - description: Item ID
+        in: path
+        name: item_id
+        required: true
+        type: integer
       produces:
-        - application/json
+      - application/json
       responses:
         "204":
           description: Item successfully revoked
@@ -799,15 +922,15 @@ paths:
           schema:
             $ref: '#/definitions/examples.InventoryItemNotFoundResponse'
       security:
-        - BearerAuth: [ ]
+      - BearerAuth: []
       summary: Revoke item from user
       tags:
-        - Inventory Items
+      - Inventory Items
   /api/users/inventory:
     get:
       description: Returns all inventory items for the currently authenticated user
       produces:
-        - application/json
+      - application/json
       responses:
         "200":
           description: List of user's inventory items
@@ -816,25 +939,25 @@ paths:
               $ref: '#/definitions/examples.PaginatedInventoryItemsDTOResponse'
             type: array
       security:
-        - BearerAuth: [ ]
+      - BearerAuth: []
       summary: Get current user's inventory
       tags:
-        - Inventory Items
+      - Inventory Items
   /api/users/me/inventory/set_item:
     post:
       consumes:
-        - application/json
+      - application/json
       description: Sets a specific inventory item as current for the authenticated
         user
       parameters:
-        - description: Inventory item details
-          in: body
-          name: request
-          required: true
-          schema:
-            $ref: '#/definitions/request.SetItemAsCurrent'
+      - description: Inventory item details
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/request.SetItemAsCurrent'
       produces:
-        - application/json
+      - application/json
       responses:
         "204":
           description: Item successfully set as current
@@ -851,10 +974,10 @@ paths:
           schema:
             $ref: '#/definitions/examples.UnprocessableEntityResponse'
       security:
-        - BearerAuth: [ ]
+      - BearerAuth: []
       summary: Set inventory item as current
       tags:
-        - Inventory Items
+      - Inventory Items
 securityDefinitions:
   BearerAuth:
     in: header

@@ -29,7 +29,8 @@ func NewDependencyProvider(
 	config *config.Config,
 ) *DependencyProvider {
 	apiPrefix := "/api"
-	dp := &DependencyProvider{ //nolint:varnamelen // canonical naming for this context
+	dp := &DependencyProvider{
+		//nolint:varnamelen // canonical naming for this context
 		Config:                config,
 		RedisClient:           redisClient,
 		AuthenticationService: authenticationService,
@@ -52,8 +53,9 @@ func (dp *DependencyProvider) setupRouteGroups(handlers *handlers.DependencyProv
 	authGroup := GetAuthGroup(handlers, dp)
 	gameItemGroup := GetGameItemGroup(handlers, dp)
 	inventoryItemGroup := GetInventoryItemGroup(handlers, dp)
+	accountGroup := GetAccountGroup(handlers, dp)
 
-	dp.routeGroups = []*RouteGroup{authGroup, gameItemGroup, inventoryItemGroup}
+	dp.routeGroups = []*RouteGroup{authGroup, gameItemGroup, inventoryItemGroup, accountGroup}
 }
 
 // WithoutAuthenticationRequirement disables authentication for a route.

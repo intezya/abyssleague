@@ -21,11 +21,12 @@ func NewAccountHandler(accountService domainservice.AccountService) *AccountHand
 //	@Tags			Account
 //	@Accept			json
 //	@Produce		json
+//	@Security		BearerAuth
 //	@Param			request	body	request.LinkEmailRequest	true	"Email for linking"
 //	@Success		204		"Code successfully sent"
 //	@Failure		400		{object}	examples.BadRequestResponse				"Bad request - missed request fields"
 //	@Failure		409		{object}	examples.AccountAlreadyHasLinkedEmail	"Conflict - user already has linked email"
-//	@Failure		409		{object}	examples.EmailConflict	"Conflict - someone already has this email as linked"
+//	@Failure		409		{object}	examples.EmailConflict					"Conflict - someone already has this email as linked"
 //	@Failure		422		{object}	examples.UnprocessableEntityResponse	"Unprocessable entity - invalid request types"
 //	@Failure		429		{object}	examples.TooManyRequestsResponse		"Too many requests - received too many requests"
 //	@Router			/api/account/email/get_code [post].
@@ -58,8 +59,9 @@ func (h *AccountHandler) SendCodeForEmailLink(c *fiber.Ctx) error {
 //	@Tags			Account
 //	@Accept			json
 //	@Produce		json
-//	@Param			request	body	request.EnterCodeForEmailLinkRequest	true	"Verification code from email"
-//	@Success		200 {object}     dto.UserDto    "Email successfully linked"
+//	@Security		BearerAuth
+//	@Param			request	body		request.EnterCodeForEmailLinkRequest	true	"Verification code from email"
+//	@Success		200		{object}	dto.UserDTO								"Email successfully linked"
 //	@Failure		400		{object}	examples.BadRequestResponse				"Bad request - missed request fields"
 //	@Failure		400		{object}	examples.BadRequestResponse				"Bad request - wrong verification code"
 //	@Failure		409		{object}	examples.AccountAlreadyHasLinkedEmail	"Conflict - user already has linked email"

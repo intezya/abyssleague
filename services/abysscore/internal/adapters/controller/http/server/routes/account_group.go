@@ -9,7 +9,7 @@ func GetAccountGroup(
 	handlers *handlers.DependencyProvider,
 	provider *DependencyProvider,
 ) *RouteGroup {
-	accountGroup := NewRouteGroup(path.Join(provider.apiPrefix, "users"))
+	accountGroup := NewRouteGroup(path.Join(provider.apiPrefix, ""))
 
 	accountGroup.Add(
 		"/account/email/get_code", NewRoute(

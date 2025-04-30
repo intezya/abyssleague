@@ -25,7 +25,7 @@ func LogError(err error) {
 		// Log standard error
 		logger.Log.Errorw(
 			"Unstructured error",
-			"error", err.Error(),
+			"error", err,
 		)
 	}
 }
