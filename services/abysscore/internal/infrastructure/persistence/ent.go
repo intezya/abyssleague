@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/ent/migrate"
 	"time"
 
 	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/ent"
@@ -22,6 +23,7 @@ type EntConfig struct {
 	source     string
 	maxRetries int
 	retryDelay time.Duration
+	debug      bool
 }
 
 func NewEntConfig(
@@ -29,12 +31,14 @@ func NewEntConfig(
 	source string,
 	maxRetries int,
 	retryDelay time.Duration,
+	debug bool,
 ) *EntConfig {
 	return &EntConfig{
 		driverName: driverName,
 		source:     source,
 		maxRetries: maxRetries,
 		retryDelay: retryDelay,
+		debug:      debug,
 	}
 }
 
@@ -72,7 +76,15 @@ func SetupEnt(config *EntConfig) *ent.Client {
 		panic(errAllConnectionAttemptsFailed)
 	}
 
-	err = entClient.Schema.Create(context.Background())
+	if config.debug {
+		entClient = entClient.Debug()
+	}
+
+	err = entClient.Schema.Create(
+		context.Background(),
+		migrate.WithDropIndex(true),
+		migrate.WithDropColumn(true),
+	)
 	if err != nil {
 		panic(fmt.Errorf("failed to create schema: %w", err))
 	}

@@ -245,6 +245,7 @@ func initEntConfig() *persistence.EntConfig {
 		buildDBConnectionString(),
 		getEnvInt("DB_MAX_RETRIES", defaultDBMaxRetries),
 		getEnvDuration("DB_RETRY_DELAY", defaultDBRetryDelay),
+		getEnvBool("DB_USE_DEBUG", false),
 	)
 }
 
