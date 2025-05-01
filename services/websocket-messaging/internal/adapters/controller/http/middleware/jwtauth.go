@@ -22,15 +22,18 @@ func (m *SecurityMiddleware) JwtAuth(
 	r *http.Request,
 ) (authenticationData *entity.AuthenticationData) {
 	authHeader := r.Header.Get("Authorization")
+	var token string
 
-	if authHeader == "" {
-		logger.Log.Debug("missing authorization header")
-		http.Error(w, "missing authorization header", http.StatusUnauthorized)
-
-		return authenticationData
+	if authHeader != "" {
+		token = softExtractTokenFromHeader(authHeader, "Bearer ", "Token ")
+	} else {
+		token = r.URL.Query().Get("token")
+		if token == "" {
+			logger.Log.Debug("missing authorization header and query token")
+			http.Error(w, "missing token", http.StatusUnauthorized)
+			return nil
+		}
 	}
-
-	token := softExtractTokenFromHeader(authHeader, "Bearer ", "Token ")
 
 	tokenData, err := m.jwtService.ValidateToken(token)
 	if err != nil {
