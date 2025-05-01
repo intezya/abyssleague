@@ -8,6 +8,7 @@ import (
 	"github.com/intezya/abyssleague/services/abysscore/internal/domain/entity/mailmessage"
 	drivenports "github.com/intezya/abyssleague/services/abysscore/internal/domain/ports/driven"
 	repositoryports "github.com/intezya/abyssleague/services/abysscore/internal/domain/repository"
+	"time"
 )
 
 type AccountService struct {
@@ -33,6 +34,8 @@ func (s *AccountService) SendCodeForEmailLink(
 	user *dto.UserDTO,
 	email string,
 ) error {
+	const newLinkEmailCodeExpireMinutes = 5
+
 	if user.Email != nil {
 		return applicationerror.ErrAccountAlreadyHasEmail
 	}
@@ -49,21 +52,21 @@ func (s *AccountService) SendCodeForEmailLink(
 		return applicationerror.ErrEmailConflict
 	}
 
-	const newLinkEmailCodeExpireMinutes = 5
-	mailMessage := mailmessage.NewLinkEmailCodeMail(user.ID, email, newLinkEmailCodeExpireMinutes)
-
 	sentMailMessage, err := s.mailMessageRepository.GetLinkMailCodeData(ctx, user.ID)
 
-	if err == nil && sentMailMessage != nil {
+	if err == nil && sentMailMessage != nil && sentMailMessage.CreatedAt.After(time.Now().Add(-time.Minute*1)) { // TODO: move to "if expired" func (move timeout to const)
 		return applicationerror.TooManyEmailLinkRequests // if already sent
 	}
 
-	go s.mailMessageRepository.SaveLinkMailCodeData(ctx, mailMessage, newLinkEmailCodeExpireMinutes)
-	err = s.mailSender.Send(mailMessage.Message, typedEmail.String())
+	mailMessage := mailmessage.NewLinkEmailCodeMail(user.ID, email, newLinkEmailCodeExpireMinutes)
+
+	err = s.mailSender.Send(ctx, mailMessage.Message, typedEmail.String())
 
 	if err != nil {
 		return applicationerror.WrapServiceUnavailable(err)
 	}
+
+	go s.mailMessageRepository.SaveLinkMailCodeData(ctx, mailMessage, newLinkEmailCodeExpireMinutes)
 
 	return nil
 }

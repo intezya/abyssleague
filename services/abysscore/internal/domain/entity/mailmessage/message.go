@@ -1,15 +1,15 @@
 package mailmessage
 
 type Message struct {
-	subject string
-	mime    string
-	body    string
+	Subject string
+	Mime    string
+	Body    string
 }
 
 func NewMessage(subject string, mime string, body string) *Message {
-	return &Message{subject: subject, mime: mime, body: body}
+	return &Message{Subject: subject, Mime: mime, Body: body}
 }
 
 func (m *Message) AsBytes() []byte {
-	return []byte(m.subject + m.mime + m.body)
+	return []byte(m.Subject + m.Mime + m.Body)
 }

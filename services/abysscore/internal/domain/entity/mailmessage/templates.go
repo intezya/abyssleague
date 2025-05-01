@@ -41,7 +41,7 @@ const linkEmailCodeMessageBodyTemplate = `
 </head>
 <body>
     <div class="container">
-        <p>Здравствуйте!</p>
+        <p>Yo!</p>
         
         <p>Thank you for registering for our service. To confirm your e-mail address <strong>%s</strong>, please, use use next code:</p>
         

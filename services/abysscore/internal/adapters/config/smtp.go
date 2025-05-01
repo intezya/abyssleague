@@ -1,23 +1,15 @@
 package config
 
-import "fmt"
+import (
+	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/mail"
+)
 
-type SMTPConfig struct {
-	Host      string
-	Port      int
-	AccessKey string
-	SecretKey string
-}
-
-func (c *SMTPConfig) Server() string {
-	return fmt.Sprintf("%s:%d", c.Host, c.Port)
-}
-
-func initSMTPConfig() *SMTPConfig {
-	return &SMTPConfig{
-		Host:      getEnvString("SMTP_HOST", ""),
-		Port:      getEnvInt("SMTP_PORT", 0),
-		AccessKey: getEnvString("SMTP_ACCESS_KEY", ""),
-		SecretKey: getEnvString("SMTP_SECRET_KEY", ""),
+func initSMTPConfig() *mail.SMTPConfig {
+	return &mail.SMTPConfig{
+		Host:          getEnvString("SMTP_HOST", ""),
+		Port:          getEnvInt("SMTP_PORT", 0),
+		AccessKey:     getEnvString("SMTP_ACCESS_KEY", ""),
+		SecretKey:     getEnvString("SMTP_SECRET_KEY", ""),
+		DefaultSender: getEnvString("SMTP_DEFAULT_SENDER", ""),
 	}
 }

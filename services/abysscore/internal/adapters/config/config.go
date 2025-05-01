@@ -3,6 +3,7 @@ package config
 import (
 	"errors"
 	"fmt"
+	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/mail"
 	"os"
 	"strconv"
 	"strings"
@@ -81,7 +82,7 @@ type Config struct {
 	JWTConfiguration *auth.JWTConfiguration
 	TracerConfig     *tracer.Config
 	GRPCConfig       *factory.GRPCConfig
-	SMTPConfig       *SMTPConfig
+	SMTPConfig       *mail.SMTPConfig
 }
 
 // Validate validates the rate limit configuration.
@@ -108,7 +109,7 @@ func LoadConfig() *Config {
 	// Load environment variables from .env file if exists
 	if err := godotenv.Load(); err != nil {
 		// Only log error, don't fail as .env file is optional
-		panic(fmt.Errorf("%w: %w", errLoadEnvFile, err))
+		fmt.Printf("%v: %v", errLoadEnvFile, err)
 	}
 
 	envType := getEnvString("ENV_TYPE", EnvTypeProd)

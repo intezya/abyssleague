@@ -47,8 +47,8 @@ services:
       target: final
     container_name: abysscore
     ports:
-      - "127.0.0.1:8080:8080"
-      - "127.0.0.1:2112:2112"
+      - "8080:8080"
+    #      - "2112:2112"
     logging:
       driver: "json-file"
       options:
@@ -67,6 +67,7 @@ services:
       - WEBSOCKET_API_GATEWAY_PORTS=${GRPC_SERVER_PORTS}
       - TZ=UTC
       - DEBUG=${DEBUG:-false}
+      - SMTP_HOST=maildev
     env_file:
       - .env
     healthcheck:
@@ -87,7 +88,7 @@ services:
         condition: service_started
 
   prometheus:
-    image: prom/prometheus:v3.2.1
+    image: docker.io/prom/prometheus:v3.2.1
     container_name: prometheus
     ports:
       - "127.0.0.1:9090:9090"
@@ -105,7 +106,7 @@ services:
       - ABYSSCORE_PORT=${ABYSSCORE_METRICS_PORT}
 
   grafana:
-    image: grafana/grafana:latest
+    image: docker.io/grafana/grafana:latest
     container_name: grafana
     ports:
       - "127.0.0.1:3000:3000"
@@ -122,7 +123,7 @@ services:
       - monitoring
 
   loki:
-    image: grafana/loki:latest
+    image: docker.io/grafana/loki:latest
     container_name: loki
     volumes:
       - loki_data:/loki
@@ -134,7 +135,7 @@ services:
       - monitoring
 
   promtail:
-    image: grafana/promtail:latest
+    image: docker.io/grafana/promtail:latest
     container_name: promtail
     volumes:
       - /var/log:/var/log
@@ -147,7 +148,7 @@ services:
       - monitoring
 
   postgres:
-    image: postgres:14.5-alpine
+    image: docker.io/postgres:14.5-alpine
     container_name: postgres
     environment:
       POSTGRES_USER: ${DB_USER}
@@ -167,10 +168,10 @@ services:
       - application
 
   redis:
-    image: redis:alpine
+    image: docker.io/redis:alpine
     container_name: redis
     ports:
-      - "127.0.0.1:6379:6379"
+      - "6379:6379"
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 10s
@@ -181,7 +182,7 @@ services:
       - application
 
   otel-collector:
-    image: otel/opentelemetry-collector-contrib:latest
+    image: docker.io/otel/opentelemetry-collector-contrib:latest
     volumes:
       - ./monitoring/otlp/otel-collector-config.yaml:/etc/otel-collector-config.yaml
     command: [ "--config=/etc/otel-collector-config.yaml" ]
@@ -197,7 +198,7 @@ services:
       - monitoring
 
   tempo:
-    image: grafana/tempo:latest
+    image: docker.io/grafana/tempo:latest
     container_name: tempo
     command: [ "-config.file=/etc/tempo.yaml" ]
     volumes:
@@ -207,6 +208,19 @@ services:
       - "127.0.0.1:3200:3200"   # tempo UI/API
     networks:
       - monitoring
+
+  maildev:
+    image: docker.io/maildev/maildev:latest
+    command: bin/maildev --web 1080 --smtp 1025 --verbose
+    container_name: maildev
+    ports:
+      - "1025:1025"
+      - "1080:1080"
+    environment:
+      - MAILDEV_INCOMING_USER=${SMTP_ACCESS_KEY}
+      - MAILDEV_INCOMING_PASS=${SMTP_SECRET_KEY}
+    networks:
+      - application
 
 networks:
   monitoring:

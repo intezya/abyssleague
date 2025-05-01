@@ -3,16 +3,28 @@ package mailmessage
 import (
 	"fmt"
 	"github.com/intezya/pkglib/generate"
+	jsoniter "github.com/json-iterator/go"
 	"time"
 )
 
 type LinkEmailCodeData struct {
-	*Message
+	Message *Message `json:"-"`
 
 	// Stored in cache
-	UserID           int    `json:"user_id"`
-	VerificationCode string `json:"verification_code"`
-	EmailForLink     string `json:"email_for_link"`
+	UserID           int       `json:"user_id"`
+	VerificationCode string    `json:"verification_code"`
+	EmailForLink     string    `json:"email_for_link"`
+	CreatedAt        time.Time `json:"created_at"`
+}
+
+// MarshalBinary implements encoding.BinaryMarshaler
+func (d *LinkEmailCodeData) MarshalBinary() ([]byte, error) {
+	return jsoniter.Marshal(d)
+}
+
+// UnmarshalBinary implements encoding.BinaryUnmarshaler
+func (d *LinkEmailCodeData) UnmarshalBinary(data []byte) error {
+	return jsoniter.Unmarshal(data, d)
 }
 
 func NewLinkEmailCodeMail(
@@ -25,7 +37,8 @@ func NewLinkEmailCodeMail(
 	verificationCode := generate.RandomString(6, verificationCodeCharset)
 
 	const subject = "Email address confirmation"
-	const mime = "MIME-version: 1.0;\nContent-Type: text/html; charset=\"UTF-8\";\n\n"
+	const mime = "text/html; charset=UTF-8"
+
 	body := fmt.Sprintf(
 		linkEmailCodeMessageBodyTemplate,
 		emailForLink,
@@ -39,5 +52,6 @@ func NewLinkEmailCodeMail(
 		VerificationCode: verificationCode,
 		EmailForLink:     emailForLink,
 		Message:          NewMessage(subject, mime, body),
+		CreatedAt:        time.Now(),
 	}
 }

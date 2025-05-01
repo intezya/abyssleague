@@ -237,7 +237,7 @@ func (r *RateLimitMiddleware) logLimitExceeded(
 		"attempts", attempts,
 		"limit", r.config.RateLimitConfig.LoginRateLimit,
 		"request_id", requestID,
-	).Info("Login rate limit exceeded")
+	).Debug("Login rate limit exceeded")
 }
 
 func (r *RateLimitMiddleware) processDefaultRateLimit(
@@ -284,7 +284,7 @@ func (r *RateLimitMiddleware) logDefaultLimitExceeded(
 		"count", count,
 		"limit", r.config.RateLimitConfig.DefaultRateLimit,
 		"request_id", requestID,
-	).Warn("General rate limit exceeded")
+	).Debug("General rate limit exceeded")
 }
 
 func (r *RateLimitMiddleware) incrementDefaultRequestCount(

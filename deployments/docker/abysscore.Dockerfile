@@ -29,7 +29,7 @@ WORKDIR /app
 
 COPY --from=builder /build/abysscore .
 
-ENTRYPOINT ["/app/$abysscore"]
+ENTRYPOINT ["/app/abysscore"]
 
 
 FROM scratch AS final

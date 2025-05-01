@@ -36,7 +36,7 @@ func main() {
 	entClient := persistence.SetupEnt(appConfig.EntConfig)
 	redisClient := rediswrapper.NewClientWrapper(appConfig.RedisConfig)
 	grpcFactory := factory.NewGrpcClientFactory()
-	smtpClient := mail.NewSMTPClientWrapper(appConfig.SMTPConfig)
+	smtpClient := mail.NewSMTPSender(appConfig.SMTPConfig)
 
 	logger.Log.Debug("grpcFactory has been initialized")
 
