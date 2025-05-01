@@ -66,8 +66,6 @@ func ValidColumn(column string) bool {
 var (
 	// DefaultReceivedFromID holds the default value on creation for the "received_from_id" field.
 	DefaultReceivedFromID int
-	// ReceivedFromIDValidator is a validator for the "received_from_id" field. It is called by the builders before save.
-	ReceivedFromIDValidator func(int) error
 	// DefaultObtainedAt holds the default value on creation for the "obtained_at" field.
 	DefaultObtainedAt func() time.Time
 )

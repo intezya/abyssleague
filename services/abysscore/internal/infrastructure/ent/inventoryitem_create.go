@@ -134,11 +134,6 @@ func (iic *InventoryItemCreate) check() error {
 	if _, ok := iic.mutation.ReceivedFromID(); !ok {
 		return &ValidationError{Name: "received_from_id", err: errors.New(`ent: missing required field "InventoryItem.received_from_id"`)}
 	}
-	if v, ok := iic.mutation.ReceivedFromID(); ok {
-		if err := inventoryitem.ReceivedFromIDValidator(v); err != nil {
-			return &ValidationError{Name: "received_from_id", err: fmt.Errorf(`ent: validator failed for field "InventoryItem.received_from_id": %w`, err)}
-		}
-	}
 	if _, ok := iic.mutation.ObtainedAt(); !ok {
 		return &ValidationError{Name: "obtained_at", err: errors.New(`ent: missing required field "InventoryItem.obtained_at"`)}
 	}

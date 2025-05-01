@@ -79,14 +79,9 @@ var (
 		},
 		Indexes: []*schema.Index{
 			{
-				Name:    "inventoryitem_item_id",
-				Unique:  true,
-				Columns: []*schema.Column{InventoryItemsColumns[3]},
-			},
-			{
-				Name:    "inventoryitem_user_id",
-				Unique:  true,
-				Columns: []*schema.Column{InventoryItemsColumns[4]},
+				Name:    "inventoryitem_user_id_item_id",
+				Unique:  false,
+				Columns: []*schema.Column{InventoryItemsColumns[4], InventoryItemsColumns[3]},
 			},
 		},
 	}

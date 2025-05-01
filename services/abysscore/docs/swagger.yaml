@@ -853,6 +853,42 @@ paths:
       summary: Get user's inventory
       tags:
       - Inventory Items
+  /api/users/{user_id}/inventory/{item_id}:
+    delete:
+      description: Admin revokes a game item from a specific user
+      parameters:
+      - description: User ID
+        in: path
+        name: user_id
+        required: true
+        type: integer
+      - description: Item ID
+        in: path
+        name: item_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: Item successfully revoked
+        "400":
+          description: Bad request - invalid ID
+          schema:
+            $ref: '#/definitions/examples.BadRequestResponse'
+        "403":
+          description: Forbidden - not enough rights
+          schema:
+            $ref: '#/definitions/examples.ForbiddenByAccessLevelResponse'
+        "404":
+          description: Not found - inventory item not found
+          schema:
+            $ref: '#/definitions/examples.InventoryItemNotFoundResponse'
+      security:
+      - BearerAuth: []
+      summary: Revoke item from user
+      tags:
+      - Inventory Items
     post:
       description: Admin grants a game item to a specific user
       parameters:
@@ -888,42 +924,6 @@ paths:
       security:
       - BearerAuth: []
       summary: Grant item to user
-      tags:
-      - Inventory Items
-  /api/users/{user_id}/inventory/{item_id}:
-    delete:
-      description: Admin revokes a game item from a specific user
-      parameters:
-      - description: User ID
-        in: path
-        name: user_id
-        required: true
-        type: integer
-      - description: Item ID
-        in: path
-        name: item_id
-        required: true
-        type: integer
-      produces:
-      - application/json
-      responses:
-        "204":
-          description: Item successfully revoked
-        "400":
-          description: Bad request - invalid ID
-          schema:
-            $ref: '#/definitions/examples.BadRequestResponse'
-        "403":
-          description: Forbidden - not enough rights
-          schema:
-            $ref: '#/definitions/examples.ForbiddenByAccessLevelResponse'
-        "404":
-          description: Not found - inventory item not found
-          schema:
-            $ref: '#/definitions/examples.InventoryItemNotFoundResponse'
-      security:
-      - BearerAuth: []
-      summary: Revoke item from user
       tags:
       - Inventory Items
   /api/users/inventory:

@@ -28,27 +28,6 @@ func (iiu *InventoryItemUpdate) Where(ps ...predicate.InventoryItem) *InventoryI
 	return iiu
 }
 
-// SetReceivedFromID sets the "received_from_id" field.
-func (iiu *InventoryItemUpdate) SetReceivedFromID(i int) *InventoryItemUpdate {
-	iiu.mutation.ResetReceivedFromID()
-	iiu.mutation.SetReceivedFromID(i)
-	return iiu
-}
-
-// SetNillableReceivedFromID sets the "received_from_id" field if the given value is not nil.
-func (iiu *InventoryItemUpdate) SetNillableReceivedFromID(i *int) *InventoryItemUpdate {
-	if i != nil {
-		iiu.SetReceivedFromID(*i)
-	}
-	return iiu
-}
-
-// AddReceivedFromID adds i to the "received_from_id" field.
-func (iiu *InventoryItemUpdate) AddReceivedFromID(i int) *InventoryItemUpdate {
-	iiu.mutation.AddReceivedFromID(i)
-	return iiu
-}
-
 // SetObtainedAt sets the "obtained_at" field.
 func (iiu *InventoryItemUpdate) SetObtainedAt(t time.Time) *InventoryItemUpdate {
 	iiu.mutation.SetObtainedAt(t)
@@ -97,11 +76,6 @@ func (iiu *InventoryItemUpdate) ExecX(ctx context.Context) {
 
 // check runs all checks and user-defined validators on the builder.
 func (iiu *InventoryItemUpdate) check() error {
-	if v, ok := iiu.mutation.ReceivedFromID(); ok {
-		if err := inventoryitem.ReceivedFromIDValidator(v); err != nil {
-			return &ValidationError{Name: "received_from_id", err: fmt.Errorf(`ent: validator failed for field "InventoryItem.received_from_id": %w`, err)}
-		}
-	}
 	if iiu.mutation.UserCleared() && len(iiu.mutation.UserIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "InventoryItem.user"`)
 	}
@@ -122,12 +96,6 @@ func (iiu *InventoryItemUpdate) sqlSave(ctx context.Context) (n int, err error) 
 				ps[i](selector)
 			}
 		}
-	}
-	if value, ok := iiu.mutation.ReceivedFromID(); ok {
-		_spec.SetField(inventoryitem.FieldReceivedFromID, field.TypeInt, value)
-	}
-	if value, ok := iiu.mutation.AddedReceivedFromID(); ok {
-		_spec.AddField(inventoryitem.FieldReceivedFromID, field.TypeInt, value)
 	}
 	if value, ok := iiu.mutation.ObtainedAt(); ok {
 		_spec.SetField(inventoryitem.FieldObtainedAt, field.TypeTime, value)
@@ -150,27 +118,6 @@ type InventoryItemUpdateOne struct {
 	fields   []string
 	hooks    []Hook
 	mutation *InventoryItemMutation
-}
-
-// SetReceivedFromID sets the "received_from_id" field.
-func (iiuo *InventoryItemUpdateOne) SetReceivedFromID(i int) *InventoryItemUpdateOne {
-	iiuo.mutation.ResetReceivedFromID()
-	iiuo.mutation.SetReceivedFromID(i)
-	return iiuo
-}
-
-// SetNillableReceivedFromID sets the "received_from_id" field if the given value is not nil.
-func (iiuo *InventoryItemUpdateOne) SetNillableReceivedFromID(i *int) *InventoryItemUpdateOne {
-	if i != nil {
-		iiuo.SetReceivedFromID(*i)
-	}
-	return iiuo
-}
-
-// AddReceivedFromID adds i to the "received_from_id" field.
-func (iiuo *InventoryItemUpdateOne) AddReceivedFromID(i int) *InventoryItemUpdateOne {
-	iiuo.mutation.AddReceivedFromID(i)
-	return iiuo
 }
 
 // SetObtainedAt sets the "obtained_at" field.
@@ -234,11 +181,6 @@ func (iiuo *InventoryItemUpdateOne) ExecX(ctx context.Context) {
 
 // check runs all checks and user-defined validators on the builder.
 func (iiuo *InventoryItemUpdateOne) check() error {
-	if v, ok := iiuo.mutation.ReceivedFromID(); ok {
-		if err := inventoryitem.ReceivedFromIDValidator(v); err != nil {
-			return &ValidationError{Name: "received_from_id", err: fmt.Errorf(`ent: validator failed for field "InventoryItem.received_from_id": %w`, err)}
-		}
-	}
 	if iiuo.mutation.UserCleared() && len(iiuo.mutation.UserIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "InventoryItem.user"`)
 	}
@@ -276,12 +218,6 @@ func (iiuo *InventoryItemUpdateOne) sqlSave(ctx context.Context) (_node *Invento
 				ps[i](selector)
 			}
 		}
-	}
-	if value, ok := iiuo.mutation.ReceivedFromID(); ok {
-		_spec.SetField(inventoryitem.FieldReceivedFromID, field.TypeInt, value)
-	}
-	if value, ok := iiuo.mutation.AddedReceivedFromID(); ok {
-		_spec.AddField(inventoryitem.FieldReceivedFromID, field.TypeInt, value)
 	}
 	if value, ok := iiuo.mutation.ObtainedAt(); ok {
 		_spec.SetField(inventoryitem.FieldObtainedAt, field.TypeTime, value)

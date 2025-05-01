@@ -730,7 +730,9 @@ const docTemplate = `{
                         }
                     }
                 }
-            },
+            }
+        },
+        "/api/users/{user_id}/inventory/{item_id}": {
             "post": {
                 "security": [
                     {
@@ -787,9 +789,7 @@ const docTemplate = `{
                         }
                     }
                 }
-            }
-        },
-        "/api/users/{user_id}/inventory/{item_id}": {
+            },
             "delete": {
                 "security": [
                     {
@@ -1489,7 +1489,7 @@ const docTemplate = `{
     }
 }`
 
-// SwaggerInfo holds exported Swagger Info so clients can modify it.
+// SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = &swag.Spec{
 	Version:          "1.0",
 	Host:             "localhost:8080",

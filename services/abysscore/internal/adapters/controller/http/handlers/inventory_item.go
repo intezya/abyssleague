@@ -34,7 +34,7 @@ func NewInventoryItemHandler(
 //	@Failure		403		{object}	examples.ForbiddenByAccessLevelResponse		"Forbidden - not enough rights"
 //	@Failure		404		{object}	examples.UserNotFoundResponse				"Not found - user not found"
 //	@Failure		404		{object}	examples.GameItemNotFound					"Not found - item not found"
-//	@Router			/api/users/{user_id}/inventory [post].
+//	@Router			/api/users/{user_id}/inventory/{item_id} [post].
 func (h *InventoryItemHandler) GrantInventoryItemToUser(c *fiber.Ctx) error {
 	ctx := c.UserContext()
 

@@ -55,8 +55,6 @@ func init() {
 	inventoryitemDescReceivedFromID := inventoryitemFields[3].Descriptor()
 	// inventoryitem.DefaultReceivedFromID holds the default value on creation for the received_from_id field.
 	inventoryitem.DefaultReceivedFromID = inventoryitemDescReceivedFromID.Default.(int)
-	// inventoryitem.ReceivedFromIDValidator is a validator for the "received_from_id" field. It is called by the builders before save.
-	inventoryitem.ReceivedFromIDValidator = inventoryitemDescReceivedFromID.Validators[0].(func(int) error)
 	// inventoryitemDescObtainedAt is the schema descriptor for obtained_at field.
 	inventoryitemDescObtainedAt := inventoryitemFields[4].Descriptor()
 	// inventoryitem.DefaultObtainedAt holds the default value on creation for the obtained_at field.

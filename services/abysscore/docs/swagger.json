@@ -724,7 +724,9 @@
                         }
                     }
                 }
-            },
+            }
+        },
+        "/api/users/{user_id}/inventory/{item_id}": {
             "post": {
                 "security": [
                     {
@@ -781,9 +783,7 @@
                         }
                     }
                 }
-            }
-        },
-        "/api/users/{user_id}/inventory/{item_id}": {
+            },
             "delete": {
                 "security": [
                     {
