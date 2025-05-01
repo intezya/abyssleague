@@ -41,13 +41,6 @@ func createAccessLevelChecker(requiredLevel *access_level.AccessLevel) fiber.Han
 			return adaptererror.InternalServerError.ToErrorResponse(c)
 		}
 
-		logger.Log.Debugw(
-			"debug createAccessLevelChecker",
-			"user", user,
-			"required access level", requiredLevel,
-			"have access level", user.AccessLevel,
-		)
-
 		if user.AccessLevel < *requiredLevel {
 			return adaptererror.ForbiddenByInsufficientAccessLevel.ToErrorResponse(c)
 		}

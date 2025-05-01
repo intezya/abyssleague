@@ -3,6 +3,9 @@ package eventlib
 import (
 	"context"
 	"fmt"
+	"github.com/intezya/pkglib/itertools"
+	"github.com/intezya/pkglib/logger"
+	"go.uber.org/zap"
 	"sync"
 )
 
@@ -90,12 +93,18 @@ func (p *ApplicationEventPublisher) Publish(event ApplicationEvent) {
 	eventType := typeName(event)
 
 	bus, exists := p.subscribers[eventType]
+
 	if exists {
 		select {
 		case bus.events <- event:
 		default:
+			logger.Log.Infoln("event bus is full")
 			// TODO: republish
 		}
+	} else {
+		availableBuses := itertools.GetMapKeys(p.subscribers)
+
+		logger.Log.Warnln("Event bus not found for event", eventType, zap.Any("available_buses", availableBuses))
 	}
 }
 

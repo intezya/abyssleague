@@ -29,9 +29,7 @@ func NewDependencyProvider(
 	tokenHelper domainservice.TokenHelper,
 	mailSender drivenports.MailSender,
 ) *DependencyProvider {
-	mainClientNotificationService := NewNotificationService(
-		gRPCDependencyProvider.MainWebsocketService,
-	)
+	mainClientNotificationService := NewNotificationService(gRPCDependencyProvider.MainWebsocketService)
 	// draftClientNotificationService := NewNotificationService(gRPCDependencyProvider.DraftWebsocketService)
 
 	eventPublisher := NewApplicationEventPublisher(mainClientNotificationService)

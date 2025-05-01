@@ -24,7 +24,7 @@ func NewApplicationEventPublisher(
 	inventoryItemEventHandlers := event.NewInventoryItemHandlers(mainClientNotificationService)
 
 	publisher.Register(
-		event.InventoryItemObtainedEvent{},
+		&event.InventoryItemObtainedEvent{},
 		inventoryItemEventHandlers.InventoryItemObtainedEventHandler,
 		// middleware...,
 	)

@@ -17,19 +17,25 @@ func NewNotificationService(websocketService drivenports.WebsocketService) *Noti
 	return &NotificationService{websocketService: websocketService}
 }
 
-func (n NotificationService) SendToUser(userID int, message interface{}) {
+func (n NotificationService) SendToUser(userID int, message interface{}) error {
 	payload, err := json.Marshal(message)
 	if err != nil {
 		logger.Log.Warn("failed to marshal message: %v", err)
 
-		return
+		return err
 	}
 
-	_ = n.websocketService.SendMessage(
+	err = n.websocketService.SendMessage(
 		context.Background(),
 		&websocketpb.SendMessageRequest{
 			UserId:      int64(userID),
 			JsonPayload: payload,
 		},
 	)
+	if err != nil {
+		logger.Log.Debug("failed to send message: %v", err)
+		return err
+	}
+
+	return nil
 }
