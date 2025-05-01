@@ -45,6 +45,7 @@ func NewDependencyProvider(
 		EventPublisher: eventPublisher,
 
 		AuthenticationService: NewAuthenticationService(
+			repositoryDependencyProvider.AuthenticationRepository,
 			repositoryDependencyProvider.UserRepository,
 			gRPCDependencyProvider.MainWebsocketService,
 			passwordHelper,
@@ -53,7 +54,7 @@ func NewDependencyProvider(
 		GameItemService: NewGameItemService(repositoryDependencyProvider.GameItemRepository),
 		InventoryItemService: NewInventoryItemService(
 			repositoryDependencyProvider.InventoryItemRepository,
-			repositoryDependencyProvider.UserRepository,
+			repositoryDependencyProvider.InventoryRepository,
 			eventPublisher,
 		),
 		AccountService: NewAccountService(

@@ -22,3 +22,32 @@ tasks:
     dir: services/abysscore
     cmds:
       - golangci-lint run ./...
+
+  generate-proto:
+    cmds:
+      - |
+        for file in {{.PROTO_FILES}}; do
+          BASE_NAME=$(basename $$file .proto)
+          OUTPUT_DIR={{.PROTO_DIR}}/$$BASE_NAME
+          mkdir -p $$OUTPUT_DIR
+          {{.PROTOC}} $$file {{.GO_OUT}}=$$OUTPUT_DIR {{.GO_GRPC_OUT}}=$$OUTPUT_DIR
+        done
+    env:
+      PROTO_DIR: ./protos
+      SRC_DIR: ./protos/src
+      PROTOC: protoc
+      GO_OUT: --go_out
+      GO_GRPC_OUT: --go-grpc_out
+      PROTO_FILES: '{{shell find ./protos/src -name "*.proto"}}'
+
+  clean-proto:
+    cmds:
+      - find {{.PROTO_DIR}} -mindepth 1 \
+        -not -path "{{.SRC_DIR}}" \
+        -not -name "go.mod" \
+        -not -name "go.sum" \
+        -not -name "*.proto" \
+        -exec rm -rf {} +
+    env:
+      PROTO_DIR: ./protos
+      SRC_DIR: ./protos/src

@@ -19,24 +19,27 @@ import (
 
 // AuthenticationService handles user authentication operations.
 type AuthenticationService struct {
-	userRepository       repositoryports.UserRepository
-	mainWebsocketService drivenports.WebsocketService
-	credentialsHelper    domainservice.CredentialsHelper
-	tokenHelper          domainservice.TokenHelper
+	authenticationRepository repositoryports.AuthenticationRepository
+	userRepository           repositoryports.UserRepository
+	mainWebsocketService     drivenports.WebsocketService
+	credentialsHelper        domainservice.CredentialsHelper
+	tokenHelper              domainservice.TokenHelper
 }
 
 // NewAuthenticationService creates a new authentication service.
 func NewAuthenticationService(
+	authenticationRepository repositoryports.AuthenticationRepository,
 	userRepository repositoryports.UserRepository,
 	mainWebsocketService drivenports.WebsocketService,
 	credentialsHelper domainservice.CredentialsHelper,
 	tokenHelper domainservice.TokenHelper,
 ) *AuthenticationService {
 	return &AuthenticationService{
-		userRepository:       userRepository,
-		mainWebsocketService: mainWebsocketService,
-		credentialsHelper:    credentialsHelper,
-		tokenHelper:          tokenHelper,
+		authenticationRepository: authenticationRepository,
+		userRepository:           userRepository,
+		mainWebsocketService:     mainWebsocketService,
+		credentialsHelper:        credentialsHelper,
+		tokenHelper:              tokenHelper,
 	}
 }
 
@@ -49,9 +52,9 @@ func (a *AuthenticationService) Register(
 
 	user, err := tracer.TraceFnWithResult(
 		ctx,
-		"userRepository.Create",
+		"authenticationRepository.Create",
 		func(ctx context.Context) (*entity.AuthenticationData, error) {
-			return a.userRepository.Create(ctx, credentials)
+			return a.authenticationRepository.Create(ctx, credentials)
 		},
 	)
 	if err != nil {
@@ -177,9 +180,9 @@ func (a *AuthenticationService) ChangePassword(
 
 	user, err := tracer.TraceFnWithResult(
 		ctx,
-		"userRepository.UpdatePasswordByID",
+		"authenticationRepository.UpdatePasswordByID",
 		func(ctx context.Context) (*dto.UserFullDTO, error) {
-			return a.userRepository.UpdatePasswordByID(
+			return a.authenticationRepository.UpdatePasswordByID(
 				ctx,
 				authentication.UserID(),
 				encodedPassword,
@@ -214,9 +217,9 @@ func (a *AuthenticationService) findAuthByUsername(ctx context.Context, username
 	lowerUsername := strings.ToLower(username)
 
 	return tracer.TraceFnWithResult(
-		ctx, "userRepository.FindAuthenticationByLowerUsername",
+		ctx, "authenticationRepository.FindAuthenticationByLowerUsername",
 		func(ctx context.Context) (*entity.AuthenticationData, error) {
-			return a.userRepository.FindAuthenticationByLowerUsername(ctx, lowerUsername)
+			return a.authenticationRepository.FindAuthenticationByLowerUsername(ctx, lowerUsername)
 		},
 	)
 }
@@ -273,9 +276,9 @@ func (a *AuthenticationService) updateHwid(
 
 	return tracer.Trace1(
 		ctx,
-		"userRepository.UpdateHWIDByID",
+		"authenticationRepository.UpdateHWIDByID",
 		func(ctx context.Context) error {
-			return a.userRepository.UpdateHWIDByID(ctx, auth.UserID(), newHwid)
+			return a.authenticationRepository.UpdateHWIDByID(ctx, auth.UserID(), newHwid)
 		},
 	)
 }
@@ -338,9 +341,9 @@ func (a *AuthenticationService) processLoginStreakAndRewards(
 
 	err := tracer.Trace1(
 		ctx,
-		"userRepository.UpdateLoginStreakLoginAtByID",
+		"authenticationRepository.UpdateLoginStreakLoginAtByID",
 		func(ctx context.Context) error {
-			return a.userRepository.UpdateLoginStreakLoginAtByID(
+			return a.authenticationRepository.UpdateLoginStreakLoginAtByID(
 				ctx,
 				user.ID,
 				user.LoginStreak,
@@ -380,9 +383,9 @@ func (a *AuthenticationService) processBanDecrementAfterLogin(
 
 	err := tracer.TraceFn(
 		ctx,
-		"userRepository.SetBlockUntilAndLevelAndReasonFromUser",
+		"authenticationRepository.SetBlockUntilAndLevelAndReasonFromUser",
 		func(ctx context.Context) error {
-			return a.userRepository.SetBlockUntilAndLevelAndReasonFromUser(ctx, user)
+			return a.authenticationRepository.SetBlockUntilAndLevelAndReasonFromUser(ctx, user)
 		},
 	)
 	if err != nil {

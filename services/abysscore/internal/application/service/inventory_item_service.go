@@ -13,18 +13,18 @@ import (
 
 type InventoryItemService struct {
 	inventoryItemRepository repositoryports.InventoryItemRepository
-	userRepository          repositoryports.UserRepository
+	inventoryRepository     repositoryports.InventoryRepository
 	eventPublisher          eventlib.Publisher
 }
 
 func NewInventoryItemService(
 	repository repositoryports.InventoryItemRepository,
-	userRepository repositoryports.UserRepository,
+	inventoryRepository repositoryports.InventoryRepository,
 	eventPublisher eventlib.Publisher,
 ) *InventoryItemService {
 	return &InventoryItemService{
 		inventoryItemRepository: repository,
-		userRepository:          userRepository,
+		inventoryRepository:     inventoryRepository,
 		eventPublisher:          eventPublisher,
 	}
 }
@@ -131,9 +131,9 @@ func (i *InventoryItemService) SetInventoryItemAsCurrent(
 
 	err = tracer.TraceFn(
 		ctx,
-		"userRepository.SetInventoryItemAsCurrent",
+		"inventoryRepository.SetInventoryItemAsCurrent",
 		func(ctx context.Context) error {
-			return i.userRepository.SetInventoryItemAsCurrent(ctx, user, item)
+			return i.inventoryRepository.SetInventoryItemAsCurrent(ctx, user, item)
 		},
 	)
 	if err != nil {

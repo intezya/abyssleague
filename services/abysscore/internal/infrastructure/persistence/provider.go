@@ -9,10 +9,12 @@ import (
 type DependencyProvider struct {
 	client *ent.Client
 
-	UserRepository          repositoryports.UserRepository
-	GameItemRepository      repositoryports.GameItemRepository
-	InventoryItemRepository repositoryports.InventoryItemRepository
-	MailMessageRepository   repositoryports.MailMessageRepository
+	UserRepository           repositoryports.UserRepository
+	AuthenticationRepository repositoryports.AuthenticationRepository
+	InventoryRepository      repositoryports.InventoryRepository
+	GameItemRepository       repositoryports.GameItemRepository
+	InventoryItemRepository  repositoryports.InventoryItemRepository
+	MailMessageRepository    repositoryports.MailMessageRepository
 }
 
 func NewDependencyProvider(
@@ -22,9 +24,11 @@ func NewDependencyProvider(
 	return &DependencyProvider{
 		client: client,
 
-		UserRepository:          NewUserRepository(client),
-		GameItemRepository:      NewGameItemRepository(client),
-		InventoryItemRepository: NewInventoryItemRepository(client),
-		MailMessageRepository:   NewMailMessageRepository(redisClient),
+		UserRepository:           NewUserRepository(client),
+		AuthenticationRepository: NewUserRepository(client),
+		InventoryRepository:      NewUserRepository(client),
+		GameItemRepository:       NewGameItemRepository(client),
+		InventoryItemRepository:  NewInventoryItemRepository(client),
+		MailMessageRepository:    NewMailMessageRepository(redisClient),
 	}
 }
