@@ -3,7 +3,6 @@ package tracer
 import (
 	"context"
 
-	"github.com/intezya/pkglib/logger"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc"
@@ -12,6 +11,12 @@ import (
 	semconv "go.opentelemetry.io/otel/semconv/v1.17.0"
 )
 
+type Logger interface {
+	Infoln(args ...interface{})
+	Warnln(args ...interface{})
+	Warnf(template string, args ...interface{})
+}
+
 type Config struct {
 	Endpoint           string
 	ServiceName        string
@@ -19,7 +24,7 @@ type Config struct {
 	ServiceEnvironment string
 }
 
-func Init(config *Config) func() {
+func Init(config *Config, logger Logger) func() {
 	ctx := context.Background()
 
 	client := otlptracegrpc.NewClient(
@@ -29,7 +34,7 @@ func Init(config *Config) func() {
 
 	exporter, err := otlptrace.New(ctx, client)
 	if err != nil {
-		logger.Log.Warnf("creating OTLP trace exporter: %v", err)
+		logger.Warnf("creating OTLP trace exporter: %v", err)
 	}
 
 	res, err := resource.New(ctx,
@@ -40,7 +45,7 @@ func Init(config *Config) func() {
 		),
 	)
 	if err != nil {
-		logger.Log.Warnf("creating resource: %v", err)
+		logger.Warnf("creating resource: %v", err)
 	}
 
 	bsp := sdktrace.NewBatchSpanProcessor(exporter)
@@ -52,11 +57,11 @@ func Init(config *Config) func() {
 
 	otel.SetTracerProvider(tracerProvider)
 
-	logger.Log.Info("Tracer initialized successfully: ", config.Endpoint)
+	logger.Infoln("Tracer initialized successfully:", config.Endpoint)
 
 	return func() {
 		if err := tracerProvider.Shutdown(ctx); err != nil {
-			logger.Log.Warnf("Error shutting down tracer provider: %v", err)
+			logger.Warnf("Error shutting down tracer provider: %v", err)
 		}
 	}
 }

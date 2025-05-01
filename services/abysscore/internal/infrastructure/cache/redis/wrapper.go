@@ -4,7 +4,6 @@ import (
 	"context"
 	"time"
 
-	"github.com/intezya/pkglib/logger"
 	"github.com/redis/go-redis/v9"
 )
 
@@ -17,14 +16,23 @@ type ClientWrapper struct {
 	Client            *redis.Client
 	config            *Config
 	closeConnectingCh chan struct{}
+	logger            Logger
 }
 
-func NewClientWrapper(config *Config) *ClientWrapper {
+type Logger interface {
+	Infoln(args ...interface{})
+	Warnln(args ...interface{})
+	Warnf(template string, args ...interface{})
+}
+
+func NewClientWrapper(config *Config, logger Logger) *ClientWrapper {
 	wrapper := &ClientWrapper{
 		Client:            nil,
 		config:            config,
 		closeConnectingCh: make(chan struct{}),
+		logger:            logger,
 	}
+
 	go wrapper.runConnecting(context.Background())
 
 	return wrapper
@@ -48,12 +56,12 @@ func (w *ClientWrapper) runConnecting(ctx context.Context) {
 
 			_, err := w.Client.Ping(ctx).Result()
 			if err == nil {
-				logger.Log.Info("Redis connected successfully!")
+				w.logger.Infoln("Redis connected successfully!")
 
 				return
 			}
 
-			logger.Log.Warnf("Attempt %d: Failed to connect to Redis: %v", attempt, err)
+			w.logger.Warnf("Attempt %d: Failed to connect to Redis: %v", attempt, err)
 
 			attempt++
 		}

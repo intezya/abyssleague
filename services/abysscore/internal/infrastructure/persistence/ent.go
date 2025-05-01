@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/ent"
-	"github.com/intezya/pkglib/logger"
 )
 
 const (
@@ -16,6 +15,13 @@ const (
 )
 
 var errAllConnectionAttemptsFailed = errors.New("all attempts to connect to database failed")
+
+type Logger interface {
+	Infof(template string, args ...interface{})
+	Warnf(template string, args ...interface{})
+	Fatal(args ...interface{})
+	Fatalf(template string, args ...interface{})
+}
 
 type EntConfig struct {
 	driverName string
@@ -41,14 +47,14 @@ func NewEntConfig(
 	}
 }
 
-func SetupEnt(config *EntConfig) *ent.Client {
+func SetupEnt(config *EntConfig, logger Logger) *ent.Client {
 	maxRetries := gt0(config.maxRetries, defaultEntReconnectMaxRetries)
 	retryDelay := gt0(config.retryDelay, defaultEntReconnectDelay)
 
 	entClient, err := ent.Open(config.driverName, config.source)
 
 	if err != nil {
-		logger.Log.Fatal(err) // invalid driver
+		logger.Fatal(err) // invalid driver
 	}
 
 	if config.debug {
@@ -63,12 +69,12 @@ func SetupEnt(config *EntConfig) *ent.Client {
 			migrate.WithDropColumn(true),
 		)
 		if err == nil {
-			logger.Log.Infof("Database migrations runned success on attempt %d", attempt)
+			logger.Infof("Database migrations runned success on attempt %d", attempt)
 
 			break
 		}
 
-		logger.Log.Warnf(
+		logger.Warnf(
 			"Attempt %d of %d: Failed to run migrations for database: %v",
 			attempt,
 			maxRetries,
@@ -81,7 +87,7 @@ func SetupEnt(config *EntConfig) *ent.Client {
 	}
 
 	if err != nil {
-		logger.Log.Fatalf("failed to create schema (all attempts are over)")
+		logger.Fatalf("failed to create schema (all attempts are over)")
 	}
 
 	return entClient

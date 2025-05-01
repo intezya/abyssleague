@@ -5,27 +5,34 @@ import (
 	"errors"
 	"fmt"
 	"github.com/intezya/abyssleague/services/abysscore/internal/domain/entity/mailmessage"
-	"github.com/intezya/pkglib/logger"
 	"gopkg.in/mail.v2"
 	"net"
 	"time"
 )
 
+type Logger interface {
+	Debugln(args ...interface{})
+	Infoln(args ...interface{})
+	Warnln(args ...interface{})
+	Errorln(args ...interface{})
+}
+
 type SMTPSender struct {
 	config *SMTPConfig
 	dialer *mail.Dialer
+	logger Logger
 }
 
-func NewSMTPSender(config *SMTPConfig) *SMTPSender {
+func NewSMTPSender(config *SMTPConfig, logger Logger) *SMTPSender {
 	const dialTimeout = 5 * time.Second
 	const mailDevHost = "maildev"
 
 	conn, err := net.DialTimeout("tcp", fmt.Sprintf("%s:%d", config.Host, config.Port), dialTimeout)
 
 	if err != nil {
-		logger.Log.Errorln("Failed to connect to SMTP server:", err)
+		logger.Errorln("Failed to connect to SMTP server:", err)
 	} else {
-		logger.Log.Infoln("Successfully established TCP connection to SMTP server")
+		logger.Infoln("Successfully established TCP connection to SMTP server")
 		_ = conn.Close()
 	}
 
@@ -41,6 +48,7 @@ func NewSMTPSender(config *SMTPConfig) *SMTPSender {
 	return &SMTPSender{
 		config: config,
 		dialer: dialer,
+		logger: logger,
 	}
 }
 
@@ -49,7 +57,7 @@ func (s *SMTPSender) Send(ctx context.Context, message *mailmessage.Message, rec
 }
 
 func (s *SMTPSender) SendS(ctx context.Context, sender string, message *mailmessage.Message, receivers ...string) error {
-	logger.Log.Debugln("Sending email from:", sender, "to:", receivers)
+	s.logger.Debugln("Sending email from:", sender, "to:", receivers)
 
 	if len(receivers) == 0 {
 		return errors.New("at least one receiver email is required")
@@ -69,12 +77,12 @@ func (s *SMTPSender) SendS(ctx context.Context, sender string, message *mailmess
 	done := make(chan error, 1)
 
 	go func() {
-		logger.Log.Debugln("Dialing SMTP server...")
+		s.logger.Debugln("Dialing SMTP server...")
 		err := s.dialer.DialAndSend(msg)
 		if err != nil {
-			logger.Log.Warnln("Failed to send email:", err)
+			s.logger.Warnln("Failed to send email:", err)
 		} else {
-			logger.Log.Debugln("Email sent successfully")
+			s.logger.Debugln("Email sent successfully")
 		}
 		done <- err
 	}()

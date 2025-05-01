@@ -32,11 +32,11 @@ func main() {
 
 	config.SetupLogger(appConfig.IsDebug, appConfig.EnvType, appConfig.LoggerConfig)
 
-	tracerCleanup := tracer.Init(appConfig.TracerConfig)
-	entClient := persistence.SetupEnt(appConfig.EntConfig)
-	redisClient := rediswrapper.NewClientWrapper(appConfig.RedisConfig)
+	tracerCleanup := tracer.Init(appConfig.TracerConfig, logger.Log)
+	entClient := persistence.SetupEnt(appConfig.EntConfig, logger.Log)
+	redisClient := rediswrapper.NewClientWrapper(appConfig.RedisConfig, logger.Log)
 	grpcFactory := factory.NewGrpcClientFactory()
-	smtpClient := mail.NewSMTPSender(appConfig.SMTPConfig)
+	smtpClient := mail.NewSMTPSender(appConfig.SMTPConfig, logger.Log)
 
 	logger.Log.Debug("grpcFactory has been initialized")
 
