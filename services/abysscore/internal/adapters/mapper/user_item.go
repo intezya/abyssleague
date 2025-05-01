@@ -3,10 +3,16 @@ package mapper
 import (
 	"github.com/intezya/abyssleague/services/abysscore/internal/domain/dto"
 	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/ent"
+	"github.com/intezya/pkglib/logger"
 )
 
 func ToInventoryItemDTOFromEnt(inventoryItem *ent.InventoryItem) *dto.InventoryItemDTO {
-	if inventoryItem == nil || inventoryItem.Edges.Item == nil {
+	if inventoryItem == nil {
+		return nil
+	}
+
+	if inventoryItem.Edges.Item == nil {
+		logger.Log.Warn("inventory item base is nil, cannot map")
 		return nil
 	}
 

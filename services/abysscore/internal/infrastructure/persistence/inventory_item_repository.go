@@ -23,12 +23,31 @@ func (r *InventoryItemRepository) Create(
 	ctx context.Context,
 	inventoryItem *dto.CreateInventoryItemDTO,
 ) (*dto.InventoryItemDTO, error) {
-	result, err := r.client.InventoryItem.
-		Create().
-		SetItemID(inventoryItem.ItemID).
-		SetUserID(inventoryItem.UserID).
-		SetReceivedFromID(inventoryItem.ReceivedFromID).
-		Save(ctx)
+	result, err := withTxResult(ctx, r.client, func(tx *ent.Tx) (*ent.InventoryItem, error) {
+		created, err := r.client.InventoryItem.
+			Create().
+			SetItemID(inventoryItem.ItemID).
+			SetUserID(inventoryItem.UserID).
+			SetReceivedFromID(inventoryItem.ReceivedFromID).
+			Save(ctx)
+
+		if err != nil {
+			return nil, err
+		}
+
+		result, err := r.client.InventoryItem.
+			Query().
+			Where(inventoryitem.IDEQ(created.ID)).
+			WithItem().
+			Only(ctx)
+
+		if err != nil {
+			return nil, err
+		}
+
+		return result, nil
+	})
+
 	if err != nil {
 		return nil, r.handleQueryError(err)
 	}
@@ -64,6 +83,7 @@ func (r *InventoryItemRepository) FindByUserIDAndID(
 			inventoryitem.IDEQ(id),
 			inventoryitem.UserIDEQ(userID),
 		).
+		WithItem().
 		First(ctx)
 	if err != nil {
 		return nil, r.handleQueryError(err)

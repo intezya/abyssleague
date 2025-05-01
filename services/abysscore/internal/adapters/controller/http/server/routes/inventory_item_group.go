@@ -14,7 +14,7 @@ func GetInventoryItemGroup(
 	inventoryItemGroup := NewRouteGroup(path.Join(provider.apiPrefix, "users"))
 
 	inventoryItemGroup.Add(
-		"/:user_id/inventory", NewRoute(
+		"/:user_id/inventory/:item_id", NewRoute(
 			handlers.InventoryItemHandler.GrantInventoryItemToUser,
 			MethodPost,
 			WithAccessLevel(access_level.GiveItem),

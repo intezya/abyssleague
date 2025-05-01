@@ -63,11 +63,16 @@ func (r *UserRepository) FindFullDTOById(ctx context.Context, id int) (*dto.User
 		Where(entUser.IDEQ(id)).
 		WithCurrentMatch().
 		WithFriends().
-		WithCurrentItem().
-		WithItems().
+		WithCurrentItem(func(q *ent.InventoryItemQuery) {
+			q.WithItem()
+		}).
+		WithItems(func(q *ent.InventoryItemQuery) {
+			q.WithItem()
+		}).
 		WithReceivedFriendRequests().
 		WithStatistics().
 		Only(ctx)
+
 	if err != nil {
 		return nil, r.handleQueryError(err)
 	}
@@ -179,6 +184,7 @@ func (r *UserRepository) SetInventoryItemAsCurrent(
 		UpdateOneID(user.ID).
 		SetCurrentItemID(item.ID).
 		Save(ctx)
+
 	if err != nil {
 		return r.handleUpdateError(err)
 	}
