@@ -2,13 +2,14 @@ package applicationservice
 
 import (
 	"context"
+	"time"
+
 	adaptererror "github.com/intezya/abyssleague/services/abysscore/internal/common/errors/adapter"
 	applicationerror "github.com/intezya/abyssleague/services/abysscore/internal/common/errors/application"
 	"github.com/intezya/abyssleague/services/abysscore/internal/domain/dto"
 	"github.com/intezya/abyssleague/services/abysscore/internal/domain/entity/mailmessage"
 	drivenports "github.com/intezya/abyssleague/services/abysscore/internal/domain/ports/driven"
 	repositoryports "github.com/intezya/abyssleague/services/abysscore/internal/domain/repository"
-	"time"
 )
 
 type AccountService struct {
@@ -41,7 +42,6 @@ func (s *AccountService) SendCodeForEmailLink(
 	}
 
 	typedEmail, err := drivenports.NewEmail(email)
-
 	if err != nil {
 		return adaptererror.BadRequestFunc(err)
 	}
@@ -54,14 +54,16 @@ func (s *AccountService) SendCodeForEmailLink(
 
 	sentMailMessage, err := s.mailMessageRepository.GetLinkMailCodeData(ctx, user.ID)
 
-	if err == nil && sentMailMessage != nil && sentMailMessage.CreatedAt.After(time.Now().Add(-time.Minute*1)) { // TODO: move to "if expired" func (move timeout to const)
+	if err == nil && sentMailMessage != nil &&
+		sentMailMessage.CreatedAt.After(
+			time.Now().Add(-time.Minute*1),
+		) { // TODO: move to "if expired" func (move timeout to const)
 		return applicationerror.TooManyEmailLinkRequests // if already sent
 	}
 
 	mailMessage := mailmessage.NewLinkEmailCodeMail(user.ID, email, newLinkEmailCodeExpireMinutes)
 
 	err = s.mailSender.Send(ctx, mailMessage.Message, typedEmail.String())
-
 	if err != nil {
 		return applicationerror.WrapServiceUnavailable(err)
 	}
@@ -80,7 +82,6 @@ func (s *AccountService) EnterCodeForEmailLink(
 	error,
 ) {
 	mailMessageData, err := s.mailMessageRepository.GetLinkMailCodeData(ctx, user.ID)
-
 	if err != nil {
 		return nil, applicationerror.WrapWrongVerificationCodeForEmailLink(err)
 	}
@@ -90,7 +91,6 @@ func (s *AccountService) EnterCodeForEmailLink(
 	}
 
 	result, err := s.userRepository.SetEmailIfNil(ctx, user.ID, mailMessageData.EmailForLink)
-
 	if err != nil {
 		return nil, err
 	}

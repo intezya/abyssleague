@@ -15,10 +15,6 @@ func NewHashHelper() *HashHelper {
 	return &HashHelper{}
 }
 
-func (h *HashHelper) preHash(raw string) (prehash string) {
-	return crypto.HashSHA256(raw)
-}
-
 func (h *HashHelper) EncodePassword(raw string) (hash string) {
 	salt, err := crypto.Salt(defaultSaltLength)
 	if err != nil {
@@ -49,4 +45,8 @@ func (h *HashHelper) VerifyHardwareID(raw, hash string) bool {
 
 func (h *HashHelper) VerifyTokenHardwareID(tokenHash, userHash string) bool {
 	return tokenHash == userHash
+}
+
+func (h *HashHelper) preHash(raw string) (prehash string) {
+	return crypto.HashSHA256(raw)
 }

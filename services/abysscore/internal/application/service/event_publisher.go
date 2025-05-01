@@ -6,8 +6,10 @@ import (
 	eventlib "github.com/intezya/abyssleague/services/abysscore/pkg/event"
 )
 
-const eventConsumerWorkerCount = 2
-const eventBufferSize = 100
+const (
+	eventConsumerWorkerCount = 2
+	eventBufferSize          = 100
+)
 
 func NewApplicationEventPublisher(
 	mainClientNotificationService domainservice.NotificationService,
@@ -24,7 +26,7 @@ func NewApplicationEventPublisher(
 	publisher.Register(
 		event.InventoryItemObtainedEvent{},
 		inventoryItemEventHandlers.InventoryItemObtainedEventHandler,
-		//middleware...,
+		// middleware...,
 	)
 
 	return publisher

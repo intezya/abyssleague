@@ -2,12 +2,12 @@ package mail
 
 import (
 	"context"
-	"errors"
 	"fmt"
-	"github.com/intezya/abyssleague/services/abysscore/internal/domain/entity/mailmessage"
-	"gopkg.in/mail.v2"
 	"net"
 	"time"
+
+	"github.com/intezya/abyssleague/services/abysscore/internal/domain/entity/mailmessage"
+	"gopkg.in/mail.v2"
 )
 
 type Logger interface {
@@ -25,6 +25,7 @@ type SMTPSender struct {
 
 func NewSMTPSender(config *SMTPConfig, logger Logger) *SMTPSender {
 	const dialTimeout = 5 * time.Second
+
 	const mailDevHost = "maildev"
 
 	conn, err := net.DialTimeout("tcp", fmt.Sprintf("%s:%d", config.Host, config.Port), dialTimeout)
@@ -33,6 +34,7 @@ func NewSMTPSender(config *SMTPConfig, logger Logger) *SMTPSender {
 		logger.Errorln("Failed to connect to SMTP server:", err)
 	} else {
 		logger.Infoln("Successfully established TCP connection to SMTP server")
+
 		_ = conn.Close()
 	}
 
@@ -52,16 +54,21 @@ func NewSMTPSender(config *SMTPConfig, logger Logger) *SMTPSender {
 	}
 }
 
-func (s *SMTPSender) Send(ctx context.Context, message *mailmessage.Message, receivers ...string) error {
+func (s *SMTPSender) Send(
+	ctx context.Context,
+	message *mailmessage.Message,
+	receivers ...string,
+) error {
 	return s.SendS(ctx, s.config.DefaultSender, message, receivers...)
 }
 
-func (s *SMTPSender) SendS(ctx context.Context, sender string, message *mailmessage.Message, receivers ...string) error {
+func (s *SMTPSender) SendS(
+	ctx context.Context,
+	sender string,
+	message *mailmessage.Message,
+	receivers ...string,
+) error {
 	s.logger.Debugln("Sending email from:", sender, "to:", receivers)
-
-	if len(receivers) == 0 {
-		return errors.New("at least one receiver email is required")
-	}
 
 	msg := mail.NewMessage()
 	msg.SetHeader("From", sender)
@@ -78,6 +85,7 @@ func (s *SMTPSender) SendS(ctx context.Context, sender string, message *mailmess
 
 	go func() {
 		s.logger.Debugln("Dialing SMTP server...")
+
 		err := s.dialer.DialAndSend(msg)
 		if err != nil {
 			s.logger.Warnln("Failed to send email:", err)

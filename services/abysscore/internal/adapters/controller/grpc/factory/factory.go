@@ -90,7 +90,6 @@ type GrpcClientFactory struct {
 // NewGrpcClientFactory creates a new instance of GrpcClientFactory.
 func NewGrpcClientFactory() *GrpcClientFactory {
 	return &GrpcClientFactory{
-		//nolint:exhaustruct // mu is "autowired"
 		connections: make(map[string]*grpc.ClientConn),
 		clients:     make(map[string]interface{}),
 	}
@@ -135,6 +134,53 @@ func (f *GrpcClientFactory) GetAndSetWebsocketApiGatewayClient(
 	}
 
 	return client, nil
+}
+
+// CloseAll closes all connections managed by the factory.
+func (f *GrpcClientFactory) CloseAll() {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+
+	for addr, conn := range f.connections {
+		logger.Log.Infof("Closing GRPC connection: %s", addr)
+
+		if err := conn.Close(); err != nil {
+			logger.Log.Warnf("Error closing connection to %s: %v", addr, err)
+		}
+	}
+
+	// Clear maps
+	f.connections = make(map[string]*grpc.ClientConn)
+	f.clients = make(map[string]interface{})
+}
+
+// GetConnectionCount returns the number of active connections.
+func (f *GrpcClientFactory) GetConnectionCount() int {
+	f.mu.RLock()
+	defer f.mu.RUnlock()
+
+	return len(f.connections)
+}
+
+// IsConnected checks if there's an active connection to the given address.
+func (f *GrpcClientFactory) IsConnected(address string) bool {
+	if address == "" {
+		return false
+	}
+
+	key := "websocket-" + address
+
+	f.mu.RLock()
+	defer f.mu.RUnlock()
+
+	conn, exists := f.connections[key]
+	if !exists {
+		return false
+	}
+
+	state := conn.GetState()
+
+	return state == connectivity.Ready || state == connectivity.Idle
 }
 
 // getExistingClient tries to return an existing healthy client.
@@ -261,51 +307,4 @@ func (f *GrpcClientFactory) connectWithRetry(
 		GRPCMaxRetries,
 		err,
 	)
-}
-
-// CloseAll closes all connections managed by the factory.
-func (f *GrpcClientFactory) CloseAll() {
-	f.mu.Lock()
-	defer f.mu.Unlock()
-
-	for addr, conn := range f.connections {
-		logger.Log.Infof("Closing GRPC connection: %s", addr)
-
-		if err := conn.Close(); err != nil {
-			logger.Log.Warnf("Error closing connection to %s: %v", addr, err)
-		}
-	}
-
-	// Clear maps
-	f.connections = make(map[string]*grpc.ClientConn)
-	f.clients = make(map[string]interface{})
-}
-
-// GetConnectionCount returns the number of active connections.
-func (f *GrpcClientFactory) GetConnectionCount() int {
-	f.mu.RLock()
-	defer f.mu.RUnlock()
-
-	return len(f.connections)
-}
-
-// IsConnected checks if there's an active connection to the given address.
-func (f *GrpcClientFactory) IsConnected(address string) bool {
-	if address == "" {
-		return false
-	}
-
-	key := "websocket-" + address
-
-	f.mu.RLock()
-	defer f.mu.RUnlock()
-
-	conn, exists := f.connections[key]
-	if !exists {
-		return false
-	}
-
-	state := conn.GetState()
-
-	return state == connectivity.Ready || state == connectivity.Idle
 }

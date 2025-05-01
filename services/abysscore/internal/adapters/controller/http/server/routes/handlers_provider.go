@@ -30,7 +30,6 @@ func NewDependencyProvider(
 ) *DependencyProvider {
 	apiPrefix := "/api"
 	dp := &DependencyProvider{
-		//nolint:varnamelen // canonical naming for this context
 		Config:                config,
 		RedisClient:           redisClient,
 		AuthenticationService: authenticationService,
@@ -48,6 +47,18 @@ func NewDependencyProvider(
 	return dp
 }
 
+// WithoutAuthenticationRequirement disables authentication for a route.
+func WithoutAuthenticationRequirement() RouteOption {
+	return func(r *Route) {
+		r.RequireAuthentication = false
+	}
+}
+
+// GetRouteGroups returns the route groups for direct use.
+func (dp *DependencyProvider) GetRouteGroups() []*RouteGroup {
+	return dp.routeGroups
+}
+
 // setupRouteGroups organizes routes into logical groups.
 func (dp *DependencyProvider) setupRouteGroups(handlers *handlers.DependencyProvider) {
 	authGroup := GetAuthGroup(handlers, dp)
@@ -58,13 +69,6 @@ func (dp *DependencyProvider) setupRouteGroups(handlers *handlers.DependencyProv
 	dp.routeGroups = []*RouteGroup{authGroup, gameItemGroup, inventoryItemGroup, accountGroup}
 }
 
-// WithoutAuthenticationRequirement disables authentication for a route.
-func WithoutAuthenticationRequirement() RouteOption {
-	return func(r *Route) {
-		r.RequireAuthentication = false
-	}
-}
-
 // populateRoutesMap converts route groups to the flat map for backward compatibility.
 func (dp *DependencyProvider) populateRoutesMap() {
 	for _, group := range dp.routeGroups {
@@ -73,9 +77,4 @@ func (dp *DependencyProvider) populateRoutesMap() {
 			dp.Routes[fullPath] = entry.Route
 		}
 	}
-}
-
-// GetRouteGroups returns the route groups for direct use.
-func (dp *DependencyProvider) GetRouteGroups() []*RouteGroup {
-	return dp.routeGroups
 }

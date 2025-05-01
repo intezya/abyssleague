@@ -23,6 +23,42 @@ type Error struct {
 	metadata  map[string]interface{} // Additional error context
 }
 
+// NewError creates a structured error with stack trace.
+func NewError(custom error, wrapped error, code int) *Error {
+	// Generate stack trace
+	stackBuf := make([]uintptr, baseStackTraceLengthForError)
+	length := runtime.Callers(2, stackBuf) //nolint:mnd // This is a magic!
+	stack := make([]string, 0, length)
+
+	frames := runtime.CallersFrames(stackBuf[:length])
+
+	for {
+		frame, more := frames.Next()
+		// Skip system and library frames
+		if !isSystemFrame(frame.Function) {
+			stack = append(stack, fmt.Sprintf("%s:%d", frame.Function, frame.Line))
+		}
+
+		if !more {
+			break
+		}
+	}
+
+	// Generate unique error ID
+	errorID := generateErrorID()
+
+	return &Error{
+		Custom:    custom,
+		Wrapped:   wrapped,
+		code:      code,
+		stack:     stack,
+		timestamp: time.Now(),
+		errorID:   errorID,
+		metadata:  make(map[string]interface{}),
+		rawStack:  "",
+	}
+}
+
 // ErrorResponse defines the structure of error JSON responses.
 type ErrorResponse struct {
 	Message   string                 `json:"message"`
@@ -75,42 +111,6 @@ func (e *Error) AddMetadata(key string, value interface{}) *Error {
 	e.metadata[key] = value
 
 	return e
-}
-
-// NewError creates a structured error with stack trace.
-func NewError(custom error, wrapped error, code int) *Error {
-	// Generate stack trace
-	stackBuf := make([]uintptr, baseStackTraceLengthForError)
-	length := runtime.Callers(2, stackBuf) //nolint:mnd // This is a magic!
-	stack := make([]string, 0, length)
-
-	frames := runtime.CallersFrames(stackBuf[:length])
-
-	for {
-		frame, more := frames.Next()
-		// Skip system and library frames
-		if !isSystemFrame(frame.Function) {
-			stack = append(stack, fmt.Sprintf("%s:%d", frame.Function, frame.Line))
-		}
-
-		if !more {
-			break
-		}
-	}
-
-	// Generate unique error ID
-	errorID := generateErrorID()
-
-	return &Error{
-		Custom:    custom,
-		Wrapped:   wrapped,
-		code:      code,
-		stack:     stack,
-		timestamp: time.Now(),
-		errorID:   errorID,
-		metadata:  make(map[string]interface{}),
-		rawStack:  "",
-	}
 }
 
 // StatusCode returns the HTTP status code.

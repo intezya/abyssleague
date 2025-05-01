@@ -3,8 +3,9 @@ package drivenports
 import (
 	"context"
 	"errors"
-	"github.com/intezya/abyssleague/services/abysscore/internal/domain/entity/mailmessage"
 	"regexp"
+
+	"github.com/intezya/abyssleague/services/abysscore/internal/domain/entity/mailmessage"
 )
 
 type Email string
@@ -18,6 +19,7 @@ func NewEmail(email string) (Email, error) {
 	if !emailRegex.MatchString(email) {
 		return "", ErrInvalidEmail
 	}
+
 	return Email(email), nil
 }
 
@@ -27,5 +29,10 @@ func (e Email) String() string {
 
 type MailSender interface {
 	Send(ctx context.Context, message *mailmessage.Message, receiver ...string) error
-	SendS(ctx context.Context, sender string, message *mailmessage.Message, receiver ...string) error
+	SendS(
+		ctx context.Context,
+		sender string,
+		message *mailmessage.Message,
+		receiver ...string,
+	) error
 }

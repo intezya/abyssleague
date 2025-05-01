@@ -186,11 +186,14 @@ func (r *UserRepository) SetInventoryItemAsCurrent(
 	return nil
 }
 
-func (r *UserRepository) SetEmailIfNil(ctx context.Context, userID int, email string) (*dto.UserDTO, error) {
+func (r *UserRepository) SetEmailIfNil(
+	ctx context.Context,
+	userID int,
+	email string,
+) (*dto.UserDTO, error) {
 	return withTxResult(
 		ctx, r.client, func(tx *ent.Tx) (*dto.UserDTO, error) {
 			user, err := tx.User.Get(ctx, userID)
-
 			if err != nil {
 				return nil, r.handleQueryError(err)
 			}
@@ -200,7 +203,6 @@ func (r *UserRepository) SetEmailIfNil(ctx context.Context, userID int, email st
 			}
 
 			savedUser, err := tx.User.UpdateOneID(userID).SetEmail(email).Save(ctx)
-
 			if err != nil {
 				return nil, r.handleConstraintError(err) // unexpected
 			}

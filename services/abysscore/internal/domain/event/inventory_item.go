@@ -22,7 +22,7 @@ func NewInventoryItemObtainedEvent(
 	userID int,
 	item *dto.InventoryItemDTO,
 ) *InventoryItemObtainedEvent {
-	var senderID = eventlib.SystemIsSender
+	senderID := eventlib.SystemIsSender
 
 	if performer.IsSet() {
 		senderID = performer.MustValue().ID
@@ -40,7 +40,9 @@ type InventoryItemHandlers struct {
 	notificationService domainservice.NotificationService
 }
 
-func NewInventoryItemHandlers(notificationService domainservice.NotificationService) *InventoryItemHandlers {
+func NewInventoryItemHandlers(
+	notificationService domainservice.NotificationService,
+) *InventoryItemHandlers {
 	return &InventoryItemHandlers{notificationService: notificationService}
 }
 

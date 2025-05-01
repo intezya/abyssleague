@@ -12,6 +12,7 @@ linters:
     - errname # not configurable (canonical custom http-like errors must be excluded)
     - depguard
     - testpackage
+    - exhaustruct # freakin linter that argue with mu, wg, ...
     # Must be turned on after
     - revive
 
@@ -59,11 +60,12 @@ linters:
         - r *http.Request
         - t testing.T
         - wg sync.WaitGroup
+        - ch chan
 
       ignore-names:
         - id  # Canonical naming (any identification)
         - ok # Canonical naming (boolean value)
-        - ch # Canonical naming (chan)
+        - fn # func
         - tt # Canonical naming (test)
         - tc # Canonical naming (test case)
 

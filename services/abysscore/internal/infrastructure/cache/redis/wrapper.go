@@ -38,6 +38,14 @@ func NewClientWrapper(config *Config, logger Logger) *ClientWrapper {
 	return wrapper
 }
 
+func (w *ClientWrapper) Close() {
+	close(w.closeConnectingCh)
+
+	if w.Client != nil {
+		_ = w.Client.Close()
+	}
+}
+
 func (w *ClientWrapper) runConnecting(ctx context.Context) {
 	attempt := 1
 
@@ -65,13 +73,5 @@ func (w *ClientWrapper) runConnecting(ctx context.Context) {
 
 			attempt++
 		}
-	}
-}
-
-func (w *ClientWrapper) Close() {
-	close(w.closeConnectingCh)
-
-	if w.Client != nil {
-		_ = w.Client.Close()
 	}
 }

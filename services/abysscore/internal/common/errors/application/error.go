@@ -2,10 +2,10 @@ package applicationerror
 
 import (
 	"errors"
-	repositoryerrors "github.com/intezya/abyssleague/services/abysscore/internal/common/errors/repository"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/intezya/abyssleague/services/abysscore/internal/common/errors/base"
+	repositoryerrors "github.com/intezya/abyssleague/services/abysscore/internal/common/errors/repository"
 )
 
 var (

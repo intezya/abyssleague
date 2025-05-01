@@ -1,7 +1,9 @@
 package websocketmessage
 
-type messageType string
-type messageSubtype string
+type (
+	messageType    string
+	messageSubtype string
+)
 
 const SystemIsSenderName = "system"
 

@@ -3,7 +3,6 @@ package config
 import (
 	"errors"
 	"fmt"
-	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/mail"
 	"os"
 	"strconv"
 	"strings"
@@ -13,6 +12,7 @@ import (
 	"github.com/gofiber/fiber/v2/middleware/requestid"
 	"github.com/intezya/abyssleague/services/abysscore/internal/adapters/controller/grpc/factory"
 	rediswrapper "github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/cache/redis"
+	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/mail"
 	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/metrics/tracer"
 	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/persistence"
 	"github.com/intezya/abyssleague/services/abysscore/internal/pkg/auth"
@@ -109,6 +109,7 @@ func LoadConfig() *Config {
 	// Load environment variables from .env file if exists
 	if err := godotenv.Load(); err != nil {
 		// Only log error, don't fail as .env file is optional
+		//nolint:forbidigo // logger not initialized yet
 		fmt.Printf("%v: %v", errLoadEnvFile, err)
 	}
 
@@ -230,7 +231,6 @@ func initLoggerConfig(envType string) *LoggerConfig {
 func initRedisConfig() *rediswrapper.Config {
 	return &rediswrapper.Config{
 		Options: &redis.Options{
-			//nolint:exhaustruct // here is too many useless fields
 			Addr:     getEnvString("REDIS_ADDR", "localhost:6379"),
 			Password: getEnvString("REDIS_PASSWORD", ""),
 			DB:       getEnvInt("REDIS_DB", 0),

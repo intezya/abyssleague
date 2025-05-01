@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+
 	"github.com/intezya/abyssleague/services/abysscore/internal/adapters/config"
 	"github.com/intezya/abyssleague/services/abysscore/internal/adapters/controller/grpc/factory"
 	"github.com/intezya/abyssleague/services/abysscore/internal/adapters/controller/grpc/wrapper"

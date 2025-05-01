@@ -1,0 +1,24 @@
+version: 3
+
+tasks:
+  swaggen:
+    dir: services/abysscore
+    cmds:
+      - |
+        swag init \
+          --dir ./cmd,./internal/adapters/controller/http/handlers,./docs/examples \
+          --parseDependency \
+          --parseInternal \
+          --output ./docs
+      - swag fmt
+
+  entgen:
+    dir: services/abysscore
+    cmd: |
+      go run entgo.io/ent/cmd/ent generate \
+        --target=./internal/infrastructure/ent ./internal/infrastructure/ent/schema
+
+  lint:
+    dir: services/abysscore
+    cmds:
+      - golangci-lint run ./...

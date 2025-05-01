@@ -23,5 +23,6 @@ func (a *mailDevCustomAuth) Next(fromServer []byte, more bool) ([]byte, error) {
 			return []byte(a.password), nil
 		}
 	}
+
 	return nil, nil
 }

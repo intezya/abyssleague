@@ -37,21 +37,6 @@ func NewGameItemHandler(gameItemService domainservice.GameItemService) *GameItem
 	}
 }
 
-// getPaginationQuery gets pagination query parameters from the request.
-func (h *GameItemHandler) getPaginationQuery(
-	c *fiber.Ctx,
-) (*request.PaginationQuery[gameitementity.OrderBy], error) {
-	paginationQuery, err := request.NewPaginationQuery[gameitementity.OrderBy](
-		c,
-		queryparser.ParseGameEntityOrderBy,
-	)
-	if err != nil {
-		return nil, adaptererror.BadRequestFunc(err)
-	}
-
-	return paginationQuery, nil
-}
-
 // Create creates a new game item
 //
 //	@Summary		Create game item
@@ -247,4 +232,19 @@ func (h *GameItemHandler) Delete(c *fiber.Ctx) error {
 	}
 
 	return sendNoContent(c)
+}
+
+// getPaginationQuery gets pagination query parameters from the request.
+func (h *GameItemHandler) getPaginationQuery(
+	c *fiber.Ctx,
+) (*request.PaginationQuery[gameitementity.OrderBy], error) {
+	paginationQuery, err := request.NewPaginationQuery[gameitementity.OrderBy](
+		c,
+		queryparser.ParseGameEntityOrderBy,
+	)
+	if err != nil {
+		return nil, adaptererror.BadRequestFunc(err)
+	}
+
+	return paginationQuery, nil
 }

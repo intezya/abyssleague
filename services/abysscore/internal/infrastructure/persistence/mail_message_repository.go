@@ -4,12 +4,13 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strings"
+	"time"
+
 	repositoryerrors "github.com/intezya/abyssleague/services/abysscore/internal/common/errors/repository"
 	"github.com/intezya/abyssleague/services/abysscore/internal/domain/entity/mailmessage"
 	rediswrapper "github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/cache/redis"
 	"github.com/intezya/pkglib/logger"
-	"strings"
-	"time"
 )
 
 type entry struct {
@@ -18,9 +19,7 @@ type entry struct {
 	data          interface{}
 }
 
-var (
-	ErrClientNotReady = errors.New("client not ready")
-)
+var ErrClientNotReady = errors.New("client not ready")
 
 type MailMessageRepository struct {
 	redisClient *rediswrapper.ClientWrapper
@@ -39,30 +38,6 @@ func NewMailMessageRepository(redisClient *rediswrapper.ClientWrapper) *MailMess
 	go repository.saveWorker()
 
 	return repository
-}
-
-func (s *MailMessageRepository) saveWorker() {
-	for data := range s.queue {
-		if s.redisClient.Client != nil {
-			ctx := context.Background()
-			err := s.redisClient.Client.Set(
-				ctx,
-				data.key,
-				data.data,
-				time.Duration(data.expireMinutes)*time.Minute,
-			).Err()
-
-			if err != nil {
-				logger.Log.Debug("failed to save data in cache. " + err.Error())
-			}
-		}
-	}
-}
-
-func (s *MailMessageRepository) linkMailCodeKey(userID int) string {
-	const key = "LinkMailCodeData"
-
-	return fmt.Sprintf("%s:%d", key, userID)
 }
 
 func (s *MailMessageRepository) SaveLinkMailCodeData(
@@ -91,7 +66,6 @@ func (s *MailMessageRepository) GetLinkMailCodeData(
 		result := &mailmessage.LinkEmailCodeData{}
 
 		err := s.redisClient.Client.Get(ctx, key).Scan(result)
-
 		if err != nil {
 			return nil, s.handleNotFoundOrUnexpected(err)
 		}
@@ -108,4 +82,28 @@ func (s *MailMessageRepository) handleNotFoundOrUnexpected(err error) error {
 	}
 
 	return repositoryerrors.WrapUnexpectedError(err)
+}
+
+func (s *MailMessageRepository) saveWorker() {
+	for data := range s.queue {
+		if s.redisClient.Client != nil {
+			ctx := context.Background()
+
+			err := s.redisClient.Client.Set(
+				ctx,
+				data.key,
+				data.data,
+				time.Duration(data.expireMinutes)*time.Minute,
+			).Err()
+			if err != nil {
+				logger.Log.Debug("failed to save data in cache. " + err.Error())
+			}
+		}
+	}
+}
+
+func (s *MailMessageRepository) linkMailCodeKey(userID int) string {
+	const key = "LinkMailCodeData"
+
+	return fmt.Sprintf("%s:%d", key, userID)
 }

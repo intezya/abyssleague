@@ -18,6 +18,7 @@ func NewInventoryItemObtainedMessage(
 	item *dto.InventoryItemDTO,
 ) *InventoryItemObtainedMessage {
 	const subtype = "new_item"
+
 	const message = "item obtained"
 
 	return &InventoryItemObtainedMessage{

@@ -2,13 +2,13 @@ package applicationservice
 
 import (
 	"context"
-	"github.com/intezya/abyssleague/services/abysscore/internal/domain/event"
-	eventlib "github.com/intezya/abyssleague/services/abysscore/pkg/event"
-	"github.com/intezya/abyssleague/services/abysscore/pkg/optional"
 
 	"github.com/intezya/abyssleague/services/abysscore/internal/domain/dto"
+	"github.com/intezya/abyssleague/services/abysscore/internal/domain/event"
 	repositoryports "github.com/intezya/abyssleague/services/abysscore/internal/domain/repository"
 	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/metrics/tracer"
+	eventlib "github.com/intezya/abyssleague/services/abysscore/pkg/event"
+	"github.com/intezya/abyssleague/services/abysscore/pkg/optional"
 )
 
 type InventoryItemService struct {

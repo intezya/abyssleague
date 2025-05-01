@@ -23,9 +23,11 @@ func NewApplicationEventPublisher(workerCount int, bufferSize int) *ApplicationE
 	if workerCount <= 0 {
 		workerCount = 1
 	}
+
 	if bufferSize <= 0 {
 		bufferSize = 100
 	}
+
 	return &ApplicationEventPublisher{
 		subscribers: make(map[string]*eventBus),
 		workerCount: workerCount,
@@ -33,7 +35,11 @@ func NewApplicationEventPublisher(workerCount int, bufferSize int) *ApplicationE
 	}
 }
 
-func (p *ApplicationEventPublisher) Register(event ApplicationEvent, handler Handler, middleware ...Middleware) {
+func (p *ApplicationEventPublisher) Register(
+	event ApplicationEvent,
+	handler Handler,
+	middleware ...Middleware,
+) {
 	p.mu.Lock()
 	defer p.mu.Unlock()
 
@@ -45,14 +51,15 @@ func (p *ApplicationEventPublisher) Register(event ApplicationEvent, handler Han
 	bus, exists := p.subscribers[eventType]
 
 	if !exists {
+		ctx, cancel := context.WithCancel(context.Background())
+
 		bus = &eventBus{
 			handlers: []Handler{},
 			events:   make(chan ApplicationEvent, p.bufferSize),
+			cancel:   cancel,
 		}
-		ctx, cancel := context.WithCancel(context.Background())
-		bus.cancel = cancel
 
-		for i := 0; i < p.workerCount; i++ {
+		for range p.workerCount {
 			go p.startWorker(ctx, bus)
 		}
 
@@ -67,6 +74,7 @@ func (p *ApplicationEventPublisher) Unregister(event ApplicationEvent) {
 	defer p.mu.Unlock()
 
 	eventType := typeName(event)
+
 	bus, exists := p.subscribers[eventType]
 	if exists {
 		bus.cancel()
@@ -80,12 +88,13 @@ func (p *ApplicationEventPublisher) Publish(event ApplicationEvent) {
 	defer p.mu.RUnlock()
 
 	eventType := typeName(event)
+
 	bus, exists := p.subscribers[eventType]
 	if exists {
 		select {
 		case bus.events <- event:
 		default:
-			fmt.Println("event bus full for event type:", eventType)
+			// TODO: republish
 		}
 	}
 }
@@ -99,6 +108,7 @@ func (p *ApplicationEventPublisher) startWorker(ctx context.Context, bus *eventB
 			if !ok {
 				return
 			}
+
 			for _, handler := range bus.handlers {
 				handler(event)
 			}

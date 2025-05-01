@@ -44,7 +44,6 @@ func (h *AccountHandler) SendCodeForEmailLink(c *fiber.Ctx) error {
 	}
 
 	err = h.accountService.SendCodeForEmailLink(ctx, user, req.Email)
-
 	if err != nil {
 		return handleError(err, c)
 	}
@@ -82,7 +81,6 @@ func (h *AccountHandler) EnterCodeForEmailLink(c *fiber.Ctx) error {
 	}
 
 	result, err := h.accountService.EnterCodeForEmailLink(ctx, user, req.VerificationCode)
-
 	if err != nil {
 		return handleError(err, c)
 	}

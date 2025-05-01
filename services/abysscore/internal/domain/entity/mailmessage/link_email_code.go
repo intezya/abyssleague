@@ -2,9 +2,10 @@ package mailmessage
 
 import (
 	"fmt"
+	"time"
+
 	"github.com/intezya/pkglib/generate"
 	jsoniter "github.com/json-iterator/go"
-	"time"
 )
 
 type LinkEmailCodeData struct {
@@ -17,26 +18,19 @@ type LinkEmailCodeData struct {
 	CreatedAt        time.Time `json:"created_at"`
 }
 
-// MarshalBinary implements encoding.BinaryMarshaler
-func (d *LinkEmailCodeData) MarshalBinary() ([]byte, error) {
-	return jsoniter.Marshal(d)
-}
-
-// UnmarshalBinary implements encoding.BinaryUnmarshaler
-func (d *LinkEmailCodeData) UnmarshalBinary(data []byte) error {
-	return jsoniter.Unmarshal(data, d)
-}
-
 func NewLinkEmailCodeMail(
 	userID int,
 	emailForLink string,
 	validMinutes int,
 ) *LinkEmailCodeData {
+	const verificationCodeLength = 6
+
 	const verificationCodeCharset = "ABCDEFGHIJKLMNOPQRSTUVWXYZ" + "0123456789"
 
-	verificationCode := generate.RandomString(6, verificationCodeCharset)
+	verificationCode := generate.RandomString(verificationCodeLength, verificationCodeCharset)
 
 	const subject = "Email address confirmation"
+
 	const mime = "text/html; charset=UTF-8"
 
 	body := fmt.Sprintf(
@@ -54,4 +48,14 @@ func NewLinkEmailCodeMail(
 		Message:          NewMessage(subject, mime, body),
 		CreatedAt:        time.Now(),
 	}
+}
+
+// MarshalBinary implements encoding.BinaryMarshaler.
+func (d *LinkEmailCodeData) MarshalBinary() ([]byte, error) {
+	return jsoniter.Marshal(d)
+}
+
+// UnmarshalBinary implements encoding.BinaryUnmarshaler.
+func (d *LinkEmailCodeData) UnmarshalBinary(data []byte) error {
+	return jsoniter.Unmarshal(data, d)
 }

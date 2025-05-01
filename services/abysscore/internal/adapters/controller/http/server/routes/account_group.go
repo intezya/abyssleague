@@ -1,8 +1,9 @@
 package routes
 
 import (
-	"github.com/intezya/abyssleague/services/abysscore/internal/adapters/controller/http/handlers"
 	"path"
+
+	"github.com/intezya/abyssleague/services/abysscore/internal/adapters/controller/http/handlers"
 )
 
 func GetAccountGroup(

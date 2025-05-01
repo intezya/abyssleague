@@ -2,19 +2,16 @@ package persistence
 
 import (
 	"context"
-	"errors"
-	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/ent/migrate"
 	"time"
 
 	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/ent"
+	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/ent/migrate"
 )
 
 const (
 	defaultEntReconnectMaxRetries = 5
 	defaultEntReconnectDelay      = 2 * time.Second
 )
-
-var errAllConnectionAttemptsFailed = errors.New("all attempts to connect to database failed")
 
 type Logger interface {
 	Infof(template string, args ...interface{})
@@ -52,7 +49,6 @@ func SetupEnt(config *EntConfig, logger Logger) *ent.Client {
 	retryDelay := gt0(config.retryDelay, defaultEntReconnectDelay)
 
 	entClient, err := ent.Open(config.driverName, config.source)
-
 	if err != nil {
 		logger.Fatal(err) // invalid driver
 	}

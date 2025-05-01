@@ -1,7 +1,9 @@
 package eventlib
 
-const EveryoneIsReceiver = 0
-const SystemIsSender = 0
+const (
+	EveryoneIsReceiver = 0
+	SystemIsSender     = 0
+)
 
 type ApplicationEvent interface {
 	EventID() string
@@ -9,8 +11,10 @@ type ApplicationEvent interface {
 	SenderID() int
 }
 
-type Handler func(event ApplicationEvent)
-type Middleware func(next Handler) Handler
+type (
+	Handler    func(event ApplicationEvent)
+	Middleware func(next Handler) Handler
+)
 
 type Publisher interface {
 	Publish(event ApplicationEvent)

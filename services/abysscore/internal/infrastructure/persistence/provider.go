@@ -15,7 +15,10 @@ type DependencyProvider struct {
 	MailMessageRepository   repositoryports.MailMessageRepository
 }
 
-func NewDependencyProvider(client *ent.Client, redisClient *rediswrapper.ClientWrapper) *DependencyProvider {
+func NewDependencyProvider(
+	client *ent.Client,
+	redisClient *rediswrapper.ClientWrapper,
+) *DependencyProvider {
 	return &DependencyProvider{
 		client: client,
 

@@ -20,16 +20,6 @@ type WebsocketServiceWrapper struct {
 	timeout     time.Duration
 }
 
-func (w *WebsocketServiceWrapper) SetClient(client interface{}) error {
-	if typedClient, ok := client.(websocketpb.WebsocketServiceClient); ok {
-		w.client = typedClient
-
-		return nil
-	}
-
-	return errInvalidClientType
-}
-
 func NewWebsocketServiceWrapper(
 	ctx context.Context,
 	factory *factory.GrpcClientFactory,
@@ -52,26 +42,14 @@ func NewWebsocketServiceWrapper(
 	return wrapper
 }
 
-func (w *WebsocketServiceWrapper) ensureClient(ctx context.Context) bool {
-	if w.client != nil {
-		return true
+func (w *WebsocketServiceWrapper) SetClient(client interface{}) error {
+	if typedClient, ok := client.(websocketpb.WebsocketServiceClient); ok {
+		w.client = typedClient
+
+		return nil
 	}
 
-	logger.Log.Info("WebsocketService client is nil, attempting to reconnect...")
-
-	client, err := w.factory.GetAndSetWebsocketApiGatewayClient(ctx, w.serviceAddr, nil)
-
-	if w.client == nil || err != nil {
-		logger.Log.Warn("Failed to reconnect to WebsocketService")
-
-		return false
-	}
-
-	w.client = client
-
-	logger.Log.Info("Successfully reconnected to WebsocketService")
-
-	return true
+	return errInvalidClientType
 }
 
 func (w *WebsocketServiceWrapper) GetOnline(
@@ -162,4 +140,26 @@ func (w *WebsocketServiceWrapper) Broadcast(
 	}
 
 	return nil
+}
+
+func (w *WebsocketServiceWrapper) ensureClient(ctx context.Context) bool {
+	if w.client != nil {
+		return true
+	}
+
+	logger.Log.Info("WebsocketService client is nil, attempting to reconnect...")
+
+	client, err := w.factory.GetAndSetWebsocketApiGatewayClient(ctx, w.serviceAddr, nil)
+
+	if w.client == nil || err != nil {
+		logger.Log.Warn("Failed to reconnect to WebsocketService")
+
+		return false
+	}
+
+	w.client = client
+
+	logger.Log.Info("Successfully reconnected to WebsocketService")
+
+	return true
 }
