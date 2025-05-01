@@ -3,6 +3,7 @@ package wrapper
 import (
 	"context"
 	"errors"
+	"sync"
 	"time"
 
 	websocketpb "github.com/intezya/abyssleague/proto/websocket"
@@ -13,11 +14,20 @@ import (
 
 var errInvalidClientType = errors.New("invalid client type")
 
+const (
+	defaultGRPCTimeout = 1 * time.Second
+	reconnectCooldown  = 5 * time.Second
+)
+
 type WebsocketServiceWrapper struct {
 	factory     *factory.GrpcClientFactory
 	serviceAddr string
 	client      websocketpb.WebsocketServiceClient
 	timeout     time.Duration
+
+	// Added fields for connection management
+	reconnectMu       sync.Mutex
+	lastReconnectTime time.Time
 }
 
 func NewWebsocketServiceWrapper(
@@ -32,6 +42,7 @@ func NewWebsocketServiceWrapper(
 		client:      nil,
 	}
 
+	// Initialize client immediately, but don't block
 	go func() {
 		_, err := factory.GetAndSetWebsocketApiGatewayClient(ctx, serviceAddr, wrapper)
 		if err != nil {
@@ -45,10 +56,8 @@ func NewWebsocketServiceWrapper(
 func (w *WebsocketServiceWrapper) SetClient(client interface{}) error {
 	if typedClient, ok := client.(websocketpb.WebsocketServiceClient); ok {
 		w.client = typedClient
-
 		return nil
 	}
-
 	return errInvalidClientType
 }
 
@@ -60,14 +69,12 @@ func (w *WebsocketServiceWrapper) GetOnline(
 
 	if !w.ensureClient(ctx) {
 		logger.Log.Warn("Using default value for GetOnline due to missing client")
-
 		return &websocketpb.GetOnlineResponse{Online: 0}, nil
 	}
 
 	response, err := w.client.GetOnline(ctx, &emptypb.Empty{})
 	if err != nil {
 		logger.Log.Warnf("GetOnline request failed: %v", err)
-
 		return &websocketpb.GetOnlineResponse{Online: 0}, err
 	}
 
@@ -82,14 +89,12 @@ func (w *WebsocketServiceWrapper) GetOnlineUsers(
 
 	if !w.ensureClient(ctx) {
 		logger.Log.Warn("Using default value for GetOnlineUsers due to missing client")
-
 		return &websocketpb.GetOnlineUsersResponse{Users: []*websocketpb.OnlineUser{}}, nil
 	}
 
 	response, err := w.client.GetOnlineUsers(ctx, &emptypb.Empty{})
 	if err != nil {
 		logger.Log.Warnf("GetOnlineUsers request failed: %v", err)
-
 		return &websocketpb.GetOnlineUsersResponse{Users: []*websocketpb.OnlineUser{}}, err
 	}
 
@@ -105,14 +110,12 @@ func (w *WebsocketServiceWrapper) SendMessage(
 
 	if !w.ensureClient(ctx) {
 		logger.Log.Warn("Failed to send message due to missing client")
-
 		return nil
 	}
 
 	_, err := w.client.SendMessage(ctx, request)
 	if err != nil {
 		logger.Log.Warnf("SendMessage request failed: %v", err)
-
 		return err
 	}
 
@@ -128,38 +131,52 @@ func (w *WebsocketServiceWrapper) Broadcast(
 
 	if !w.ensureClient(ctx) {
 		logger.Log.Warn("Failed to broadcast message due to missing client")
-
 		return nil
 	}
 
 	_, err := w.client.Broadcast(ctx, request)
 	if err != nil {
 		logger.Log.Warnf("Broadcast request failed: %v", err)
-
 		return err
 	}
 
 	return nil
 }
 
+// Optimized client reconnection logic with rate limiting
 func (w *WebsocketServiceWrapper) ensureClient(ctx context.Context) bool {
+	// If we already have a client, return immediately
 	if w.client != nil {
 		return true
 	}
 
+	// Lock to prevent multiple goroutines from attempting reconnection simultaneously
+	w.reconnectMu.Lock()
+	defer w.reconnectMu.Unlock()
+
+	// Check again after acquiring lock (double-checked locking pattern)
+	if w.client != nil {
+		return true
+	}
+
+	// Implement reconnection rate limiting
+	now := time.Now()
+	if now.Sub(w.lastReconnectTime) < reconnectCooldown {
+		logger.Log.Debug("Skipping reconnection attempt due to cooldown period")
+		return false
+	}
+
+	// Update last reconnect timestamp
+	w.lastReconnectTime = now
+
 	logger.Log.Info("WebsocketService client is nil, attempting to reconnect...")
-
 	client, err := w.factory.GetAndSetWebsocketApiGatewayClient(ctx, w.serviceAddr, nil)
-
-	if w.client == nil || err != nil {
-		logger.Log.Warn("Failed to reconnect to WebsocketService")
-
+	if err != nil {
+		logger.Log.Warnf("Failed to reconnect to WebsocketService: %v", err)
 		return false
 	}
 
 	w.client = client
-
 	logger.Log.Info("Successfully reconnected to WebsocketService")
-
 	return true
 }

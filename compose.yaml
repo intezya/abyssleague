@@ -7,9 +7,11 @@ services:
       target: final
     restart: unless-stopped
     ports:
-      - "127.0.0.1:8090:8090"
-      - "127.0.0.1:50051:50051"
-      - "127.0.0.1:50052:50052"
+      # Websocket port
+      - "8090:8090"
+      # GRPC ports
+    #      - "50051:50051"
+    #      - "50052:50052"
     environment:
       - HTTP_PORT=${WEBSOCKET_HTTP_PORT:-8090}
       - GRPC_SERVER_PORTS=${GRPC_SERVER_PORTS}

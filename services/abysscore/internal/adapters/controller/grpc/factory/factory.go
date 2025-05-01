@@ -29,8 +29,8 @@ const (
 	GRPCMaxCallRecvMsgSize = 10 * 1024 * 1024
 	GRPCMaxCallSendMsgSize = 10 * 1024 * 1024
 
-	GRPCKeepAliveTime    = 20 * time.Second
-	GRPCKeepAliveTimeout = 5 * time.Second
+	GRPCKeepAliveTime    = 60 * time.Second
+	GRPCKeepAliveTimeout = 10 * time.Second
 )
 
 var (
