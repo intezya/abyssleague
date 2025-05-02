@@ -117,10 +117,10 @@ jobs:
         service:
           - name: websocket-messaging
             condition: ${{ needs.detect-changes.outputs.websocket-messaging == 'true' }}
-            path: ./services/websocket-messaging/...
+            path: services/websocket-messaging
           - name: abysscore
             condition: ${{ needs.detect-changes.outputs.abysscore == 'true' }}
-            path: ./services/abysscore/...
+            path: services/abysscore
 
     continue-on-error: ${{ !matrix.service.condition }}
     steps:
