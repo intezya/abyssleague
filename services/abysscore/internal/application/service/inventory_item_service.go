@@ -86,29 +86,23 @@ func (i *InventoryItemService) RevokeByAdmin(
 	inventoryItemID int,
 	performer *dto.UserDTO,
 ) error {
-	_, err := tracer.TraceFnWithResult(
+	result, err := tracer.TraceFnWithResult(
 		ctx,
-		"inventoryItemRepository.FindByUserIDAndID",
+		"inventoryItemRepository.DeleteByUserIDAndID",
 		func(ctx context.Context) (*dto.InventoryItemDTO, error) {
-			return i.inventoryItemRepository.FindByUserIDAndID(ctx, userID, inventoryItemID)
+			return i.inventoryItemRepository.DeleteByUserIDAndID(ctx, userID, inventoryItemID)
 		},
 	)
 	if err != nil {
 		return err
 	}
 
-	err = tracer.TraceFn(
-		ctx,
-		"inventoryItemRepository.Delete",
-		func(ctx context.Context) error {
-			return i.inventoryItemRepository.Delete(ctx, inventoryItemID)
-		},
-	)
-	if err != nil {
-		return err
-	}
-
-	// TODO: send notification to user
+	i.eventPublisher.Publish(event.NewInventoryItemRevokedEvent(
+		optional.EmptyOptional[string](),
+		optional.New(performer),
+		userID,
+		result,
+	))
 
 	return nil
 }

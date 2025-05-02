@@ -7,7 +7,6 @@ import (
 type InventoryItemDTO struct {
 	ID             int       `json:"id"`
 	UserID         int       `json:"-"`
-	ItemID         int       `json:"-"`
 	ReceivedFromID *int      `json:"-"`
 	ObtainedAt     time.Time `json:"obtained_at"`
 

@@ -89,15 +89,32 @@ func (r *InventoryItemRepository) FindByUserIDAndID(
 	return mapper.ToInventoryItemDTOFromEnt(inventoryItem), nil
 }
 
-func (r *InventoryItemRepository) Delete(ctx context.Context, inventoryItemID int) error {
-	err := r.client.InventoryItem.
-		DeleteOneID(inventoryItemID).
-		Exec(ctx)
+func (r *InventoryItemRepository) DeleteByUserIDAndID(
+	ctx context.Context,
+	userID, id int,
+) (*dto.InventoryItemDTO, error) {
+	result, err := withTxResult(ctx, r.client, func(tx *ent.Tx) (*ent.InventoryItem, error) {
+		item, err := tx.InventoryItem.
+			Query().
+			Where(inventoryitem.IDEQ(id), inventoryitem.UserIDEQ(userID)).
+			First(ctx)
+		if err != nil {
+			return nil, err
+		}
+
+		err = tx.InventoryItem.DeleteOneID(item.ID).Exec(ctx)
+		if err != nil {
+			return nil, err
+		}
+
+		return item, nil
+	})
+
 	if err != nil {
-		return r.handleQueryError(err)
+		return nil, r.handleQueryError(err)
 	}
 
-	return nil
+	return mapper.ToInventoryItemDTOFromEnt(result), nil
 }
 
 // handleQueryError transforms Ent query errors into domain-specific errors.

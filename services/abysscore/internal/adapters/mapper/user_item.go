@@ -22,7 +22,6 @@ func ToInventoryItemDTOFromEnt(inventoryItem *ent.InventoryItem) *dto.InventoryI
 	return &dto.InventoryItemDTO{
 		ID:             inventoryItem.ID,
 		UserID:         inventoryItem.UserID,
-		ItemID:         inventoryItem.ItemID,
 		ReceivedFromID: inventoryItem.ReceivedFromID,
 		ObtainedAt:     inventoryItem.ObtainedAt,
 		GameItemID:     gameItem.ID,

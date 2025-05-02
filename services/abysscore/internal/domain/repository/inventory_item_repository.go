@@ -16,5 +16,5 @@ type InventoryItemRepository interface {
 		ctx context.Context,
 		userID int,
 	) ([]*dto.InventoryItemDTO, error) // TODO: maybe add pagination
-	Delete(ctx context.Context, inventoryItemID int) error
+	DeleteByUserIDAndID(ctx context.Context, userID, id int) (*dto.InventoryItemDTO, error)
 }

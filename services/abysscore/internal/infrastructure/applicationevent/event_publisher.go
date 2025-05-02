@@ -29,5 +29,11 @@ func NewApplicationEventPublisher(
 		// middleware...,
 	)
 
+	publisher.Register(
+		&event.InventoryItemRevokedEvent{},
+		inventoryItemEventHandlers.InventoryItemRevokedEventHandler,
+		// middleware...,
+	)
+
 	return publisher
 }

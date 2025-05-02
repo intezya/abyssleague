@@ -37,6 +37,34 @@ func NewInventoryItemObtainedEvent(
 	}
 }
 
+type InventoryItemRevokedEvent struct {
+	*BaseEvent
+	// metadata
+	performer optional.Optional[*dto.UserDTO]
+	userID    int
+	item      *dto.InventoryItemDTO
+}
+
+func NewInventoryItemRevokedEvent(
+	eventID optional.String,
+	performer optional.Optional[*dto.UserDTO],
+	userID int,
+	item *dto.InventoryItemDTO,
+) *InventoryItemRevokedEvent {
+	senderID := eventlib.SystemIsSender
+
+	if performer.IsSet() {
+		senderID = performer.MustValue().ID
+	}
+
+	return &InventoryItemRevokedEvent{
+		BaseEvent: newBaseEvent(eventID, userID, senderID),
+		performer: performer,
+		userID:    userID,
+		item:      item,
+	}
+}
+
 type InventoryItemHandlers struct {
 	notificationService domainservice.NotificationService
 }
@@ -63,6 +91,30 @@ func (h *InventoryItemHandlers) InventoryItemObtainedEventHandler(event eventlib
 		typedEvent.id,
 		performerName,
 		typedEvent.item,
+	)
+
+	err := h.notificationService.SendToUser(typedEvent.receiverID, message)
+	if err != nil {
+		logger.Log.Warnln("failed to send message to user:", err)
+	}
+}
+
+func (h *InventoryItemHandlers) InventoryItemRevokedEventHandler(event eventlib.ApplicationEvent) {
+	typedEvent, ok := event.(*InventoryItemRevokedEvent)
+	if !ok {
+		return
+	}
+
+	performerName := websocketmessage.SystemIsSenderName
+
+	if typedEvent.performer.IsSet() {
+		performerName = typedEvent.performer.MustValue().Username
+	}
+
+	message := websocketmessage.NewInventoryItemRevokedMessage(
+		typedEvent.id,
+		performerName,
+		typedEvent.item.ID,
 	)
 
 	err := h.notificationService.SendToUser(typedEvent.receiverID, message)
