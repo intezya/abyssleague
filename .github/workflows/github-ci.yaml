@@ -18,8 +18,14 @@ on:
 
 env:
   GO_VERSION: 1.24.2
-  REGISTRY: ghcr.io
-  IMAGE_NAME: ${{ github.repository }}
+  REGISTRY: ${{ secrets.DOCKER_REGISTRY || 'ghcr.io' }}
+  REGISTRY_USERNAME: ${{ secrets.REGISTRY_USERNAME || github.actor }}
+  REGISTRY_PASSWORD: ${{ secrets.REGISTRY_PASSWORD || secrets.GITHUB_TOKEN }}
+  IMAGE_NAME: ${{ secrets.IMAGE_PREFIX || github.repository }}
+
+permissions:
+  contents: read
+  packages: write
 
 jobs:
   detect-changes:
@@ -38,97 +44,55 @@ jobs:
         id: changes
         uses: dorny/paths-filter@v3.0.2
         with:
-          base: 'dev'
           filters: |
             websocket-messaging:
               - 'services/websocket-messaging/**'
               - 'protos/websocket-messaging/**'
-              - 'deployments/docker/go.Dockerfile'
+              - 'deployments/docker/websocket-messaging.Dockerfile'
             abysscore:
               - 'services/abysscore/**'
               - 'protos/src/**'
-              - 'deployments/docker/go.Dockerfile'
+              - 'deployments/docker/abysscore.Dockerfile'
             protos:
               - 'protos/**'
 
-  #  lint:
-  #    needs: detect-changes
-  #    if: ${{ needs.detect-changes.outputs.websocket-messaging == 'true' || needs.detect-changes.outputs.abysscore == 'true' || needs.detect-changes.outputs.protos == 'true' }}
-  #    runs-on: ubuntu-latest
-  #    strategy:
-  #      matrix:
-  ##        directory: ['services/websocket-messaging', 'services/abysscore', ]
-  #        directory: [ 'services/abysscore' ]
-  #
-  #    steps:
-  #      - uses: actions/checkout@v4.2.2
-  #
-  #      - name: Set up Go
-  #        uses: actions/setup-go@v5.4.0
-  #        with:
-  #          go-version: ${{ env.GO_VERSION }}
-  #
-  #      - name: Lint
-  #        uses: golangci/golangci-lint-action@v7
-  #        with:
-  #          version: latest
-  #          working-directory: ${{ matrix.directory }}
-  #          args: --timeout=5m
-
-  #  security-scan:
-  #    needs: [detect-changes]
-  #    if: ${{ needs.detect-changes.outputs.websocket-messaging == 'true' || needs.detect-changes.outputs.abysscore == 'true' }}
-  #    runs-on: ubuntu-latest
-  #    steps:
-  #      - uses: actions/checkout@v4.2.2
-  #
-  #      - name: Set up Go
-  #        uses: actions/setup-go@v5.4.0
-  #        with:
-  #          go-version: ${{ env.GO_VERSION }}
-  #
-  #      - name: Run Gosec Security Scanner for websocket-messaging
-  #        if: ${{ needs.detect-changes.outputs.websocket-messaging == 'true' }}
-  #        uses: securego/gosec@master
-  #        with:
-  #          args: ./services/websocket-messaging/...
-  #
-  #      - name: Run Gosec Security Scanner for AbyssCore
-  #        if: ${{ needs.detect-changes.outputs.abysscore == 'true' }}
-  #        uses: securego/gosec@master
-  #        with:
-  #          args: ./services/abysscore/...
-
-  test:
-    needs: [ detect-changes, ] # lint
-    if: ${{ needs.detect-changes.outputs.websocket-messaging == 'true' || needs.detect-changes.outputs.abysscore == 'true' }}
+  validate-protos:
+    needs: detect-changes
+    if: ${{ needs.detect-changes.outputs.protos == 'true' }}
     runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4.2.2
 
-    #    services:
-    #      postgres:
-    #        image: postgres:14.5-alpine
-    #        env:
-    #          POSTGRES_USER: postgres
-    #          POSTGRES_PASSWORD: postgres
-    #          POSTGRES_DB: testdb
-    #        ports:
-    #          - 5432:5432
-    #        options: >-
-    #          --health-cmd pg_isready
-    #          --health-interval 10s
-    #          --health-timeout 5s
-    #          --health-retries 5
-    #
-    #      redis:
-    #        image: redis:alpine
-    #        ports:
-    #          - 6379:6379
-    #        options: >-
-    #          --health-cmd "redis-cli ping"
-    #          --health-interval 10s
-    #          --health-timeout 5s
-    #          --health-retries 5
+      - name: Set up Protoc
+        uses: arduino/setup-protoc@v2
+        with:
+          version: '3.x'
 
+      - name: Install protoc-gen-go
+        run: |
+          go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
+          go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest
+
+      - name: Validate Proto Files
+        run: |
+          find protos -name "*.proto" -exec protoc --proto_path=protos \
+          --go_out=. --go_opt=paths=source_relative \
+          --go-grpc_out=. --go-grpc_opt=paths=source_relative {} \;
+
+  lint:
+    needs: detect-changes
+    if: ${{ needs.detect-changes.outputs.websocket-messaging == 'true' || needs.detect-changes.outputs.abysscore == 'true' || needs.detect-changes.outputs.protos == 'true' }}
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        directory: [ 'services/websocket-messaging', 'services/abysscore' ]
+        include:
+          - directory: 'services/websocket-messaging'
+            condition: ${{ needs.detect-changes.outputs.websocket-messaging == 'true' }}
+          - directory: 'services/abysscore'
+            condition: ${{ needs.detect-changes.outputs.abysscore == 'true' }}
+
+    continue-on-error: ${{ !matrix.condition }}
     steps:
       - uses: actions/checkout@v4.2.2
 
@@ -137,10 +101,94 @@ jobs:
         with:
           go-version: ${{ env.GO_VERSION }}
 
-      - name: Test websocket-messaging with Coverage
-        if: ${{ needs.detect-changes.outputs.websocket-messaging == 'true' }}
+      - name: Lint
+        uses: golangci/golangci-lint-action@v7
+        with:
+          version: latest
+          working-directory: ${{ matrix.directory }}
+          args: --timeout=5m
+
+  security-scan:
+    needs: [ detect-changes, lint ]
+    if: ${{ needs.detect-changes.outputs.websocket-messaging == 'true' || needs.detect-changes.outputs.abysscore == 'true' }}
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        service:
+          - name: websocket-messaging
+            condition: ${{ needs.detect-changes.outputs.websocket-messaging == 'true' }}
+            path: ./services/websocket-messaging/...
+          - name: abysscore
+            condition: ${{ needs.detect-changes.outputs.abysscore == 'true' }}
+            path: ./services/abysscore/...
+
+    continue-on-error: ${{ !matrix.service.condition }}
+    steps:
+      - uses: actions/checkout@v4.2.2
+
+      - name: Set up Go
+        uses: actions/setup-go@v5.4.0
+        with:
+          go-version: ${{ env.GO_VERSION }}
+
+      - name: Run Gosec Security Scanner for ${{ matrix.service.name }}
+        uses: securego/gosec@master
+        with:
+          args: ${{ matrix.service.path }}
+
+  test:
+    needs: [ detect-changes, lint ]
+    if: ${{ needs.detect-changes.outputs.websocket-messaging == 'true' || needs.detect-changes.outputs.abysscore == 'true' }}
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:14.5-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: testdb
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+      redis:
+        image: redis:alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    strategy:
+      matrix:
+        service:
+          - name: websocket-messaging
+            condition: ${{ needs.detect-changes.outputs.websocket-messaging == 'true' }}
+            path: ./services/websocket-messaging
+          - name: abysscore
+            condition: ${{ needs.detect-changes.outputs.abysscore == 'true' }}
+            path: ./services/abysscore
+
+    # Пропускаем тесты для неизмененных сервисов
+    continue-on-error: ${{ !matrix.service.condition }}
+    steps:
+      - uses: actions/checkout@v4.2.2
+
+      - name: Set up Go
+        uses: actions/setup-go@v5.4.0
+        with:
+          go-version: ${{ env.GO_VERSION }}
+
+      - name: Test ${{ matrix.service.name }} with Coverage
         run: |
-          cd services/websocket-messaging
+          cd ${{ matrix.service.path }}
           go test -race -coverprofile=coverage.txt -covermode=atomic ./...
         env:
           DB_HOST: localhost
@@ -150,26 +198,15 @@ jobs:
           DB_NAME: testdb
           REDIS_ADDR: localhost:6379
 
-      - name: Test AbyssCore with Coverage
-        if: ${{ needs.detect-changes.outputs.abysscore == 'true' }}
-        run: |
-          cd services/abysscore
-          go test -race -coverprofile=coverage.txt -covermode=atomic ./...
-        env:
-          DB_HOST: localhost
-          DB_PORT: 5432
-          DB_USER: postgres
-          DB_PASSWORD: postgres
-          DB_NAME: testdb
-          REDIS_ADDR: localhost:6379
-
-  #      - name: Upload coverage to Codecov
-  #        uses: codecov/codecov-action@v5.4.2
-  #        with:
-  #          files: ./services/websocket-messaging/coverage.txt,./services/abysscore/coverage.txt
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v5.4.2
+        with:
+          files: ${{ matrix.service.path }}/coverage.txt
+          flags: ${{ matrix.service.name }}
+          fail_ci_if_error: false
 
   build-and-push:
-    needs: [ detect-changes, test, ] # security-scan
+    needs: [ detect-changes, test, security-scan ]
     if: ${{ success() && (needs.detect-changes.outputs.websocket-messaging == 'true' || needs.detect-changes.outputs.abysscore == 'true') && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master' || github.ref == 'refs/heads/dev') }}
     runs-on: ubuntu-latest
 
@@ -184,17 +221,16 @@ jobs:
         with:
           major_pattern: "major:"
           minor_pattern: "feat:"
-          patch_pattern: "fix:"
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3.10.0
 
-      - name: Login to GitHub Container Registry
+      - name: Login to Docker Registry
         uses: docker/login-action@v3.4.0
         with:
           registry: ${{ env.REGISTRY }}
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+          username: ${{ env.REGISTRY_USERNAME }}
+          password: ${{ env.REGISTRY_PASSWORD }}
 
       - name: Get branch name
         id: branch_name
@@ -205,41 +241,38 @@ jobs:
             echo "BRANCH_TAG=$(echo ${{ github.ref }} | sed 's/refs\/heads\///')" >> $GITHUB_OUTPUT
           fi
 
-      - name: Build and push websocket-messaging image
-        if: ${{ needs.detect-changes.outputs.websocket-messaging == 'true' }}
-        uses: docker/build-push-action@v6.0.0
-        with:
-          context: .
-          file: ./deployments/docker/websocket-messaging.Dockerfile
-          push: true
-          tags: |
-            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/websocket-messaging:${{ github.sha }}
-            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/websocket-messaging:${{ steps.branch_name.outputs.BRANCH_TAG }}
-            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/websocket-messaging:${{ steps.semver.outputs.version }}
-          cache-from: type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/websocket-messaging:${{ steps.branch_name.outputs.BRANCH_TAG }}
-          cache-to: type=inline
-          build-args: |
-            SERVICE_NAME=websocket-messaging
-            OUTPUT_BINARY_NAME=websocket-messaging-api-gateway
-            VERSION=${{ steps.semver.outputs.version }}
-
-      - name: Build and push AbyssCore image
-        if: ${{ needs.detect-changes.outputs.abysscore == 'true' }}
-        uses: docker/build-push-action@v6.0.0
-        with:
-          context: .
-          file: ./deployments/docker/abysscore.Dockerfile
-          push: true
-          tags: |
-            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/abysscore:${{ github.sha }}
-            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/abysscore:${{ steps.branch_name.outputs.BRANCH_TAG }}
-            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/abysscore:${{ steps.semver.outputs.version }}
-          cache-from: type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/abysscore:${{ steps.branch_name.outputs.BRANCH_TAG }}
-          cache-to: type=inline
-          build-args: |
-            SERVICE_NAME=abysscore
-            OUTPUT_BINARY_NAME=abysscore
-            VERSION=${{ steps.semver.outputs.version }}
+      - name: Build and Push Docker Image
+        id: docker_build
+        run: |
+          services=()
+          
+          if [ "${{ needs.detect-changes.outputs.websocket-messaging }}" == "true" ]; then
+            services+=("websocket-messaging:websocket-messaging-api-gateway:./deployments/docker/websocket-messaging.Dockerfile")
+          fi
+          
+          if [ "${{ needs.detect-changes.outputs.abysscore }}" == "true" ]; then
+            services+=("abysscore:abysscore:./deployments/docker/abysscore.Dockerfile")
+          fi
+          
+          for service_info in "${services[@]}"; do
+            IFS=':' read -r service_name binary_name dockerfile <<< "$service_info"
+          
+            echo "Building and pushing $service_name..."
+          
+            docker buildx build \
+              --push \
+              --cache-from type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/$service_name:${{ steps.branch_name.outputs.BRANCH_TAG }} \
+              --cache-from type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/$service_name:latest \
+              --cache-to type=inline,mode=max \
+              --build-arg SERVICE_NAME=$service_name \
+              --build-arg OUTPUT_BINARY_NAME=$binary_name \
+              --build-arg VERSION=${{ steps.semver.outputs.version }} \
+              -t ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/$service_name:${{ github.sha }} \
+              -t ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/$service_name:${{ steps.branch_name.outputs.BRANCH_TAG }} \
+              -t ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/$service_name:${{ steps.semver.outputs.version }} \
+              -f $dockerfile \
+              .
+          done
 
   deploy:
     needs: [ build-and-push ]
@@ -256,19 +289,25 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           known_hosts: ${{ secrets.SSH_KNOWN_HOSTS }}
 
-      - name: Setup Docker auth on server
+      - name: Checkout for deployment configs
+        uses: actions/checkout@v4.2.2
+        with:
+          sparse-checkout: 'deployments/compose'
+          sparse-checkout-cone-mode: false
+
+      - name: Copy docker-compose config to server
         run: |
-          ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "
-            mkdir -p ~/.docker
-          
-            if [ ! -f ~/.docker/config.json ] || ! grep -q \"${{ env.REGISTRY }}\" ~/.docker/config.json; then
-              echo '{\"auths\":{\"${{ env.REGISTRY }}\":{\"auth\":\"'$(echo -n \"${{ github.repository_owner }}:${{ secrets.GHCR_PAT }}\" | base64)'\"}}}' > ~/.docker/config.json
-              chmod 600 ~/.docker/config.json
-              echo 'Docker auth configured successfully'
-            else
-              echo 'Docker auth already configured'
-            fi
-          "
+          scp -r deployments/compose/ ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:${{ secrets.DEPLOY_PATH }}/
+
+      - name: Create secure docker login config
+        env:
+          REGISTRY_AUTH: ${{ env.REGISTRY_USERNAME }}:${{ secrets.GHCR_PAT || env.REGISTRY_PASSWORD }}
+        run: |
+          mkdir -p ~/.docker
+          echo '{"auths":{"${{ env.REGISTRY }}":{"auth":"'$(echo -n "$REGISTRY_AUTH" | base64)'"}}}' > docker_auth.json
+          scp docker_auth.json ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:~/.docker/config.json
+          ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "chmod 600 ~/.docker/config.json"
+          rm docker_auth.json
 
       - name: Deploy to server
         run: |
@@ -285,6 +324,23 @@ jobs:
           
             echo 'Restarting services...'
             docker compose up -d
+          
+            echo 'Verifying services are running...'
+            sleep 10
+          
+            if ! docker compose ps | grep websocket-messaging | grep -q 'Up'; then
+              echo 'Error: websocket-messaging service failed to start!'
+              docker compose logs websocket-messaging-api-gateway --tail=50
+              exit 1
+            fi
+          
+            if ! docker compose ps | grep abysscore | grep -q 'Up'; then
+              echo 'Error: abysscore service failed to start!'
+              docker compose logs abysscore --tail=50
+              exit 1
+            fi
+          
+            echo 'Services are running successfully'
           
             echo 'Cleaning up old images...'
             docker image prune -af --filter 'until=24h'
