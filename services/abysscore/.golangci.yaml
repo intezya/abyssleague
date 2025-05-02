@@ -1,5 +1,12 @@
 version: "2"
 
+run:
+  timeout: 5m
+  issues-exit-code: 1000
+  tests: false
+  modules-download-mode: readonly
+  allow-parallel-runners: true
+
 linters:
   default: all
 
@@ -10,11 +17,12 @@ linters:
     - gochecknoinits # not configurable (swaggo docs must be excluded)
     - gochecknoglobals # not configurable (swaggo docs, custom errors and validator must be excluded)
     - errname # not configurable (canonical custom http-like errors must be excluded)
-    - depguard
     - testpackage
     - exhaustruct # freakin linter that argue with mu, wg, ...
+    - godox
     # Must be turned on after
     - revive
+    - depguard
 
   settings:
     gomoddirectives:
@@ -95,3 +103,6 @@ formatters:
     - gofmt
     - gofumpt
     - golines
+
+issues:
+  fix: true
