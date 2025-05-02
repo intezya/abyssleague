@@ -3,10 +3,10 @@ module github.com/intezya/abyssleague/services/websocket-messaging
 go 1.24.2
 
 require (
-		github.com/intezya/abyssleague/proto v0.0.0
 	github.com/golang-jwt/jwt/v5 v5.2.2
 	github.com/google/uuid v1.6.0
 	github.com/gorilla/websocket v1.5.3
+	github.com/intezya/abyssleague/proto v0.0.0
 	github.com/intezya/pkglib/configloader v0.1.2
 	github.com/intezya/pkglib/itertools v0.1.1
 	github.com/intezya/pkglib/logger v0.1.2
@@ -14,8 +14,8 @@ require (
 	google.golang.org/grpc v1.71.1
 	google.golang.org/protobuf v1.36.6
 )
-replace github.com/intezya/abyssleague/proto => ./../../protos/
 
+replace github.com/intezya/abyssleague/proto => ./../../protos/
 
 require (
 	github.com/beorn7/perks v1.0.1 // indirect

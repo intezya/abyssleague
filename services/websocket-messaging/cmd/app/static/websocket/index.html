@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <title>WebSocket Debugger</title>
+    <link href="/debug/websocket/static/styles.css" rel="stylesheet">
+</head>
+<body>
+<div class="header">
+    <h2>🧪 WebSocket Debugger</h2>
+    <div class="theme-switch">
+        <span>Theme</span>
+        <label class="switch">
+            <input id="theme-toggle" type="checkbox">
+            <span class="slider"></span>
+        </label>
+    </div>
+</div>
+
+<div class="token-section">
+    <h3>🔑 Authentication</h3>
+    <div class="control-row">
+        <label for="token">Token:</label>
+        <input id="token" placeholder="Enter your auth token here" size="60">
+        <button id="save-token">Save Token</button>
+    </div>
+</div>
+
+<div id="connections-container">
+    <!-- WebSocket connections will be added here dynamically -->
+</div>
+
+<div class="add-connection-container">
+    <button id="add-connection-btn">+ Add Connection</button>
+</div>
+
+<script src="/debug/websocket/static/script.js"></script>
+</body>
+</html>

@@ -22,6 +22,12 @@ import (
 const gracefulShutdownTimeout = 10 * time.Second
 
 func main() {
+	if _, err := os.Stat("static/websocket_debugger.html"); err != nil {
+		fmt.Println("File not found:", err)
+	} else {
+		fmt.Println("File exists!")
+	}
+
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 

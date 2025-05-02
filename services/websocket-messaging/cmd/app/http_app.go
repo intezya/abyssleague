@@ -4,9 +4,13 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"io/fs"
+	"mime"
 	"net/http"
+	"path/filepath"
 	"time"
 
+	"embed"
 	"github.com/intezya/abyssleague/services/websocket-messaging/internal/adapters/config"
 	"github.com/intezya/abyssleague/services/websocket-messaging/internal/adapters/controller/http/middleware"
 	"github.com/intezya/abyssleague/services/websocket-messaging/internal/adapters/controller/http/routes"
@@ -21,6 +25,9 @@ const (
 	idleTimeout       = 60 * time.Second
 	readHeaderTimeout = 10 * time.Second
 )
+
+//go:embed static/websocket/**
+var staticFS embed.FS
 
 type HttpApp struct {
 	Mux     *http.ServeMux
@@ -39,6 +46,33 @@ func NewHttpApp(config *config.Config) *HttpApp {
 	)
 
 	mux.HandleFunc(routes.MetricsPath, promhttp.Handler().ServeHTTP)
+
+	// Websocket debugger
+	if config.IsDevMode() {
+
+		websocketFS, err := fs.Sub(staticFS, "static/websocket")
+		if err != nil {
+			panic(err)
+		}
+
+		// /debug/websocket → index.html
+		mux.HandleFunc("/debug/websocket", func(w http.ResponseWriter, r *http.Request) {
+			data, err := fs.ReadFile(websocketFS, "index.html")
+			if err != nil {
+				http.Error(w, "index not found", http.StatusInternalServerError)
+				return
+			}
+			w.Header().Set("Content-Type", "text/html")
+			_, _ = w.Write(data)
+		})
+
+		// /debug/websocket/static/... → style.css, script.js
+		mux.Handle("/debug/websocket/static/",
+			http.StripPrefix("/debug/websocket/static/",
+				withContentType(http.FileServer(http.FS(websocketFS))),
+			),
+		)
+	}
 
 	loggedHandler := middleware.RequestIDMiddleware(middleware.LoggingMiddleware(mux))
 
@@ -120,4 +154,14 @@ func (a *HttpApp) Shutdown(ctx context.Context) error {
 	logger.Log.Info("HTTP server shutdown completed")
 
 	return nil
+}
+
+func withContentType(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		ext := filepath.Ext(r.URL.Path)
+		if ctype := mime.TypeByExtension(ext); ctype != "" {
+			w.Header().Set("Content-Type", ctype)
+		}
+		next.ServeHTTP(w, r)
+	})
 }
