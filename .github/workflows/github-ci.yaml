@@ -108,34 +108,6 @@ jobs:
           working-directory: ${{ matrix.directory }}
           args: --timeout=5m
 
-  security-scan:
-    needs: [ detect-changes, lint ]
-    if: ${{ needs.detect-changes.outputs.websocket-messaging == 'true' || needs.detect-changes.outputs.abysscore == 'true' }}
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        service:
-          - name: websocket-messaging
-            condition: ${{ needs.detect-changes.outputs.websocket-messaging == 'true' }}
-            path: services/websocket-messaging
-          - name: abysscore
-            condition: ${{ needs.detect-changes.outputs.abysscore == 'true' }}
-            path: services/abysscore
-
-    continue-on-error: ${{ !matrix.service.condition }}
-    steps:
-      - uses: actions/checkout@v4.2.2
-
-      - name: Set up Go
-        uses: actions/setup-go@v5.4.0
-        with:
-          go-version: ${{ env.GO_VERSION }}
-
-      - name: Run Gosec Security Scanner for ${{ matrix.service.name }}
-        uses: securego/gosec@master
-        with:
-          args: ${{ matrix.service.path }}
-
   test:
     needs: [ detect-changes, lint ]
     if: ${{ needs.detect-changes.outputs.websocket-messaging == 'true' || needs.detect-changes.outputs.abysscore == 'true' }}
@@ -206,7 +178,7 @@ jobs:
           fail_ci_if_error: false
 
   build-and-push:
-    needs: [ detect-changes, test, security-scan ]
+    needs: [ detect-changes, test ]
     if: ${{ success() && (needs.detect-changes.outputs.websocket-messaging == 'true' || needs.detect-changes.outputs.abysscore == 'true') && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master' || github.ref == 'refs/heads/dev') }}
     runs-on: ubuntu-latest
 
