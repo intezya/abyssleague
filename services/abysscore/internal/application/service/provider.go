@@ -4,6 +4,7 @@ import (
 	"github.com/intezya/abyssleague/services/abysscore/internal/adapters/controller/grpc/wrapper"
 	drivenports "github.com/intezya/abyssleague/services/abysscore/internal/domain/ports/driven"
 	domainservice "github.com/intezya/abyssleague/services/abysscore/internal/domain/service"
+	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/applicationevent"
 	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/persistence"
 	eventlib "github.com/intezya/abyssleague/services/abysscore/pkg/event"
 )
@@ -32,7 +33,7 @@ func NewDependencyProvider(
 	mainClientNotificationService := NewNotificationService(gRPCDependencyProvider.MainWebsocketService)
 	// draftClientNotificationService := NewNotificationService(gRPCDependencyProvider.DraftWebsocketService)
 
-	eventPublisher := NewApplicationEventPublisher(mainClientNotificationService)
+	eventPublisher := applicationevent.NewApplicationEventPublisher(mainClientNotificationService)
 
 	return &DependencyProvider{
 		repositoryDependencyProvider: repositoryDependencyProvider,

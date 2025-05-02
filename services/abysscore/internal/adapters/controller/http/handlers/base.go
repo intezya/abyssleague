@@ -2,19 +2,18 @@ package handlers
 
 import (
 	"context"
+	"github.com/intezya/abyssleague/services/abysscore/internal/pkg/apperrors"
+	"github.com/intezya/abyssleague/services/abysscore/pkg/errorz"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/intezya/abyssleague/services/abysscore/internal/adapters/controller/http/dto/response"
 	"github.com/intezya/abyssleague/services/abysscore/internal/adapters/controller/http/middleware"
-	adaptererror "github.com/intezya/abyssleague/services/abysscore/internal/common/errors/adapter"
-	"github.com/intezya/abyssleague/services/abysscore/internal/common/errors/base"
-	"github.com/intezya/abyssleague/services/abysscore/internal/common/errors/validator"
 	"github.com/intezya/abyssleague/services/abysscore/internal/domain/dto"
 	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/metrics/tracer"
 )
 
 var wrapInvalidRequestBody = func(wrapped error) error {
-	return adaptererror.UnprocessableEntity(wrapped)
+	return apperrors.WrapUnprocessableEntity(wrapped)
 }
 
 // getAndValidateRequest parses and validates the request body into the given generic struct T.
@@ -35,7 +34,7 @@ func getAndValidateRequest[T interface{}](c *fiber.Ctx) (*T, error) {
 
 	err = tracer.TraceFn(
 		ctx, "validator.ValidateJSON", func(ctx context.Context) error {
-			return validator.ValidateJSON(&request)
+			return errorz.ValidateJSON(&request)
 		},
 	)
 	if err != nil {
@@ -50,7 +49,7 @@ func getAndValidateRequest[T interface{}](c *fiber.Ctx) (*T, error) {
 func extractUser(ctx context.Context) (*dto.UserDTO, error) { // TODO mustExtractUser
 	user, ok := ctx.Value(middleware.UserCtxKey).(*dto.UserDTO)
 	if !ok {
-		return nil, adaptererror.InternalServerError
+		return nil, apperrors.InternalServerError
 	}
 
 	return user, nil
@@ -61,7 +60,7 @@ func extractUser(ctx context.Context) (*dto.UserDTO, error) { // TODO mustExtrac
 func extractIntParam(key string, c *fiber.Ctx) (int, error) {
 	val, err := c.ParamsInt(key)
 	if err != nil {
-		return 0, adaptererror.BadRequestFunc(err)
+		return 0, apperrors.WrapBadRequest(err)
 	}
 
 	return val, nil
@@ -69,7 +68,7 @@ func extractIntParam(key string, c *fiber.Ctx) (int, error) {
 
 // handleError maps and sends a consistent error response based on the error type.
 func handleError(err error, c *fiber.Ctx) error {
-	return base.ParseErrorOrInternalResponse(err, c)
+	return apperrors.HandleError(err, c)
 }
 
 // sendSuccess sends a standard JSON success response with the given data.

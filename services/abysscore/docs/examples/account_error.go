@@ -8,14 +8,14 @@ type AccountAlreadyHasLinkedEmail struct {
 }
 
 type WrongVerificationCode struct {
-	Message string `json:"message" example:"wrong verification code"`
-	Detail  string `json:"detail"`
+	Message string `json:"message" example:"bad request"`
+	Detail  string `json:"detail" example:"wrong verification code"`
 	Code    int    `json:"code"    example:"400"`
 	Path    string `json:"path"`
 }
 
 type EmailConflict struct {
-	Message string `json:"message" example:"email conflict"`
+	Message string `json:"message" example:"someone account already has this email"`
 	Detail  string `json:"detail"`
 	Code    int    `json:"code"    example:"409"`
 	Path    string `json:"path"`

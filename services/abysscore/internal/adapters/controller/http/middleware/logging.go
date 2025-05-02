@@ -2,12 +2,12 @@ package middleware
 
 import (
 	"fmt"
+	"github.com/intezya/abyssleague/services/abysscore/internal/pkg/apperrors"
 	"strconv"
 	"time"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/intezya/abyssleague/services/abysscore/internal/adapters/config"
-	"github.com/intezya/abyssleague/services/abysscore/internal/common/errors/errorutils"
 	"github.com/intezya/pkglib/logger"
 	"github.com/prometheus/client_golang/prometheus"
 	"go.opentelemetry.io/otel"
@@ -245,7 +245,7 @@ func logRequest(
 	switch {
 	case isError:
 		log.Error("http request failed with server error")
-		errorutils.LogError(err)
+		apperrors.LogError(err)
 	case isWarning:
 		log.Info("http request failed with client error")
 	case isSlow:

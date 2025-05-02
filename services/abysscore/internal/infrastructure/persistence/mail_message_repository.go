@@ -4,10 +4,10 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/intezya/abyssleague/services/abysscore/internal/pkg/apperrors"
 	"strings"
 	"time"
 
-	repositoryerrors "github.com/intezya/abyssleague/services/abysscore/internal/common/errors/repository"
 	"github.com/intezya/abyssleague/services/abysscore/internal/domain/entity/mailmessage"
 	rediswrapper "github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/cache/redis"
 	"github.com/intezya/pkglib/logger"
@@ -78,10 +78,10 @@ func (s *MailMessageRepository) GetLinkMailCodeData(
 
 func (s *MailMessageRepository) handleNotFoundOrUnexpected(err error) error {
 	if strings.Contains(err.Error(), "redis: nil") {
-		return repositoryerrors.WrapMailDataNotFound(err)
+		return apperrors.WrapMailDataNotFound(err)
 	}
 
-	return repositoryerrors.WrapUnexpectedError(err)
+	return apperrors.WrapUnexpectedError(err)
 }
 
 func (s *MailMessageRepository) saveWorker() {

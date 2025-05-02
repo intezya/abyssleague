@@ -4,8 +4,8 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/intezya/abyssleague/services/abysscore/internal/pkg/apperrors"
 
-	repositoryerrors "github.com/intezya/abyssleague/services/abysscore/internal/common/errors/repository"
 	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/ent"
 )
 
@@ -16,7 +16,7 @@ func withTxResult[T any](
 ) (_ *T, err error) {
 	tx, err := client.Tx(ctx)
 	if err != nil {
-		return nil, repositoryerrors.WrapUnexpectedError(fmt.Errorf("start transaction: %w", err))
+		return nil, apperrors.WrapUnexpectedError(fmt.Errorf("start transaction: %w", err))
 	}
 
 	defer func() {
@@ -28,14 +28,14 @@ func withTxResult[T any](
 
 		if err != nil {
 			if rollbackErr := tx.Rollback(); rollbackErr != nil {
-				err = repositoryerrors.WrapUnexpectedError(errors.Join(err, rollbackErr))
+				err = apperrors.WrapUnexpectedError(errors.Join(err, rollbackErr))
 			}
 
 			return
 		}
 
 		if commitErr := tx.Commit(); commitErr != nil {
-			err = repositoryerrors.WrapUnexpectedError(commitErr)
+			err = apperrors.WrapUnexpectedError(commitErr)
 		}
 	}()
 

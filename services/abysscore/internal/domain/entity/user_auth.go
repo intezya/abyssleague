@@ -1,6 +1,7 @@
 package entity
 
 import (
+	"github.com/intezya/abyssleague/services/abysscore/pkg/optional"
 	"time"
 )
 
@@ -75,6 +76,6 @@ func (a *AuthenticationData) UserID() int {
 	return a.id
 }
 
-func (a *AuthenticationData) BlockReason() *string {
-	return a.blockReason
+func (a *AuthenticationData) BlockReason() optional.String {
+	return optional.NewP(a.blockReason)
 }

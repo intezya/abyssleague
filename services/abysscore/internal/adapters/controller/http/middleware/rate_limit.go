@@ -3,11 +3,11 @@ package middleware
 import (
 	"context"
 	"errors"
+	"github.com/intezya/abyssleague/services/abysscore/internal/pkg/apperrors"
 	"time"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/intezya/abyssleague/services/abysscore/internal/adapters/config"
-	adaptererror "github.com/intezya/abyssleague/services/abysscore/internal/common/errors/adapter"
 	rediswrapper "github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/cache/redis"
 	"github.com/intezya/pkglib/logger"
 	"github.com/prometheus/client_golang/prometheus"
@@ -161,7 +161,7 @@ func (r *RateLimitMiddleware) processLoginRateLimit(
 		r.logLimitExceeded(username, attempts, requestID)
 		r.loginAttemptsCounter.WithLabelValues(username, "blocked").Inc()
 
-		return adaptererror.TooManyRequests.ToErrorResponse(c)
+		return apperrors.HandleError(apperrors.TooManyRequests, c)
 	}
 
 	// Increment attempt count
@@ -262,7 +262,7 @@ func (r *RateLimitMiddleware) processDefaultRateLimit(
 		r.logDefaultLimitExceeded(ipAddr, path, count, requestID)
 		r.rateLimitCounter.WithLabelValues(ipAddr, path, "blocked").Inc()
 
-		return adaptererror.TooManyRequests.ToErrorResponse(c)
+		return apperrors.HandleError(apperrors.TooManyRequests, c)
 	}
 
 	// Increment request count

@@ -2,10 +2,6 @@ package applicationservice
 
 import (
 	"context"
-	"strings"
-	"time"
-
-	applicationerror "github.com/intezya/abyssleague/services/abysscore/internal/common/errors/application"
 	"github.com/intezya/abyssleague/services/abysscore/internal/domain/dto"
 	"github.com/intezya/abyssleague/services/abysscore/internal/domain/entity"
 	"github.com/intezya/abyssleague/services/abysscore/internal/domain/entity/userentity"
@@ -13,8 +9,11 @@ import (
 	repositoryports "github.com/intezya/abyssleague/services/abysscore/internal/domain/repository"
 	domainservice "github.com/intezya/abyssleague/services/abysscore/internal/domain/service"
 	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/metrics/tracer"
-	"github.com/intezya/abyssleague/services/abysscore/internal/pkg/timeutils"
+	"github.com/intezya/abyssleague/services/abysscore/internal/pkg/apperrors"
+	"github.com/intezya/abyssleague/services/abysscore/pkg/timeutils"
 	"github.com/intezya/pkglib/logger"
+	"strings"
+	"time"
 )
 
 // AuthenticationService handles user authentication operations.
@@ -75,7 +74,7 @@ func (a *AuthenticationService) Authenticate(ctx context.Context, credentials *d
 	}
 
 	if !a.verifyPassword(ctx, authentication, credentials.Password) {
-		return nil, applicationerror.ErrWrongPassword
+		return nil, apperrors.ErrWrongPassword
 	}
 
 	if err := a.verifyAndUpdateHWID(ctx, authentication, credentials.HardwareID); err != nil {
@@ -83,7 +82,7 @@ func (a *AuthenticationService) Authenticate(ctx context.Context, credentials *d
 	}
 
 	if authentication.IsAccountLocked() {
-		return nil, applicationerror.ErrAccountIsLocked(authentication.BlockReason())
+		return nil, apperrors.ErrAccountIsLocked(authentication.BlockReason())
 	}
 
 	user, err := tracer.TraceFnWithResult(
@@ -137,11 +136,11 @@ func (a *AuthenticationService) ValidateToken(
 		},
 	)
 	if !hardwareIDOk || needsUpdate {
-		return nil, applicationerror.ErrTokenHwidIsInvalid
+		return nil, apperrors.ErrTokenHardwareIDIsInvalid
 	}
 
 	if authentication.IsAccountLocked() {
-		return nil, applicationerror.ErrAccountIsLocked(authentication.BlockReason())
+		return nil, apperrors.ErrAccountIsLocked(authentication.BlockReason())
 	}
 
 	user, err := tracer.TraceFnWithResult(
@@ -173,7 +172,7 @@ func (a *AuthenticationService) ChangePassword(
 	}
 
 	if !a.verifyPassword(ctx, authentication, credentials.OldPassword) {
-		return nil, applicationerror.ErrWrongPassword
+		return nil, apperrors.ErrWrongPassword
 	}
 
 	encodedPassword := a.encodePassword(ctx, credentials.NewPassword)
@@ -253,7 +252,7 @@ func (a *AuthenticationService) verifyAndUpdateHWID(
 	)
 
 	if !hwidOk {
-		return applicationerror.ErrUserWrongHwid
+		return apperrors.ErrUserWrongHardwareID
 	}
 
 	if needsUpdate {

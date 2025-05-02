@@ -1,12 +1,18 @@
 package routes
 
 import (
+	"errors"
 	"github.com/gofiber/fiber/v2"
 	"github.com/intezya/abyssleague/services/abysscore/internal/adapters/controller/http/middleware"
-	adaptererror "github.com/intezya/abyssleague/services/abysscore/internal/common/errors/adapter"
 	"github.com/intezya/abyssleague/services/abysscore/internal/domain/dto"
 	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/ent/schema/access_level"
+	"github.com/intezya/abyssleague/services/abysscore/internal/pkg/apperrors"
 	"github.com/intezya/pkglib/logger"
+)
+
+var (
+	errUserMustBeInMatch    = errors.New("user must be in match")
+	errUserMustNotBeInMatch = errors.New("user must not be in match")
 )
 
 type MiddlewareLinker struct {
@@ -38,11 +44,11 @@ func createAccessLevelChecker(requiredLevel *access_level.AccessLevel) fiber.Han
 		if !ok {
 			logger.Log.Error("mismatched client type for middleware")
 
-			return adaptererror.InternalServerError.ToErrorResponse(c)
+			return apperrors.HandleError(apperrors.InternalServerError, c)
 		}
 
 		if user.AccessLevel < *requiredLevel {
-			return adaptererror.ForbiddenByInsufficientAccessLevel.ToErrorResponse(c)
+			return apperrors.HandleError(apperrors.ForbiddenByInsufficientAccessLevel, c)
 		}
 
 		return c.Next()
@@ -57,22 +63,18 @@ func createMatchRequirementChecker(matchRequirement MatchRequirement) fiber.Hand
 		if !ok {
 			logger.Log.Error("mismatched client type for middleware")
 
-			return adaptererror.InternalServerError.ToErrorResponse(c)
+			return apperrors.HandleError(apperrors.InternalServerError, c)
 		}
 
 		switch matchRequirement {
 		case MatchIrrelevant:
 		case MustBeInMatch:
 			if user.CurrentMatchID == nil {
-				return adaptererror.UserMatchStateError(
-					fiber.NewError(fiber.StatusForbidden, "user must be in match"),
-				).ToErrorResponse(c)
+				return apperrors.HandleError(apperrors.WrapUserMatchStateError(errUserMustBeInMatch), c)
 			}
 		case MustNotBeInMatch:
 			if user.CurrentMatchID != nil {
-				return adaptererror.UserMatchStateError(
-					fiber.NewError(fiber.StatusForbidden, "user must not be in match"),
-				).ToErrorResponse(c)
+				return apperrors.HandleError(apperrors.WrapUserMatchStateError(errUserMustNotBeInMatch), c)
 			}
 		default:
 		}

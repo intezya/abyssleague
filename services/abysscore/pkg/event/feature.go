@@ -29,7 +29,7 @@ func RecoverMiddleware(log func(string, ...interface{})) Middleware {
 
 func LoggingMiddleware(next Handler, log func(args ...interface{})) Handler {
 	return func(event ApplicationEvent) {
-		log("handling event:", typeName(event))
+		log("handling event: ", typeName(event))
 		next(event)
 	}
 }

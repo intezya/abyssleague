@@ -1087,7 +1087,7 @@ const docTemplate = `{
                 },
                 "message": {
                     "type": "string",
-                    "example": "email conflict"
+                    "example": "someone account already has this email"
                 },
                 "path": {
                     "type": "string"
@@ -1201,7 +1201,7 @@ const docTemplate = `{
                 },
                 "message": {
                     "type": "string",
-                    "example": "item not found in inventory"
+                    "example": "item not found"
                 },
                 "path": {
                     "type": "string"
@@ -1327,11 +1327,12 @@ const docTemplate = `{
                     "example": 401
                 },
                 "detail": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "wrong hardware id"
                 },
                 "message": {
                     "type": "string",
-                    "example": "wrong hardware id"
+                    "example": "unauthorized"
                 },
                 "path": {
                     "type": "string"
@@ -1346,11 +1347,12 @@ const docTemplate = `{
                     "example": 401
                 },
                 "detail": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "wrong password"
                 },
                 "message": {
                     "type": "string",
-                    "example": "wrong password"
+                    "example": "unauthorized"
                 },
                 "path": {
                     "type": "string"

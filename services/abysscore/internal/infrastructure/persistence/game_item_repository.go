@@ -2,9 +2,9 @@ package persistence
 
 import (
 	"context"
+	"github.com/intezya/abyssleague/services/abysscore/internal/pkg/apperrors"
 
 	"github.com/intezya/abyssleague/services/abysscore/internal/adapters/mapper"
-	repositoryerrors "github.com/intezya/abyssleague/services/abysscore/internal/common/errors/repository"
 	"github.com/intezya/abyssleague/services/abysscore/internal/domain/dto"
 	"github.com/intezya/abyssleague/services/abysscore/internal/domain/entity/gameitementity"
 	"github.com/intezya/abyssleague/services/abysscore/internal/domain/entity/types"
@@ -32,7 +32,7 @@ func (r *GameItemRepository) Create(
 		SetRarity(gameItem.Rarity).
 		Save(ctx)
 	if err != nil {
-		return nil, repositoryerrors.WrapUnexpectedError(err)
+		return nil, apperrors.WrapUnexpectedError(err)
 	}
 
 	return mapper.ToGameItemDTOFromEnt(result), nil
@@ -51,7 +51,7 @@ func (r *GameItemRepository) UpdateByID(
 		SetRarity(gameItem.Rarity).
 		Save(ctx)
 	if err != nil {
-		return repositoryerrors.WrapUnexpectedError(err)
+		return apperrors.WrapUnexpectedError(err)
 	}
 
 	return nil
@@ -63,10 +63,10 @@ func (r *GameItemRepository) DeleteByID(ctx context.Context, id int) error {
 		Exec(ctx)
 	if err != nil {
 		if ent.IsNotFound(err) {
-			return repositoryerrors.WrapGameItemNotFound(err)
+			return apperrors.WrapGameItemNotFound(err)
 		}
 
-		return repositoryerrors.WrapUnexpectedError(err)
+		return apperrors.WrapUnexpectedError(err)
 	}
 
 	return nil
@@ -86,7 +86,7 @@ func (r *GameItemRepository) FindAllPaged(
 		Query().
 		Count(ctx)
 	if err != nil {
-		return nil, repositoryerrors.WrapUnexpectedError(err)
+		return nil, apperrors.WrapUnexpectedError(err)
 	}
 
 	totalPages := getTotalPages(total, size)
@@ -98,7 +98,7 @@ func (r *GameItemRepository) FindAllPaged(
 		Order(orderBy.ToOrderOption(orderType)).
 		All(ctx)
 	if err != nil {
-		return nil, repositoryerrors.WrapUnexpectedError(err)
+		return nil, apperrors.WrapUnexpectedError(err)
 	}
 
 	mappedItems := itertools.Map(gameItems, mapper.ToGameItemDTOFromEnt)
@@ -117,10 +117,10 @@ func (r *GameItemRepository) FindByID(ctx context.Context, id int) (*dto.GameIte
 		Get(ctx, id)
 	if err != nil {
 		if ent.IsNotFound(err) {
-			return nil, repositoryerrors.WrapGameItemNotFound(err)
+			return nil, apperrors.WrapGameItemNotFound(err)
 		}
 
-		return nil, repositoryerrors.WrapUnexpectedError(err)
+		return nil, apperrors.WrapUnexpectedError(err)
 	}
 
 	return mapper.ToGameItemDTOFromEnt(result), nil

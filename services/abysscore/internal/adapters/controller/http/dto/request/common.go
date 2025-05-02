@@ -2,8 +2,8 @@ package request
 
 import (
 	"github.com/gofiber/fiber/v2"
-	adaptererror "github.com/intezya/abyssleague/services/abysscore/internal/common/errors/adapter"
 	"github.com/intezya/abyssleague/services/abysscore/internal/domain/entity/types"
+	"github.com/intezya/abyssleague/services/abysscore/internal/pkg/apperrors"
 	"github.com/intezya/abyssleague/services/abysscore/internal/pkg/queryparser"
 )
 
@@ -27,12 +27,12 @@ func NewPaginationQuery[orderByT ~string](
 ) (*PaginationQuery[orderByT], error) {
 	orderBy, err := orderTypeValidator(c.Query("order_by", ""))
 	if err != nil {
-		return nil, adaptererror.BadRequestFunc(err)
+		return nil, apperrors.WrapBadRequest(err)
 	}
 
 	orderType, err := queryparser.ParseOrderType(c.Query("order_type", ""))
 	if err != nil {
-		return nil, adaptererror.BadRequestFunc(err)
+		return nil, apperrors.WrapBadRequest(err)
 	}
 
 	return &PaginationQuery[orderByT]{

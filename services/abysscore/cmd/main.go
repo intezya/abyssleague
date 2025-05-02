@@ -2,7 +2,7 @@ package main
 
 import (
 	"context"
-
+	"github.com/go-playground/validator/v10"
 	"github.com/intezya/abyssleague/services/abysscore/internal/adapters/config"
 	"github.com/intezya/abyssleague/services/abysscore/internal/adapters/controller/grpc/factory"
 	"github.com/intezya/abyssleague/services/abysscore/internal/adapters/controller/grpc/wrapper"
@@ -15,6 +15,7 @@ import (
 	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/metrics/tracer"
 	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/persistence"
 	"github.com/intezya/abyssleague/services/abysscore/internal/pkg/auth"
+	"github.com/intezya/abyssleague/services/abysscore/pkg/errorz"
 	"github.com/intezya/pkglib/logger"
 	_ "github.com/lib/pq"
 )
@@ -38,8 +39,6 @@ func main() {
 	redisClient := rediswrapper.NewClientWrapper(appConfig.RedisConfig, logger.Log)
 	grpcFactory := factory.NewGrpcClientFactory()
 	smtpClient := mail.NewSMTPSender(appConfig.SMTPConfig, logger.Log)
-
-	logger.Log.Debug("grpcFactory has been initialized")
 
 	defer func() {
 		tracerCleanup()
@@ -75,6 +74,8 @@ func main() {
 		redisClient,
 		appConfig,
 	)
+
+	errorz.SetValidator(validator.New())
 
 	app := server.Setup(serverDependencies)
 

@@ -2,10 +2,10 @@ package handlers
 
 import (
 	"context"
+	"github.com/intezya/abyssleague/services/abysscore/internal/pkg/apperrors"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/intezya/abyssleague/services/abysscore/internal/adapters/controller/http/dto/request"
-	adaptererror "github.com/intezya/abyssleague/services/abysscore/internal/common/errors/adapter"
 	"github.com/intezya/abyssleague/services/abysscore/internal/domain/dto"
 	"github.com/intezya/abyssleague/services/abysscore/internal/domain/entity/gameitementity"
 	domainservice "github.com/intezya/abyssleague/services/abysscore/internal/domain/service"
@@ -243,7 +243,7 @@ func (h *GameItemHandler) getPaginationQuery(
 		queryparser.ParseGameEntityOrderBy,
 	)
 	if err != nil {
-		return nil, adaptererror.BadRequestFunc(err)
+		return nil, apperrors.WrapBadRequest(err)
 	}
 
 	return paginationQuery, nil

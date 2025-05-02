@@ -3,12 +3,12 @@ package middleware
 import (
 	"context"
 	"errors"
+	"github.com/intezya/abyssleague/services/abysscore/internal/pkg/apperrors"
 	"strings"
 	"sync"
 	"time"
 
 	"github.com/gofiber/fiber/v2"
-	adaptererror "github.com/intezya/abyssleague/services/abysscore/internal/common/errors/adapter"
 	"github.com/intezya/abyssleague/services/abysscore/internal/domain/dto"
 	domainservice "github.com/intezya/abyssleague/services/abysscore/internal/domain/service"
 	rediswrapper "github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/cache/redis"
@@ -75,7 +75,7 @@ func (a *AuthenticationMiddleware) Handle() fiber.Handler {
 			if err != nil {
 				logger.Log.Debug("Error validating token: ", err)
 
-				return adaptererror.Unauthorized(err).ToErrorResponse(c)
+				return apperrors.HandleError(apperrors.WrapUnauthorized(err), c)
 			}
 
 			a.cacheToken(authorizationHeaderValue, user)

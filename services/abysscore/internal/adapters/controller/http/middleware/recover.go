@@ -2,13 +2,12 @@ package middleware
 
 import (
 	"fmt"
+	"github.com/intezya/abyssleague/services/abysscore/internal/pkg/apperrors"
 	"runtime/debug"
 	"time"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/requestid"
-	"github.com/intezya/abyssleague/services/abysscore/internal/common/errors/base"
-	"github.com/intezya/abyssleague/services/abysscore/internal/common/errors/errorutils"
 	"github.com/intezya/pkglib/logger"
 )
 
@@ -42,23 +41,19 @@ func (r *RecoverMiddleware) Handle() fiber.Handler {
 				}
 
 				// Create a structured error with additional context
-				structuredErr := base.NewError(
-					fmt.Errorf("server panic: %w", recErr),
-					recErr,
-					fiber.StatusInternalServerError,
-				)
+				structuredErr := apperrors.WrapInternalServerError(recErr)
 
 				// Add metadata to the error
-				structuredErr.SetErrorID(errorID)
-				structuredErr.SetTimestamp(timestamp)
-				structuredErr.SetStackTrace(string(stackTrace))
-				structuredErr.SetMetadata(map[string]interface{}{
+				structuredErr.ErrorID = errorID
+				structuredErr.Timestamp = timestamp
+				structuredErr.RawStack = string(stackTrace)
+				structuredErr.Metadata = map[string]interface{}{
 					"request_id": requestID,
 					"url":        c.OriginalURL(),
 					"method":     c.Method(),
 					"ip":         c.IP(),
 					"user_agent": c.Get("User-Agent"),
-				})
+				}
 
 				// Log the error with full context
 				logger.Log.With(
@@ -73,10 +68,10 @@ func (r *RecoverMiddleware) Handle() fiber.Handler {
 				).Error("panic recovered")
 
 				// Use the utils package to log structured error
-				errorutils.LogError(structuredErr)
+				apperrors.LogError(structuredErr)
 
 				// Return error response
-				err = structuredErr.ToErrorResponse(c)
+				err = apperrors.HandleError(structuredErr, c)
 			}
 		}()
 

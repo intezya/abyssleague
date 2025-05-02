@@ -2,11 +2,11 @@ package persistence
 
 import (
 	"context"
+	"github.com/intezya/abyssleague/services/abysscore/internal/pkg/apperrors"
 	"strings"
 	"time"
 
 	"github.com/intezya/abyssleague/services/abysscore/internal/adapters/mapper"
-	repositoryerrors "github.com/intezya/abyssleague/services/abysscore/internal/common/errors/repository"
 	"github.com/intezya/abyssleague/services/abysscore/internal/domain/dto"
 	"github.com/intezya/abyssleague/services/abysscore/internal/domain/entity"
 	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/ent"
@@ -115,7 +115,7 @@ func (r *UserRepository) UpdateHWIDByID(ctx context.Context, id int, hardwareID 
 		Save(ctx)
 	if err != nil {
 		if ent.IsConstraintError(err) && strings.Contains(err.Error(), "hardwareID") {
-			return repositoryerrors.WrapUserHwidConflict(err)
+			return apperrors.WrapUserHardwareIDConflict(err)
 		}
 
 		return r.handleUpdateError(err)
@@ -205,7 +205,7 @@ func (r *UserRepository) SetEmailIfNil(
 			}
 
 			if user.Email != nil {
-				return nil, repositoryerrors.ErrAccountAlreadyHasEmail
+				return nil, apperrors.ErrAccountAlreadyHasEmail
 			}
 
 			savedUser, err := tx.User.UpdateOneID(userID).SetEmail(email).Save(ctx)
@@ -227,10 +227,10 @@ func (r *UserRepository) handleQueryError(err error) error {
 	}
 
 	if ent.IsNotFound(err) {
-		return repositoryerrors.WrapUserNotFound(err)
+		return apperrors.WrapUserNotFound(err)
 	}
 
-	return repositoryerrors.WrapUnexpectedError(err)
+	return apperrors.WrapUnexpectedError(err)
 }
 
 // handleUpdateError transforms Ent update errors into domain-specific errors.
@@ -240,10 +240,10 @@ func (r *UserRepository) handleUpdateError(err error) error {
 	}
 
 	if ent.IsNotFound(err) {
-		return repositoryerrors.WrapUserNotFound(err)
+		return apperrors.WrapUserNotFound(err)
 	}
 
-	return repositoryerrors.WrapUnexpectedError(err)
+	return apperrors.WrapUnexpectedError(err)
 }
 
 // handleConstraintError processes database constraint violation errors.
@@ -253,17 +253,17 @@ func (r *UserRepository) handleConstraintError(err error) error {
 	}
 
 	if !ent.IsConstraintError(err) {
-		return repositoryerrors.WrapUnexpectedError(err)
+		return apperrors.WrapUnexpectedError(err)
 	}
 
 	switch {
 	case strings.Contains(err.Error(), "username"):
-		return repositoryerrors.WrapUserAlreadyExists(err)
+		return apperrors.WrapUserAlreadyExists(err)
 	case strings.Contains(err.Error(), "hardware_id"):
-		return repositoryerrors.WrapUserHwidConflict(err)
+		return apperrors.WrapUserHardwareIDConflict(err)
 	case strings.Contains(err.Error(), "email"):
-		return repositoryerrors.ErrAccountAlreadyHasEmail
+		return apperrors.ErrAccountAlreadyHasEmail
 	default:
-		return repositoryerrors.WrapUnexpectedError(err)
+		return apperrors.WrapUnexpectedError(err)
 	}
 }

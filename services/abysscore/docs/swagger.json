@@ -1081,7 +1081,7 @@
                 },
                 "message": {
                     "type": "string",
-                    "example": "email conflict"
+                  "example": "someone account already has this email"
                 },
                 "path": {
                     "type": "string"
@@ -1195,7 +1195,7 @@
                 },
                 "message": {
                     "type": "string",
-                    "example": "item not found in inventory"
+                  "example": "item not found"
                 },
                 "path": {
                     "type": "string"
@@ -1321,12 +1321,13 @@
                     "example": 401
                 },
                 "detail": {
-                    "type": "string"
-                },
-                "message": {
                     "type": "string",
                     "example": "wrong hardware id"
                 },
+              "message": {
+                "type": "string",
+                "example": "unauthorized"
+              },
                 "path": {
                     "type": "string"
                 }
@@ -1340,12 +1341,13 @@
                     "example": 401
                 },
                 "detail": {
-                    "type": "string"
-                },
-                "message": {
                     "type": "string",
                     "example": "wrong password"
                 },
+              "message": {
+                "type": "string",
+                "example": "unauthorized"
+              },
                 "path": {
                     "type": "string"
                 }

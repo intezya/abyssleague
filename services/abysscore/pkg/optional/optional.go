@@ -9,10 +9,24 @@ type Optional[T any] struct {
 	value *T
 }
 
-func NewOptional[T any](value T) Optional[T] {
+func New[T any](value T) Optional[T] {
 	return Optional[T]{
 		true,
 		&value,
+	}
+}
+
+func NewP[T any](value *T) Optional[T] {
+	if value == nil {
+		return Optional[T]{
+			false,
+			nil,
+		}
+	}
+
+	return Optional[T]{
+		true,
+		value,
 	}
 }
 

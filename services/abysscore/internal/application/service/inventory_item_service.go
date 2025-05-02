@@ -54,7 +54,7 @@ func (i *InventoryItemService) GrantToUserByAdmin(
 
 	i.eventPublisher.Publish(event.NewInventoryItemObtainedEvent(
 		optional.EmptyOptional[string](),
-		optional.NewOptional(performer),
+		optional.New(performer),
 		userID,
 		result,
 	))

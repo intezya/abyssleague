@@ -163,7 +163,7 @@ definitions:
       detail:
         type: string
       message:
-        example: email conflict
+        example: someone account already has this email
         type: string
       path:
         type: string
@@ -241,7 +241,7 @@ definitions:
       detail:
         type: string
       message:
-        example: item not found in inventory
+        example: item not found
         type: string
       path:
         type: string
@@ -329,9 +329,10 @@ definitions:
         example: 401
         type: integer
       detail:
+        example: wrong hardware id
         type: string
       message:
-        example: wrong hardware id
+        example: unauthorized
         type: string
       path:
         type: string
@@ -342,9 +343,10 @@ definitions:
         example: 401
         type: integer
       detail:
+        example: wrong password
         type: string
       message:
-        example: wrong password
+        example: unauthorized
         type: string
       path:
         type: string

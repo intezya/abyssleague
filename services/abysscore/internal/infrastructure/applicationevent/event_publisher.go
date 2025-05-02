@@ -1,4 +1,4 @@
-package applicationservice
+package applicationevent
 
 import (
 	"github.com/intezya/abyssleague/services/abysscore/internal/domain/event"
@@ -14,7 +14,7 @@ const (
 func NewApplicationEventPublisher(
 	mainClientNotificationService domainservice.NotificationService,
 	// draftClientNotificationService domainservice.NotificationService,
-) *eventlib.ApplicationEventPublisher {
+) eventlib.Publisher {
 	publisher := eventlib.NewApplicationEventPublisher(
 		eventConsumerWorkerCount,
 		eventBufferSize,

@@ -2,9 +2,9 @@ package persistence
 
 import (
 	"context"
+	"github.com/intezya/abyssleague/services/abysscore/internal/pkg/apperrors"
 
 	"github.com/intezya/abyssleague/services/abysscore/internal/adapters/mapper"
-	repositoryerrors "github.com/intezya/abyssleague/services/abysscore/internal/common/errors/repository"
 	"github.com/intezya/abyssleague/services/abysscore/internal/domain/dto"
 	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/ent"
 	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/ent/inventoryitem"
@@ -110,8 +110,8 @@ func (r *InventoryItemRepository) handleQueryError(err error) error {
 	}
 
 	if ent.IsNotFound(err) {
-		return repositoryerrors.WrapItemNotFoundInInventory(err)
+		return apperrors.WrapItemNotFoundInInventory(err)
 	}
 
-	return repositoryerrors.WrapUnexpectedError(err)
+	return apperrors.WrapUnexpectedError(err)
 }
