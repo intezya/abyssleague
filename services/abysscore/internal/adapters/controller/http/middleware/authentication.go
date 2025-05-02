@@ -3,7 +3,6 @@ package middleware
 import (
 	"context"
 	"errors"
-	"github.com/intezya/abyssleague/services/abysscore/internal/pkg/apperrors"
 	"strings"
 	"sync"
 	"time"
@@ -12,6 +11,7 @@ import (
 	"github.com/intezya/abyssleague/services/abysscore/internal/domain/dto"
 	domainservice "github.com/intezya/abyssleague/services/abysscore/internal/domain/service"
 	rediswrapper "github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/cache/redis"
+	"github.com/intezya/abyssleague/services/abysscore/internal/pkg/apperrors"
 	"github.com/intezya/pkglib/logger"
 )
 

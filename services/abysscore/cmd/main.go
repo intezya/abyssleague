@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+
 	"github.com/go-playground/validator/v10"
 	"github.com/intezya/abyssleague/services/abysscore/internal/adapters/config"
 	"github.com/intezya/abyssleague/services/abysscore/internal/adapters/controller/grpc/factory"

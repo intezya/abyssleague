@@ -66,7 +66,6 @@ func (h *InventoryItemHandlers) InventoryItemObtainedEventHandler(event eventlib
 	)
 
 	err := h.notificationService.SendToUser(typedEvent.receiverID, message)
-
 	if err != nil {
 		logger.Log.Warnln("failed to send message to user:", err)
 	}

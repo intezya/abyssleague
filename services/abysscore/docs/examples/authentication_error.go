@@ -23,14 +23,14 @@ type UserNotFoundResponse struct {
 
 type UserWrongPasswordResponse struct {
 	Message string `json:"message" example:"unauthorized"`
-	Detail  string `json:"detail" example:"wrong password"`
+	Detail  string `json:"detail"  example:"wrong password"`
 	Code    int    `json:"code"    example:"401"`
 	Path    string `json:"path"`
 }
 
 type UserWrongHardwareIDResponse struct {
 	Message string `json:"message" example:"unauthorized"`
-	Detail  string `json:"detail" example:"wrong hardware id"`
+	Detail  string `json:"detail"  example:"wrong hardware id"`
 	Code    int    `json:"code"    example:"401"`
 	Path    string `json:"path"`
 }

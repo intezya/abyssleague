@@ -3,12 +3,12 @@ package middleware
 import (
 	"context"
 	"errors"
-	"github.com/intezya/abyssleague/services/abysscore/internal/pkg/apperrors"
 	"time"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/intezya/abyssleague/services/abysscore/internal/adapters/config"
 	rediswrapper "github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/cache/redis"
+	"github.com/intezya/abyssleague/services/abysscore/internal/pkg/apperrors"
 	"github.com/intezya/pkglib/logger"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/redis/go-redis/v9"

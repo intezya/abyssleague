@@ -1,8 +1,9 @@
 package entity
 
 import (
-	"github.com/intezya/abyssleague/services/abysscore/pkg/optional"
 	"time"
+
+	"github.com/intezya/abyssleague/services/abysscore/pkg/optional"
 )
 
 type passwordComparator func(raw, hash string) bool

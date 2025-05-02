@@ -4,11 +4,11 @@ import (
 	"net/http"
 )
 
-// Common error generators for different application layers
+// Common error generators for different application layers.
 var (
-	// Repository Errors
+	// Repository Errors.
 
-	// NotFound creates a generic "not found" error
+	// NotFound creates a generic "not found" error.
 	NotFound = func(entity string, detail error) *Error {
 		return New(
 			entity+" not found",
@@ -18,7 +18,7 @@ var (
 		)
 	}
 
-	// Conflict creates a generic conflict error
+	// Conflict creates a generic conflict error.
 	Conflict = func(message string, detail error) *Error {
 		return New(
 			message,
@@ -28,9 +28,9 @@ var (
 		)
 	}
 
-	// Adapter (HTTP/API) Errors
+	// Adapter (HTTP/API) Errors.
 
-	// TooManyRequests creates a general rate limit error
+	// TooManyRequests creates a general rate limit error.
 	TooManyRequests = func(err error) *Error {
 		return New(
 			"too many requests",
@@ -40,7 +40,7 @@ var (
 		)
 	}
 
-	// InternalError creates an internal server error
+	// InternalError creates an internal server error.
 	InternalError = func(detail error) *Error {
 		return New(
 			"internal server error",
@@ -50,7 +50,7 @@ var (
 		)
 	}
 
-	// Forbidden creates a permission error
+	// Forbidden creates a permission error.
 	Forbidden = func(message string, detail error) *Error {
 		return New(
 			message,
@@ -60,7 +60,7 @@ var (
 		)
 	}
 
-	// BadRequest creates a bad request error
+	// BadRequest creates a bad request error.
 	BadRequest = func(detail error) *Error {
 		return New(
 			"bad request",
@@ -70,7 +70,7 @@ var (
 		)
 	}
 
-	// UnprocessableEntity creates an unprocessable entity error
+	// UnprocessableEntity creates an unprocessable entity error.
 	UnprocessableEntity = func(detail error) *Error {
 		return New(
 			"unprocessable entity",
@@ -80,7 +80,7 @@ var (
 		)
 	}
 
-	// Unauthorized creates an unauthorized error
+	// Unauthorized creates an unauthorized error.
 	Unauthorized = func(detail error) *Error {
 		return New(
 			"unauthorized",
@@ -90,7 +90,7 @@ var (
 		)
 	}
 
-	// ServiceUnavailable creates a service unavailable error
+	// ServiceUnavailable creates a service unavailable error.
 	ServiceUnavailable = func(detail error) *Error {
 		return New(
 			"service unavailable",
@@ -101,13 +101,11 @@ var (
 	}
 )
 
-var (
-	validationError = func(err error) *Error {
-		return New(
-			"validation error",
-			err,
-			ErrorTypeValidation,
-			400,
-		)
-	}
-)
+var validationError = func(err error) *Error {
+	return New(
+		"validation error",
+		err,
+		ErrorTypeValidation,
+		http.StatusBadRequest,
+	)
+}

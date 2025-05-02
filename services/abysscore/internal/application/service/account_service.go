@@ -2,13 +2,13 @@ package applicationservice
 
 import (
 	"context"
-	"github.com/intezya/abyssleague/services/abysscore/internal/pkg/apperrors"
 	"time"
 
 	"github.com/intezya/abyssleague/services/abysscore/internal/domain/dto"
 	"github.com/intezya/abyssleague/services/abysscore/internal/domain/entity/mailmessage"
 	drivenports "github.com/intezya/abyssleague/services/abysscore/internal/domain/ports/driven"
 	repositoryports "github.com/intezya/abyssleague/services/abysscore/internal/domain/repository"
+	"github.com/intezya/abyssleague/services/abysscore/internal/pkg/apperrors"
 )
 
 type AccountService struct {

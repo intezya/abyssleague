@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"context"
-	"github.com/intezya/abyssleague/services/abysscore/internal/pkg/apperrors"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/intezya/abyssleague/services/abysscore/internal/adapters/controller/http/dto/request"
@@ -10,6 +9,7 @@ import (
 	"github.com/intezya/abyssleague/services/abysscore/internal/domain/entity/gameitementity"
 	domainservice "github.com/intezya/abyssleague/services/abysscore/internal/domain/service"
 	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/metrics/tracer"
+	"github.com/intezya/abyssleague/services/abysscore/internal/pkg/apperrors"
 	"github.com/intezya/abyssleague/services/abysscore/internal/pkg/queryparser"
 )
 

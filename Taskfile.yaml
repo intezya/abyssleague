@@ -21,7 +21,7 @@ tasks:
   lint:
     dir: services/abysscore
     cmds:
-      - golangci-lint run ./...
+      - golangci-lint run ./... --fix
 
   generate-proto:
     cmds:

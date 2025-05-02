@@ -2,15 +2,22 @@ package apperrors
 
 import (
 	"errors"
+
 	"github.com/intezya/abyssleague/services/abysscore/pkg/errorz"
 )
 
 var (
-	ErrWrongPassword            = errorz.Unauthorized(errors.New("wrong password"))
-	ErrUserWrongHardwareID      = errorz.Unauthorized(errors.New("wrong hardware id"))
-	ErrTokenHardwareIDIsInvalid = errorz.Unauthorized(errors.New("wrong token hardware id"))
+	errWrongPassword            = errors.New("wrong password")
+	errUserWrongHardwareID      = errors.New("wrong hardware id")
+	errTokenHardwareIDIsInvalid = errors.New("wrong token hardware id")
+)
 
-	WrapUnauthorized = func(err error) error {
+var (
+	ErrWrongPassword            = errorz.Unauthorized(errWrongPassword)
+	ErrUserWrongHardwareID      = errorz.Unauthorized(errUserWrongHardwareID)
+	ErrTokenHardwareIDIsInvalid = errorz.Unauthorized(errTokenHardwareIDIsInvalid)
+
+	WrapUnauthorized = func(err error) *errorz.Error {
 		return errorz.Unauthorized(err)
 	}
 )

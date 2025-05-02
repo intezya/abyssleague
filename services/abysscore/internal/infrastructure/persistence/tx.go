@@ -4,9 +4,9 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/intezya/abyssleague/services/abysscore/internal/pkg/apperrors"
 
 	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/ent"
+	"github.com/intezya/abyssleague/services/abysscore/internal/pkg/apperrors"
 )
 
 func withTxResult[T any](

@@ -13,6 +13,7 @@ func ToInventoryItemDTOFromEnt(inventoryItem *ent.InventoryItem) *dto.InventoryI
 
 	if inventoryItem.Edges.Item == nil {
 		logger.Log.Warn("inventory item base is nil, cannot map")
+
 		return nil
 	}
 

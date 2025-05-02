@@ -3,10 +3,11 @@ package eventlib
 import (
 	"context"
 	"fmt"
+	"sync"
+
 	"github.com/intezya/pkglib/itertools"
 	"github.com/intezya/pkglib/logger"
 	"go.uber.org/zap"
-	"sync"
 )
 
 type eventBus struct {

@@ -2,7 +2,6 @@ package persistence
 
 import (
 	"context"
-	"github.com/intezya/abyssleague/services/abysscore/internal/pkg/apperrors"
 	"strings"
 	"time"
 
@@ -11,6 +10,7 @@ import (
 	"github.com/intezya/abyssleague/services/abysscore/internal/domain/entity"
 	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/ent"
 	entUser "github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/ent/user"
+	"github.com/intezya/abyssleague/services/abysscore/internal/pkg/apperrors"
 )
 
 // UserRepository provides access to user data in the database.
@@ -72,7 +72,6 @@ func (r *UserRepository) FindFullDTOById(ctx context.Context, id int) (*dto.User
 		WithReceivedFriendRequests().
 		WithStatistics().
 		Only(ctx)
-
 	if err != nil {
 		return nil, r.handleQueryError(err)
 	}
@@ -184,7 +183,6 @@ func (r *UserRepository) SetInventoryItemAsCurrent(
 		UpdateOneID(user.ID).
 		SetCurrentItemID(item.ID).
 		Save(ctx)
-
 	if err != nil {
 		return r.handleUpdateError(err)
 	}

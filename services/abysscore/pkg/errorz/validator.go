@@ -6,34 +6,35 @@ import (
 	"github.com/go-playground/validator/v10"
 )
 
-// ValidatorInterface allows us to mock the validator for testing
+// ValidatorInterface allows us to mock the validator for testing.
 type ValidatorInterface interface {
 	Struct(s interface{}) error
 }
 
-// validatorInstance is the singleton validator instance
+// validatorInstance is the singleton validator instance.
 var validatorInstance ValidatorInterface
 
-// SetValidator sets the validator instance to be used
+// SetValidator sets the validator instance to be used.
 func SetValidator(v ValidatorInterface) {
 	validatorInstance = v
 }
 
-// GetValidator returns the validator instance
+// GetValidator returns the validator instance.
 func GetValidator() ValidatorInterface {
 	if validatorInstance == nil {
 		// Default to standard validator if not set
 		validatorInstance = validator.New()
 	}
+
 	return validatorInstance
 }
 
-// ValidateStruct validates a struct against validation tags
+// ValidateStruct validates a struct against validation tags.
 func ValidateStruct(s interface{}) error {
 	return GetValidator().Struct(s)
 }
 
-// ValidateJSON validates a data transfer object and returns a validation error if invalid
+// ValidateJSON validates a data transfer object and returns a validation error if invalid.
 func ValidateJSON(dto interface{}) error {
 	if err := ValidateStruct(dto); err != nil {
 		var validationErrors validator.ValidationErrors
@@ -54,7 +55,7 @@ func ValidateJSON(dto interface{}) error {
 	return nil
 }
 
-// formatValidationError formats a validation error in a user-friendly way
+// formatValidationError formats a validation error in a user-friendly way.
 func formatValidationError(err validator.FieldError) string {
 	switch err.Tag() {
 	case "required":

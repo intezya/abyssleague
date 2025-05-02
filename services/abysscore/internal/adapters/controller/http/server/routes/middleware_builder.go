@@ -2,6 +2,7 @@ package routes
 
 import (
 	"errors"
+
 	"github.com/gofiber/fiber/v2"
 	"github.com/intezya/abyssleague/services/abysscore/internal/adapters/controller/http/middleware"
 	"github.com/intezya/abyssleague/services/abysscore/internal/domain/dto"
@@ -70,11 +71,17 @@ func createMatchRequirementChecker(matchRequirement MatchRequirement) fiber.Hand
 		case MatchIrrelevant:
 		case MustBeInMatch:
 			if user.CurrentMatchID == nil {
-				return apperrors.HandleError(apperrors.WrapUserMatchStateError(errUserMustBeInMatch), c)
+				return apperrors.HandleError(
+					apperrors.WrapUserMatchStateError(errUserMustBeInMatch),
+					c,
+				)
 			}
 		case MustNotBeInMatch:
 			if user.CurrentMatchID != nil {
-				return apperrors.HandleError(apperrors.WrapUserMatchStateError(errUserMustNotBeInMatch), c)
+				return apperrors.HandleError(
+					apperrors.WrapUserMatchStateError(errUserMustNotBeInMatch),
+					c,
+				)
 			}
 		default:
 		}

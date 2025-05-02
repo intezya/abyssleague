@@ -9,7 +9,7 @@ type AccountAlreadyHasLinkedEmail struct {
 
 type WrongVerificationCode struct {
 	Message string `json:"message" example:"bad request"`
-	Detail  string `json:"detail" example:"wrong verification code"`
+	Detail  string `json:"detail"  example:"wrong verification code"`
 	Code    int    `json:"code"    example:"400"`
 	Path    string `json:"path"`
 }

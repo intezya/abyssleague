@@ -2,12 +2,12 @@ package middleware
 
 import (
 	"fmt"
-	"github.com/intezya/abyssleague/services/abysscore/internal/pkg/apperrors"
 	"strconv"
 	"time"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/intezya/abyssleague/services/abysscore/internal/adapters/config"
+	"github.com/intezya/abyssleague/services/abysscore/internal/pkg/apperrors"
 	"github.com/intezya/pkglib/logger"
 	"github.com/prometheus/client_golang/prometheus"
 	"go.opentelemetry.io/otel"

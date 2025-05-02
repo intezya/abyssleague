@@ -2,6 +2,7 @@ package wrapper
 
 import (
 	"context"
+
 	"github.com/intezya/abyssleague/services/abysscore/internal/adapters/controller/grpc/factory"
 )
 

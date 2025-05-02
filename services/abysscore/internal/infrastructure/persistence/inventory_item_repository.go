@@ -2,12 +2,12 @@ package persistence
 
 import (
 	"context"
-	"github.com/intezya/abyssleague/services/abysscore/internal/pkg/apperrors"
 
 	"github.com/intezya/abyssleague/services/abysscore/internal/adapters/mapper"
 	"github.com/intezya/abyssleague/services/abysscore/internal/domain/dto"
 	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/ent"
 	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/ent/inventoryitem"
+	"github.com/intezya/abyssleague/services/abysscore/internal/pkg/apperrors"
 	"github.com/intezya/pkglib/itertools"
 )
 
@@ -30,7 +30,6 @@ func (r *InventoryItemRepository) Create(
 			SetUserID(inventoryItem.UserID).
 			SetReceivedFromID(inventoryItem.ReceivedFromID).
 			Save(ctx)
-
 		if err != nil {
 			return nil, err
 		}
@@ -40,14 +39,12 @@ func (r *InventoryItemRepository) Create(
 			Where(inventoryitem.IDEQ(created.ID)).
 			WithItem().
 			Only(ctx)
-
 		if err != nil {
 			return nil, err
 		}
 
 		return result, nil
 	})
-
 	if err != nil {
 		return nil, r.handleQueryError(err)
 	}

@@ -2,12 +2,12 @@ package middleware
 
 import (
 	"fmt"
-	"github.com/intezya/abyssleague/services/abysscore/internal/pkg/apperrors"
 	"runtime/debug"
 	"time"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/requestid"
+	"github.com/intezya/abyssleague/services/abysscore/internal/pkg/apperrors"
 	"github.com/intezya/pkglib/logger"
 )
 

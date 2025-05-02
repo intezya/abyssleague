@@ -34,6 +34,7 @@ func (n NotificationService) SendToUser(userID int, message interface{}) error {
 	)
 	if err != nil {
 		logger.Log.Debug("failed to send message: %v", err)
+
 		return err
 	}
 

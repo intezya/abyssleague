@@ -2,13 +2,13 @@ package persistence
 
 import (
 	"context"
-	"github.com/intezya/abyssleague/services/abysscore/internal/pkg/apperrors"
 
 	"github.com/intezya/abyssleague/services/abysscore/internal/adapters/mapper"
 	"github.com/intezya/abyssleague/services/abysscore/internal/domain/dto"
 	"github.com/intezya/abyssleague/services/abysscore/internal/domain/entity/gameitementity"
 	"github.com/intezya/abyssleague/services/abysscore/internal/domain/entity/types"
 	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/ent"
+	"github.com/intezya/abyssleague/services/abysscore/internal/pkg/apperrors"
 	"github.com/intezya/pkglib/itertools"
 )
 

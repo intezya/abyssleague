@@ -2,6 +2,6 @@ package errorz
 
 type Context interface {
 	Path() string
-	Status(int) Context
+	Status(code int) Context
 	JSON(data interface{}) error
 }

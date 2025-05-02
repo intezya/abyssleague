@@ -2,6 +2,9 @@ package applicationservice
 
 import (
 	"context"
+	"strings"
+	"time"
+
 	"github.com/intezya/abyssleague/services/abysscore/internal/domain/dto"
 	"github.com/intezya/abyssleague/services/abysscore/internal/domain/entity"
 	"github.com/intezya/abyssleague/services/abysscore/internal/domain/entity/userentity"
@@ -12,8 +15,6 @@ import (
 	"github.com/intezya/abyssleague/services/abysscore/internal/pkg/apperrors"
 	"github.com/intezya/abyssleague/services/abysscore/pkg/timeutils"
 	"github.com/intezya/pkglib/logger"
-	"strings"
-	"time"
 )
 
 // AuthenticationService handles user authentication operations.

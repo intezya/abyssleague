@@ -2,7 +2,7 @@ package errorz
 
 import "time"
 
-// ErrorResponse is the JSON structure returned to clients
+// ErrorResponse is the JSON structure returned to clients.
 type ErrorResponse struct {
 	Message     string                 `json:"message"`
 	Detail      string                 `json:"detail,omitempty"`
