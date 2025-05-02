@@ -2,6 +2,7 @@ package app
 
 import (
 	"context"
+	"embed"
 	"errors"
 	"fmt"
 	"io/fs"
@@ -10,7 +11,6 @@ import (
 	"path/filepath"
 	"time"
 
-	"embed"
 	"github.com/intezya/abyssleague/services/websocket-messaging/internal/adapters/config"
 	"github.com/intezya/abyssleague/services/websocket-messaging/internal/adapters/controller/http/middleware"
 	"github.com/intezya/abyssleague/services/websocket-messaging/internal/adapters/controller/http/routes"
@@ -49,7 +49,6 @@ func NewHttpApp(config *config.Config) *HttpApp {
 
 	// Websocket debugger
 	if config.IsDevMode() {
-
 		websocketFS, err := fs.Sub(staticFS, "static/websocket")
 		if err != nil {
 			panic(err)
@@ -60,8 +59,10 @@ func NewHttpApp(config *config.Config) *HttpApp {
 			data, err := fs.ReadFile(websocketFS, "index.html")
 			if err != nil {
 				http.Error(w, "index not found", http.StatusInternalServerError)
+
 				return
 			}
+
 			w.Header().Set("Content-Type", "text/html")
 			_, _ = w.Write(data)
 		})
@@ -162,6 +163,7 @@ func withContentType(next http.Handler) http.Handler {
 		if ctype := mime.TypeByExtension(ext); ctype != "" {
 			w.Header().Set("Content-Type", ctype)
 		}
+
 		next.ServeHTTP(w, r)
 	})
 }

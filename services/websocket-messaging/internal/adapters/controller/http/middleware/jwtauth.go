@@ -22,6 +22,7 @@ func (m *SecurityMiddleware) JwtAuth(
 	r *http.Request,
 ) (authenticationData *entity.AuthenticationData) {
 	authHeader := r.Header.Get("Authorization")
+
 	var token string
 
 	if authHeader != "" {
@@ -31,6 +32,7 @@ func (m *SecurityMiddleware) JwtAuth(
 		if token == "" {
 			logger.Log.Debug("missing authorization header and query token")
 			http.Error(w, "missing token", http.StatusUnauthorized)
+
 			return nil
 		}
 	}
