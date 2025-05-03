@@ -6,6 +6,9 @@ import (
 	"entgo.io/ent/dialect/sql"
 )
 
+// BannedHardwareID is the predicate function for bannedhardwareid builders.
+type BannedHardwareID func(*sql.Selector)
+
 // FriendRequest is the predicate function for friendrequest builders.
 type FriendRequest func(*sql.Selector)
 

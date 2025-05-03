@@ -15,6 +15,7 @@ import (
 	"entgo.io/ent/dialect"
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
+	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/ent/bannedhardwareid"
 	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/ent/friendrequest"
 	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/ent/gameitem"
 	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/ent/inventoryitem"
@@ -30,6 +31,8 @@ type Client struct {
 	config
 	// Schema is the client for creating, migrating and dropping schema.
 	Schema *migrate.Schema
+	// BannedHardwareID is the client for interacting with the BannedHardwareID builders.
+	BannedHardwareID *BannedHardwareIDClient
 	// FriendRequest is the client for interacting with the FriendRequest builders.
 	FriendRequest *FriendRequestClient
 	// GameItem is the client for interacting with the GameItem builders.
@@ -57,6 +60,7 @@ func NewClient(opts ...Option) *Client {
 
 func (c *Client) init() {
 	c.Schema = migrate.NewSchema(c.driver)
+	c.BannedHardwareID = NewBannedHardwareIDClient(c.config)
 	c.FriendRequest = NewFriendRequestClient(c.config)
 	c.GameItem = NewGameItemClient(c.config)
 	c.InventoryItem = NewInventoryItemClient(c.config)
@@ -157,6 +161,7 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 	return &Tx{
 		ctx:               ctx,
 		config:            cfg,
+		BannedHardwareID:  NewBannedHardwareIDClient(cfg),
 		FriendRequest:     NewFriendRequestClient(cfg),
 		GameItem:          NewGameItemClient(cfg),
 		InventoryItem:     NewInventoryItemClient(cfg),
@@ -184,6 +189,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 	return &Tx{
 		ctx:               ctx,
 		config:            cfg,
+		BannedHardwareID:  NewBannedHardwareIDClient(cfg),
 		FriendRequest:     NewFriendRequestClient(cfg),
 		GameItem:          NewGameItemClient(cfg),
 		InventoryItem:     NewInventoryItemClient(cfg),
@@ -198,7 +204,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 // Debug returns a new debug-client. It's used to get verbose logging on specific operations.
 //
 //	client.Debug().
-//		FriendRequest.
+//		BannedHardwareID.
 //		Query().
 //		Count(ctx)
 func (c *Client) Debug() *Client {
@@ -221,8 +227,8 @@ func (c *Client) Close() error {
 // In order to add hooks to a specific client, call: `client.Node.Use(...)`.
 func (c *Client) Use(hooks ...Hook) {
 	for _, n := range []interface{ Use(...Hook) }{
-		c.FriendRequest, c.GameItem, c.InventoryItem, c.Match, c.PlayerMatchResult,
-		c.Statistic, c.User, c.UserBalance,
+		c.BannedHardwareID, c.FriendRequest, c.GameItem, c.InventoryItem, c.Match,
+		c.PlayerMatchResult, c.Statistic, c.User, c.UserBalance,
 	} {
 		n.Use(hooks...)
 	}
@@ -232,8 +238,8 @@ func (c *Client) Use(hooks ...Hook) {
 // In order to add interceptors to a specific client, call: `client.Node.Intercept(...)`.
 func (c *Client) Intercept(interceptors ...Interceptor) {
 	for _, n := range []interface{ Intercept(...Interceptor) }{
-		c.FriendRequest, c.GameItem, c.InventoryItem, c.Match, c.PlayerMatchResult,
-		c.Statistic, c.User, c.UserBalance,
+		c.BannedHardwareID, c.FriendRequest, c.GameItem, c.InventoryItem, c.Match,
+		c.PlayerMatchResult, c.Statistic, c.User, c.UserBalance,
 	} {
 		n.Intercept(interceptors...)
 	}
@@ -242,6 +248,8 @@ func (c *Client) Intercept(interceptors ...Interceptor) {
 // Mutate implements the ent.Mutator interface.
 func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 	switch m := m.(type) {
+	case *BannedHardwareIDMutation:
+		return c.BannedHardwareID.mutate(ctx, m)
 	case *FriendRequestMutation:
 		return c.FriendRequest.mutate(ctx, m)
 	case *GameItemMutation:
@@ -260,6 +268,139 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.UserBalance.mutate(ctx, m)
 	default:
 		return nil, fmt.Errorf("ent: unknown mutation type %T", m)
+	}
+}
+
+// BannedHardwareIDClient is a client for the BannedHardwareID schema.
+type BannedHardwareIDClient struct {
+	config
+}
+
+// NewBannedHardwareIDClient returns a client for the BannedHardwareID from the given config.
+func NewBannedHardwareIDClient(c config) *BannedHardwareIDClient {
+	return &BannedHardwareIDClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `bannedhardwareid.Hooks(f(g(h())))`.
+func (c *BannedHardwareIDClient) Use(hooks ...Hook) {
+	c.hooks.BannedHardwareID = append(c.hooks.BannedHardwareID, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `bannedhardwareid.Intercept(f(g(h())))`.
+func (c *BannedHardwareIDClient) Intercept(interceptors ...Interceptor) {
+	c.inters.BannedHardwareID = append(c.inters.BannedHardwareID, interceptors...)
+}
+
+// Create returns a builder for creating a BannedHardwareID entity.
+func (c *BannedHardwareIDClient) Create() *BannedHardwareIDCreate {
+	mutation := newBannedHardwareIDMutation(c.config, OpCreate)
+	return &BannedHardwareIDCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of BannedHardwareID entities.
+func (c *BannedHardwareIDClient) CreateBulk(builders ...*BannedHardwareIDCreate) *BannedHardwareIDCreateBulk {
+	return &BannedHardwareIDCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *BannedHardwareIDClient) MapCreateBulk(slice any, setFunc func(*BannedHardwareIDCreate, int)) *BannedHardwareIDCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &BannedHardwareIDCreateBulk{err: fmt.Errorf("calling to BannedHardwareIDClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*BannedHardwareIDCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &BannedHardwareIDCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for BannedHardwareID.
+func (c *BannedHardwareIDClient) Update() *BannedHardwareIDUpdate {
+	mutation := newBannedHardwareIDMutation(c.config, OpUpdate)
+	return &BannedHardwareIDUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *BannedHardwareIDClient) UpdateOne(bhi *BannedHardwareID) *BannedHardwareIDUpdateOne {
+	mutation := newBannedHardwareIDMutation(c.config, OpUpdateOne, withBannedHardwareID(bhi))
+	return &BannedHardwareIDUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *BannedHardwareIDClient) UpdateOneID(id int) *BannedHardwareIDUpdateOne {
+	mutation := newBannedHardwareIDMutation(c.config, OpUpdateOne, withBannedHardwareIDID(id))
+	return &BannedHardwareIDUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for BannedHardwareID.
+func (c *BannedHardwareIDClient) Delete() *BannedHardwareIDDelete {
+	mutation := newBannedHardwareIDMutation(c.config, OpDelete)
+	return &BannedHardwareIDDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *BannedHardwareIDClient) DeleteOne(bhi *BannedHardwareID) *BannedHardwareIDDeleteOne {
+	return c.DeleteOneID(bhi.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *BannedHardwareIDClient) DeleteOneID(id int) *BannedHardwareIDDeleteOne {
+	builder := c.Delete().Where(bannedhardwareid.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &BannedHardwareIDDeleteOne{builder}
+}
+
+// Query returns a query builder for BannedHardwareID.
+func (c *BannedHardwareIDClient) Query() *BannedHardwareIDQuery {
+	return &BannedHardwareIDQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeBannedHardwareID},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a BannedHardwareID entity by its id.
+func (c *BannedHardwareIDClient) Get(ctx context.Context, id int) (*BannedHardwareID, error) {
+	return c.Query().Where(bannedhardwareid.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *BannedHardwareIDClient) GetX(ctx context.Context, id int) *BannedHardwareID {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// Hooks returns the client hooks.
+func (c *BannedHardwareIDClient) Hooks() []Hook {
+	return c.hooks.BannedHardwareID
+}
+
+// Interceptors returns the client interceptors.
+func (c *BannedHardwareIDClient) Interceptors() []Interceptor {
+	return c.inters.BannedHardwareID
+}
+
+func (c *BannedHardwareIDClient) mutate(ctx context.Context, m *BannedHardwareIDMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&BannedHardwareIDCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&BannedHardwareIDUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&BannedHardwareIDUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&BannedHardwareIDDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown BannedHardwareID mutation op: %q", m.Op())
 	}
 }
 
@@ -1650,11 +1791,11 @@ func (c *UserBalanceClient) mutate(ctx context.Context, m *UserBalanceMutation) 
 // hooks and interceptors per client, for fast access.
 type (
 	hooks struct {
-		FriendRequest, GameItem, InventoryItem, Match, PlayerMatchResult, Statistic,
-		User, UserBalance []ent.Hook
+		BannedHardwareID, FriendRequest, GameItem, InventoryItem, Match,
+		PlayerMatchResult, Statistic, User, UserBalance []ent.Hook
 	}
 	inters struct {
-		FriendRequest, GameItem, InventoryItem, Match, PlayerMatchResult, Statistic,
-		User, UserBalance []ent.Interceptor
+		BannedHardwareID, FriendRequest, GameItem, InventoryItem, Match,
+		PlayerMatchResult, Statistic, User, UserBalance []ent.Interceptor
 	}
 )

@@ -40,7 +40,7 @@ func (h *HashHelper) EncodeHardwareID(raw string) (hash string) {
 }
 
 func (h *HashHelper) VerifyHardwareID(raw, hash string) bool {
-	return h.EncodeHardwareID(raw) == hash
+	return raw == hash
 }
 
 func (h *HashHelper) VerifyTokenHardwareID(tokenHash, userHash string) bool {

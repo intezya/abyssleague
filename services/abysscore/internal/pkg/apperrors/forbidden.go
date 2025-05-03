@@ -15,6 +15,13 @@ var (
 		return errorz.Forbidden("account is locked", reasonAsError)
 	}
 
+	ErrHardwareIDBanned = func(reason optional.String) error {
+		//nolint:err113 // required dynamic error
+		reasonAsError := errors.New(reason.Default("reason is null"))
+
+		return errorz.Forbidden("hardware id is banned", reasonAsError)
+	}
+
 	ForbiddenByInsufficientAccessLevel = errorz.Forbidden("insufficient access level", nil)
 
 	WrapUserMatchStateError = func(err error) error {

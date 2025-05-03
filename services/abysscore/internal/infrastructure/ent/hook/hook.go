@@ -9,6 +9,18 @@ import (
 	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/ent"
 )
 
+// The BannedHardwareIDFunc type is an adapter to allow the use of ordinary
+// function as BannedHardwareID mutator.
+type BannedHardwareIDFunc func(context.Context, *ent.BannedHardwareIDMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f BannedHardwareIDFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.BannedHardwareIDMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.BannedHardwareIDMutation", m)
+}
+
 // The FriendRequestFunc type is an adapter to allow the use of ordinary
 // function as FriendRequest mutator.
 type FriendRequestFunc func(context.Context, *ent.FriendRequestMutation) (ent.Value, error)

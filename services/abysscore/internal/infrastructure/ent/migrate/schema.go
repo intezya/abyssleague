@@ -8,6 +8,26 @@ import (
 )
 
 var (
+	// BannedHardwareIdsColumns holds the columns for the "banned_hardware_ids" table.
+	BannedHardwareIdsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "hardware_id", Type: field.TypeString, Unique: true},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "ban_reason", Type: field.TypeString, Nullable: true},
+	}
+	// BannedHardwareIdsTable holds the schema information for the "banned_hardware_ids" table.
+	BannedHardwareIdsTable = &schema.Table{
+		Name:       "banned_hardware_ids",
+		Columns:    BannedHardwareIdsColumns,
+		PrimaryKey: []*schema.Column{BannedHardwareIdsColumns[0]},
+		Indexes: []*schema.Index{
+			{
+				Name:    "bannedhardwareid_hardware_id",
+				Unique:  true,
+				Columns: []*schema.Column{BannedHardwareIdsColumns[1]},
+			},
+		},
+	}
 	// FriendRequestsColumns holds the columns for the "friend_requests" table.
 	FriendRequestsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
@@ -286,6 +306,7 @@ var (
 	}
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{
+		BannedHardwareIdsTable,
 		FriendRequestsTable,
 		GameItemsTable,
 		InventoryItemsTable,

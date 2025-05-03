@@ -1,5 +1,7 @@
 package optional
 
+import jsoniter "github.com/json-iterator/go"
+
 /*
 	Optional package provides custom (extended) solution for optional types
 */
@@ -38,41 +40,45 @@ func EmptyOptional[T any]() Optional[T] {
 	}
 }
 
-func (e Optional[T]) IsSet() bool {
-	return e.isSet && e.value != nil
+func (o Optional[T]) IsSet() bool {
+	return o.isSet && o.value != nil
 }
 
-func (e Optional[T]) Value() (value T, ok bool) {
-	if !e.isSet || e.value == nil {
+func (o Optional[T]) Value() (value T, ok bool) {
+	if !o.isSet || o.value == nil {
 		var zero T
 
 		return zero, false
 	}
 
-	return *e.value, true
+	return *o.value, true
 }
 
-func (e Optional[T]) MustValue() T {
-	if !e.isSet || e.value == nil {
+func (o Optional[T]) MustValue() T {
+	if !o.isSet || o.value == nil {
 		panic("attempted to get value from empty or nil optional")
 	}
 
-	return *e.value
+	return *o.value
 }
 
-func (e Optional[T]) Default(defaultValue T) T {
-	if e.isSet && e.value != nil {
-		return *e.value
+func (o Optional[T]) Default(defaultValue T) T {
+	if o.isSet && o.value != nil {
+		return *o.value
 	}
 
 	return defaultValue
 }
 
 // DefaultFn provides method for getting default value from fn without extra call if isSet.
-func (e Optional[T]) DefaultFn(defaultValue func() T) T {
-	if e.isSet && e.value != nil {
-		return *e.value
+func (o Optional[T]) DefaultFn(defaultValue func() T) T {
+	if o.isSet && o.value != nil {
+		return *o.value
 	}
 
 	return defaultValue()
+}
+
+func (o Optional[T]) MarshalJSON() ([]byte, error) {
+	return jsoniter.Marshal(o.value)
 }

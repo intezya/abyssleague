@@ -25,24 +25,6 @@ func NewUserRepository(client *ent.Client) *UserRepository {
 	}
 }
 
-// Create adds a new user to the database.
-func (r *UserRepository) Create(
-	ctx context.Context,
-	credentials *dto.CredentialsDTO,
-) (*entity.AuthenticationData, error) {
-	user, err := r.client.User.
-		Create().
-		SetUsername(credentials.Username).
-		SetPassword(credentials.Password).
-		SetHardwareID(credentials.HardwareID).
-		Save(ctx)
-	if err != nil {
-		return nil, r.handleConstraintError(err)
-	}
-
-	return mapper.ToAuthenticationDataFromEnt(user), nil
-}
-
 // FindDTOById retrieves basic user data by ID.
 func (r *UserRepository) FindDTOById(ctx context.Context, id int) (*dto.UserDTO, error) {
 	user, err := r.client.User.
@@ -79,15 +61,16 @@ func (r *UserRepository) FindFullDTOById(ctx context.Context, id int) (*dto.User
 	return mapper.ToUserFullDTOFromEnt(user), nil
 }
 
-// FindAuthenticationByLowerUsername retrieves authentication data by lowercase username.
-func (r *UserRepository) FindAuthenticationByLowerUsername(
+// TxFindAuthenticationByLowerUsername retrieves authentication data by lowercase username.
+func (r *UserRepository) TxFindAuthenticationByLowerUsername(
 	ctx context.Context,
+	tx *ent.Tx,
 	lowerUsername string,
 ) (
 	*entity.AuthenticationData,
 	error,
 ) {
-	user, err := r.client.User.
+	user, err := tx.User.
 		Query().
 		Where(entUser.UsernameEqualFold(lowerUsername)).
 		Only(ctx)
@@ -106,9 +89,9 @@ func (r *UserRepository) ExistsByEmail(ctx context.Context, email string) bool {
 	return exists
 }
 
-// UpdateHWIDByID updates a user's hardware ID.
-func (r *UserRepository) UpdateHWIDByID(ctx context.Context, id int, hardwareID string) error {
-	_, err := r.client.User.
+// TxUpdateHardwareIDByID updates a user's hardware ID.
+func (r *UserRepository) TxUpdateHardwareIDByID(ctx context.Context, tx *ent.Tx, id int, hardwareID string) error {
+	_, err := tx.User.
 		UpdateOneID(id).
 		SetHardwareID(hardwareID).
 		Save(ctx)
@@ -123,14 +106,15 @@ func (r *UserRepository) UpdateHWIDByID(ctx context.Context, id int, hardwareID 
 	return nil
 }
 
-// UpdateLoginStreakLoginAtByID updates a user's login streak and login time.
-func (r *UserRepository) UpdateLoginStreakLoginAtByID(
+// TxUpdateLoginStreakLoginAtByID updates a user's login streak and login time.
+func (r *UserRepository) TxUpdateLoginStreakLoginAtByID(
 	ctx context.Context,
+	tx *ent.Tx,
 	id int,
 	loginStreak int,
 	loginAt time.Time,
 ) error {
-	_, err := r.client.User.
+	_, err := tx.User.
 		UpdateOneID(id).
 		SetLoginStreak(loginStreak).
 		SetLoginAt(loginAt).
@@ -156,12 +140,13 @@ func (r *UserRepository) UpdatePasswordByID(
 	return mapper.ToUserFullDTOFromEnt(user), nil
 }
 
-// SetBlockUntilAndLevelAndReasonFromUser updates a user's block status information.
-func (r *UserRepository) SetBlockUntilAndLevelAndReasonFromUser(
+// TxSetBlockUntilAndLevelAndReasonFromUser updates a user's block status information.
+func (r *UserRepository) TxSetBlockUntilAndLevelAndReasonFromUser(
 	ctx context.Context,
+	tx *ent.Tx,
 	user *dto.UserDTO,
 ) error {
-	_, err := r.client.User.
+	_, err := tx.User.
 		UpdateOneID(user.ID).
 		SetNillableAccountBlockedUntil(user.AccountBlockedUntil).
 		SetAccountBlockedLevel(user.AccountBlockedLevel).
@@ -214,6 +199,47 @@ func (r *UserRepository) SetEmailIfNil(
 			return mapper.ToUserDTOFromEnt(savedUser), nil
 		},
 	)
+}
+
+func (r *UserRepository) WithTx(ctx context.Context) (*ent.Tx, error) {
+	tx, err := r.client.Tx(ctx)
+	if err != nil {
+		return nil, apperrors.WrapUnexpectedError(err)
+	}
+
+	return tx, nil
+}
+
+// TxCreate adds a new user to the database.
+func (r *UserRepository) TxCreate(
+	ctx context.Context,
+	tx *ent.Tx,
+	credentials *dto.CredentialsDTO,
+) (*entity.AuthenticationData, error) {
+	user, err := tx.User.
+		Create().
+		SetUsername(credentials.Username).
+		SetPassword(credentials.Password).
+		SetHardwareID(credentials.HardwareID).
+		Save(ctx)
+	if err != nil {
+		return nil, r.handleConstraintError(err)
+	}
+
+	return mapper.ToAuthenticationDataFromEnt(user), nil
+}
+
+// TxFindDTOById retrieves basic user data by ID.
+func (r *UserRepository) TxFindDTOById(ctx context.Context, tx *ent.Tx, id int) (*dto.UserDTO, error) {
+	user, err := tx.User.
+		Query().
+		Where(entUser.IDEQ(id)).
+		Only(ctx)
+	if err != nil {
+		return nil, r.handleQueryError(err)
+	}
+
+	return mapper.ToUserDTOFromEnt(user), nil
 }
 
 // Helper methods for error handling

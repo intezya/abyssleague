@@ -12,6 +12,8 @@ import (
 // Tx is a transactional client that is created by calling Client.Tx().
 type Tx struct {
 	config
+	// BannedHardwareID is the client for interacting with the BannedHardwareID builders.
+	BannedHardwareID *BannedHardwareIDClient
 	// FriendRequest is the client for interacting with the FriendRequest builders.
 	FriendRequest *FriendRequestClient
 	// GameItem is the client for interacting with the GameItem builders.
@@ -159,6 +161,7 @@ func (tx *Tx) Client() *Client {
 }
 
 func (tx *Tx) init() {
+	tx.BannedHardwareID = NewBannedHardwareIDClient(tx.config)
 	tx.FriendRequest = NewFriendRequestClient(tx.config)
 	tx.GameItem = NewGameItemClient(tx.config)
 	tx.InventoryItem = NewInventoryItemClient(tx.config)
@@ -176,7 +179,7 @@ func (tx *Tx) init() {
 // of them in order to commit or rollback the transaction.
 //
 // If a closed transaction is embedded in one of the generated entities, and the entity
-// applies a query, for example: FriendRequest.QueryXXX(), the query will be executed
+// applies a query, for example: BannedHardwareID.QueryXXX(), the query will be executed
 // through the driver which created this transaction.
 //
 // Note that txDriver is not goroutine safe.

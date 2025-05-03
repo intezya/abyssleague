@@ -99,3 +99,10 @@ func Trace2[R1, R2 any](
 
 	return fn(ctx)
 }
+
+// StartSpan creates a new span with the given name and returns the updated context and span.
+// This is a convenience wrapper around the OpenTelemetry tracer Start method.
+func StartSpan(ctx context.Context, spanName string) (context.Context, trace.Span) {
+	tracer := otel.Tracer("application")
+	return tracer.Start(ctx, spanName)
+}

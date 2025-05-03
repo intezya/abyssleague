@@ -51,6 +51,7 @@ func NewDependencyProvider(
 			gRPCDependencyProvider.MainWebsocketService,
 			passwordHelper,
 			tokenHelper,
+			repositoryDependencyProvider.BannedHardwareIDRepository,
 		),
 		GameItemService: NewGameItemService(repositoryDependencyProvider.GameItemRepository),
 		InventoryItemService: NewInventoryItemService(

@@ -12,6 +12,7 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
+	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/ent/bannedhardwareid"
 	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/ent/friendrequest"
 	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/ent/gameitem"
 	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/ent/inventoryitem"
@@ -80,6 +81,7 @@ var (
 func checkColumn(table, column string) error {
 	initCheck.Do(func() {
 		columnCheck = sql.NewColumnCheck(map[string]func(string) bool{
+			bannedhardwareid.Table:  bannedhardwareid.ValidColumn,
 			friendrequest.Table:     friendrequest.ValidColumn,
 			gameitem.Table:          gameitem.ValidColumn,
 			inventoryitem.Table:     inventoryitem.ValidColumn,

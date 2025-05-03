@@ -69,7 +69,7 @@ func (a *AuthenticationData) TokenData() *TokenData {
 	}
 }
 
-func (a *AuthenticationData) SetHWID(hwid string) {
+func (a *AuthenticationData) SetHardwareID(hwid string) {
 	a.hardwareID = &hwid
 }
 
