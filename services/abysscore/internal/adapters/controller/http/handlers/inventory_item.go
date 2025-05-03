@@ -38,10 +38,7 @@ func NewInventoryItemHandler(
 func (h *InventoryItemHandler) GrantInventoryItemToUser(c *fiber.Ctx) error {
 	ctx := c.UserContext()
 
-	admin, err := extractUser(ctx)
-	if err != nil {
-		return handleError(err, c)
-	}
+	admin := mustExtractUser(ctx)
 
 	userID, err := extractIntParam("user_id", c)
 	if err != nil {
@@ -79,10 +76,7 @@ func (h *InventoryItemHandler) GrantInventoryItemToUser(c *fiber.Ctx) error {
 func (h *InventoryItemHandler) GetAllByAuthorization(c *fiber.Ctx) error {
 	ctx := c.UserContext()
 
-	user, err := extractUser(ctx)
-	if err != nil {
-		return handleError(err, c)
-	}
+	user := mustExtractUser(ctx)
 
 	result, err := tracer.TraceFnWithResult(
 		ctx,
@@ -151,10 +145,7 @@ func (h *InventoryItemHandler) GetAllByUserID(c *fiber.Ctx) error {
 func (h *InventoryItemHandler) RevokeByAdmin(c *fiber.Ctx) error {
 	ctx := c.UserContext()
 
-	admin, err := extractUser(ctx)
-	if err != nil {
-		return handleError(err, c)
-	}
+	admin := mustExtractUser(ctx)
 
 	userID, err := extractIntParam("user_id", c)
 	if err != nil {
@@ -197,10 +188,7 @@ func (h *InventoryItemHandler) RevokeByAdmin(c *fiber.Ctx) error {
 func (h *InventoryItemHandler) SetInventoryItem(c *fiber.Ctx) error {
 	ctx := c.UserContext()
 
-	user, err := extractUser(ctx)
-	if err != nil {
-		return handleError(err, c)
-	}
+	user := mustExtractUser(ctx)
 
 	req, err := getAndValidateRequest[request.SetItemAsCurrent](c)
 	if err != nil {

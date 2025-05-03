@@ -36,10 +36,7 @@ func NewAccountHandler(accountService domainservice.AccountService) *AccountHand
 func (h *AccountHandler) SendCodeForEmailLink(c *fiber.Ctx) error {
 	ctx := c.UserContext()
 
-	user, err := extractUser(ctx)
-	if err != nil {
-		return handleError(err, c)
-	}
+	user := mustExtractUser(ctx)
 
 	req, err := getAndValidateRequest[request.LinkEmailRequest](c)
 	if err != nil {
@@ -79,10 +76,7 @@ func (h *AccountHandler) SendCodeForEmailLink(c *fiber.Ctx) error {
 func (h *AccountHandler) EnterCodeForEmailLink(c *fiber.Ctx) error {
 	ctx := c.UserContext()
 
-	user, err := extractUser(ctx)
-	if err != nil {
-		return handleError(err, c)
-	}
+	user := mustExtractUser(ctx)
 
 	req, err := getAndValidateRequest[request.EnterCodeForEmailLinkRequest](c)
 	if err != nil {

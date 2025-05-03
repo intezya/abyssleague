@@ -46,13 +46,26 @@ func getAndValidateRequest[T interface{}](c *fiber.Ctx) (*T, error) {
 
 // extractUser retrieves the authenticated user from the context.
 // returns an error if the user is missing or has the wrong type.
-func extractUser(ctx context.Context) (*dto.UserDTO, error) { // TODO mustExtractUser
+func extractUser(ctx context.Context) (*dto.UserDTO, error) {
 	user, ok := ctx.Value(middleware.UserCtxKey).(*dto.UserDTO)
 	if !ok {
 		return nil, apperrors.InternalServerError
 	}
 
 	return user, nil
+}
+
+// mustExtractUser retrieves the authenticated user from the context.
+// can be used if handler has authentication middleware.
+// calls panic if user hasn't been authenticated.
+func mustExtractUser(ctx context.Context) *dto.UserDTO {
+	user, err := extractUser(ctx)
+
+	if err != nil {
+		panic(err)
+	}
+
+	return user
 }
 
 // extractIntParam extracts an integer route parameter by key.

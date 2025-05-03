@@ -54,10 +54,7 @@ func NewGameItemHandler(gameItemService domainservice.GameItemService) *GameItem
 func (h *GameItemHandler) Create(c *fiber.Ctx) error {
 	ctx := c.UserContext()
 
-	admin, err := extractUser(ctx)
-	if err != nil {
-		return handleError(err, c)
-	}
+	admin := mustExtractUser(ctx)
 
 	req, err := getAndValidateRequest[request.CreateUpdateGameItem](c)
 	if err != nil {
@@ -164,10 +161,7 @@ func (h *GameItemHandler) FindAllPaged(c *fiber.Ctx) error {
 func (h *GameItemHandler) Update(c *fiber.Ctx) error {
 	ctx := c.UserContext()
 
-	admin, err := extractUser(ctx)
-	if err != nil {
-		return handleError(err, c)
-	}
+	admin := mustExtractUser(ctx)
 
 	itemID, err := extractIntParam("id", c)
 	if err != nil {
@@ -210,10 +204,7 @@ func (h *GameItemHandler) Update(c *fiber.Ctx) error {
 func (h *GameItemHandler) Delete(c *fiber.Ctx) error {
 	ctx := c.UserContext()
 
-	admin, err := extractUser(ctx)
-	if err != nil {
-		return handleError(err, c)
-	}
+	admin := mustExtractUser(ctx)
 
 	itemID, err := extractIntParam("id", c)
 	if err != nil {
