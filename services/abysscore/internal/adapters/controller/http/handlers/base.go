@@ -20,23 +20,17 @@ var wrapInvalidRequestBody = func(wrapped error) error {
 // returns the parsed struct or a validation/parsing error.
 func getAndValidateRequest[T interface{}](c *fiber.Ctx) (*T, error) {
 	ctx := c.UserContext()
+	ctx, span := tracer.StartSpan(ctx, "getAndValidateRequest")
+	defer span.End()
 
 	var request T
 
-	err := tracer.TraceFn(
-		ctx, "c.BodyParser", func(ctx context.Context) error {
-			return c.BodyParser(&request)
-		},
-	)
+	err := c.BodyParser(&request)
 	if err != nil {
 		return nil, wrapInvalidRequestBody(err)
 	}
 
-	err = tracer.TraceFn(
-		ctx, "validator.ValidateJSON", func(ctx context.Context) error {
-			return errorz.ValidateJSON(&request)
-		},
-	)
+	err = errorz.ValidateJSON(&request)
 	if err != nil {
 		return nil, err
 	}

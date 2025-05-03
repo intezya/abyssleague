@@ -20,7 +20,6 @@ type UserRepository interface {
 }
 
 type AuthenticationRepository interface {
-	UpdatePasswordByID(ctx context.Context, id int, password string) (*dto.UserFullDTO, error)
 	WithTx(ctx context.Context) (*ent.Tx, error)
 	TxFindAuthenticationByLowerUsername(
 		ctx context.Context,
@@ -36,6 +35,7 @@ type AuthenticationRepository interface {
 		loginAt time.Time,
 	) error
 	TxSetBlockUntilAndLevelAndReasonFromUser(ctx context.Context, tx *ent.Tx, user *dto.UserDTO) error
+	TxUpdatePasswordByID(ctx context.Context, tx *ent.Tx, id int, password string) (*dto.UserFullDTO, error)
 }
 
 type InventoryRepository interface {

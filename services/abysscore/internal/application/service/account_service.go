@@ -35,6 +35,9 @@ func (s *AccountService) SendCodeForEmailLink(
 	user *dto.UserDTO,
 	email string,
 ) error {
+	ctx, span := tracer.StartSpan(ctx, "AccountService.SendCodeForEmailLink")
+	defer span.End()
+
 	const newLinkEmailCodeExpireMinutes = 5
 
 	if user.Email != nil {
@@ -46,21 +49,13 @@ func (s *AccountService) SendCodeForEmailLink(
 		return apperrors.WrapBadRequest(err)
 	}
 
-	exists := tracer.Trace1(ctx, "userRepository.ExistsByEmail", func(ctx context.Context) bool {
-		return s.userRepository.ExistsByEmail(ctx, email)
-	})
+	exists := s.userRepository.ExistsByEmail(ctx, email)
 
 	if exists {
 		return apperrors.ErrEmailConflict
 	}
 
-	sentMailMessage, err := tracer.TraceFnWithResult(
-		ctx,
-		"mailMessageRepository.GetLinkMailCodeData",
-		func(ctx context.Context) (*mailmessage.LinkEmailCodeData, error) {
-			return s.mailMessageRepository.GetLinkMailCodeData(ctx, user.ID)
-		},
-	)
+	sentMailMessage, err := s.mailMessageRepository.GetLinkMailCodeData(ctx, user.ID)
 
 	if err == nil && sentMailMessage != nil &&
 		sentMailMessage.CreatedAt.After(
@@ -69,17 +64,9 @@ func (s *AccountService) SendCodeForEmailLink(
 		return apperrors.TooManyEmailLinkRequests // if already sent
 	}
 
-	mailMessage := tracer.Trace1(
-		ctx,
-		"mailmessage.NewLinkEmailCodeMail",
-		func(ctx context.Context) *mailmessage.LinkEmailCodeData {
-			return mailmessage.NewLinkEmailCodeMail(user.ID, email, newLinkEmailCodeExpireMinutes)
-		},
-	)
+	mailMessage := mailmessage.NewLinkEmailCodeMail(user.ID, email, newLinkEmailCodeExpireMinutes)
 
-	err = tracer.TraceFn(ctx, "mailSender.Send", func(ctx context.Context) error {
-		return s.mailSender.Send(ctx, mailMessage.Message, typedEmail.String())
-	})
+	err = s.mailSender.Send(ctx, mailMessage.Message, typedEmail.String())
 	if err != nil {
 		return apperrors.WrapServiceUnavailable(err)
 	}
@@ -97,13 +84,10 @@ func (s *AccountService) EnterCodeForEmailLink(
 	*dto.UserDTO,
 	error,
 ) {
-	mailMessageData, err := tracer.TraceFnWithResult(
-		ctx,
-		"mailMessageRepository.GetLinkMailCodeData",
-		func(ctx context.Context) (*mailmessage.LinkEmailCodeData, error) {
-			return s.mailMessageRepository.GetLinkMailCodeData(ctx, user.ID)
-		},
-	)
+	ctx, span := tracer.StartSpan(ctx, "AccountService.EnterCodeForEmailLink")
+	defer span.End()
+
+	mailMessageData, err := s.mailMessageRepository.GetLinkMailCodeData(ctx, user.ID)
 	if err != nil {
 		return nil, apperrors.WrapWrongVerificationCodeForEmailLink(err)
 	}
@@ -112,13 +96,7 @@ func (s *AccountService) EnterCodeForEmailLink(
 		return nil, apperrors.ErrWrongVerificationCodeForEmailLink
 	}
 
-	result, err := tracer.TraceFnWithResult(
-		ctx,
-		"userRepository.SetEmailIfNil",
-		func(ctx context.Context) (*dto.UserDTO, error) {
-			return s.userRepository.SetEmailIfNil(ctx, user.ID, mailMessageData.EmailForLink)
-		},
-	)
+	result, err := s.userRepository.SetEmailIfNil(ctx, user.ID, mailMessageData.EmailForLink)
 	if err != nil {
 		return nil, err
 	}

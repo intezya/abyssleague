@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/metrics/tracer"
 
 	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/ent"
 	"github.com/intezya/abyssleague/services/abysscore/internal/pkg/apperrors"
@@ -14,6 +15,9 @@ func withTxResult[T any](
 	client *ent.Client,
 	fn func(tx *ent.Tx) (*T, error),
 ) (_ *T, err error) {
+	ctx, span := tracer.StartSpan(ctx, "withTxResult")
+	defer span.End()
+
 	tx, err := client.Tx(ctx)
 	if err != nil {
 		return nil, apperrors.WrapUnexpectedError(fmt.Errorf("start transaction: %w", err))
@@ -50,6 +54,9 @@ func WithTxResultTx[T any](
 	tx *ent.Tx,
 	fn func(tx *ent.Tx) (*T, error),
 ) (_ *T, err error) {
+	ctx, span := tracer.StartSpan(ctx, "WithTxResultTx")
+	defer span.End()
+
 	defer func() {
 		if p := recover(); p != nil {
 			_ = tx.Rollback()
@@ -81,6 +88,9 @@ func WithTxResult2Tx[R1, R2 any](
 	tx *ent.Tx,
 	fn func(tx *ent.Tx) (*R1, *R2, error),
 ) (_ *R1, _ *R2, err error) {
+	ctx, span := tracer.StartSpan(ctx, "WithTxResult2Tx")
+	defer span.End()
+
 	defer func() {
 		if p := recover(); p != nil {
 			_ = tx.Rollback()

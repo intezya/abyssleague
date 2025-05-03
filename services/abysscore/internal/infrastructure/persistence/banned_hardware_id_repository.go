@@ -6,6 +6,7 @@ import (
 	"github.com/intezya/abyssleague/services/abysscore/internal/domain/dto"
 	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/ent"
 	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/ent/bannedhardwareid"
+	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/metrics/tracer"
 	"github.com/intezya/abyssleague/services/abysscore/pkg/optional"
 )
 
@@ -22,6 +23,9 @@ func (r *BannedHardwareIDRepository) Create(
 	hardwareID string,
 	reason optional.String,
 ) (*dto.BannedHardwareID, error) {
+	ctx, span := tracer.StartSpan(ctx, "BannedHardwareIDRepository.Create")
+	defer span.End()
+
 	//TODO implement me
 	panic("implement me")
 }
@@ -30,11 +34,17 @@ func (r *BannedHardwareIDRepository) FindByHardwareID(
 	ctx context.Context,
 	hardwareID string,
 ) (*dto.BannedHardwareID, error) {
+	ctx, span := tracer.StartSpan(ctx, "BannedHardwareIDRepository.FindByHardwareID")
+	defer span.End()
+
 	//TODO implement me
 	panic("implement me")
 }
 
 func (r *BannedHardwareIDRepository) DeleteByHardwareID(ctx context.Context, hardwareID string) error {
+	ctx, span := tracer.StartSpan(ctx, "BannedHardwareIDRepository.DeleteByHardwareID")
+	defer span.End()
+
 	//TODO implement me
 	panic("implement me")
 }
@@ -44,6 +54,9 @@ func (r *BannedHardwareIDRepository) TxFindByHardwareID(
 	tx *ent.Tx,
 	hardwareID string,
 ) (*dto.BannedHardwareID, error) {
+	ctx, span := tracer.StartSpan(ctx, "BannedHardwareIDRepository.TxFindByHardwareID")
+	defer span.End()
+
 	found, err := tx.BannedHardwareID.
 		Query().
 		Where(bannedhardwareid.HardwareIDEQ(hardwareID)).

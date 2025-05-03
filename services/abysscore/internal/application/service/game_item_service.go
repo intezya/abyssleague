@@ -23,14 +23,12 @@ func (g *GameItemService) Create(
 	request *request.CreateUpdateGameItem,
 	performer *dto.UserDTO,
 ) (*dto.GameItemDTO, error) {
+	ctx, span := tracer.StartSpan(ctx, "GameItemService.Create")
+	defer span.End()
+
 	// TODO: log performer action
-	result, err := tracer.TraceFnWithResult(
-		ctx,
-		"gameItemRepository.Create",
-		func(ctx context.Context) (*dto.GameItemDTO, error) {
-			return g.gameItemRepository.Create(ctx, request.ToDTO())
-		},
-	)
+
+	result, err := g.gameItemRepository.Create(ctx, request.ToDTO())
 	if err != nil {
 		return nil, err // ???
 	}
@@ -39,13 +37,10 @@ func (g *GameItemService) Create(
 }
 
 func (g *GameItemService) FindByID(ctx context.Context, id int) (*dto.GameItemDTO, error) {
-	result, err := tracer.TraceFnWithResult(
-		ctx,
-		"gameItemRepository.FindByID",
-		func(ctx context.Context) (*dto.GameItemDTO, error) {
-			return g.gameItemRepository.FindByID(ctx, id)
-		},
-	)
+	ctx, span := tracer.StartSpan(ctx, "GameItemService.FindByID")
+	defer span.End()
+
+	result, err := g.gameItemRepository.FindByID(ctx, id)
 	if err != nil {
 		return nil, err // not found
 	}
@@ -57,19 +52,10 @@ func (g *GameItemService) FindAllPaged(
 	ctx context.Context,
 	query *request.PaginationQuery[gameitementity.OrderBy],
 ) (*dto.PaginatedResult[*dto.GameItemDTO], error) {
-	result, err := tracer.TraceFnWithResult(
-		ctx,
-		"gameItemRepository.FindAllPaged",
-		func(ctx context.Context) (*dto.PaginatedResult[*dto.GameItemDTO], error) {
-			return g.gameItemRepository.FindAllPaged(
-				ctx,
-				query.Page,
-				query.Size,
-				query.OrderBy,
-				query.OrderType,
-			)
-		},
-	)
+	ctx, span := tracer.StartSpan(ctx, "GameItemService.FindAllPaged")
+	defer span.End()
+
+	result, err := g.gameItemRepository.FindAllPaged(ctx, query.Page, query.Size, query.OrderBy, query.OrderType)
 	if err != nil {
 		return nil, err // ???
 	}
@@ -83,10 +69,12 @@ func (g *GameItemService) Update(
 	request *request.CreateUpdateGameItem,
 	performer *dto.UserDTO,
 ) error {
+	ctx, span := tracer.StartSpan(ctx, "GameItemService.Update")
+	defer span.End()
+
 	// TODO: log performer action
-	err := tracer.TraceFn(ctx, "gameItemRepository.UpdateByID", func(ctx context.Context) error {
-		return g.gameItemRepository.UpdateByID(ctx, id, request.ToDTO())
-	})
+
+	err := g.gameItemRepository.UpdateByID(ctx, id, request.ToDTO())
 	if err != nil {
 		return err // not found
 	}
@@ -99,10 +87,12 @@ func (g *GameItemService) Delete(
 	id int,
 	performer *dto.UserDTO,
 ) error {
+	ctx, span := tracer.StartSpan(ctx, "GameItemService.Delete")
+	defer span.End()
+
 	// TODO: log performer action
-	err := tracer.TraceFn(ctx, "gameItemRepository.DeleteByID", func(ctx context.Context) error {
-		return g.gameItemRepository.DeleteByID(ctx, id)
-	})
+
+	err := g.gameItemRepository.DeleteByID(ctx, id)
 	if err != nil {
 		return err // not found
 	}

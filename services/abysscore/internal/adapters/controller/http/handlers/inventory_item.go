@@ -1,11 +1,8 @@
 package handlers
 
 import (
-	"context"
-
 	"github.com/gofiber/fiber/v2"
 	"github.com/intezya/abyssleague/services/abysscore/internal/adapters/controller/http/dto/request"
-	"github.com/intezya/abyssleague/services/abysscore/internal/domain/dto"
 	domainservice "github.com/intezya/abyssleague/services/abysscore/internal/domain/service"
 	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/metrics/tracer"
 )
@@ -37,6 +34,8 @@ func NewInventoryItemHandler(
 //	@Router			/api/users/{user_id}/inventory/{item_id} [post].
 func (h *InventoryItemHandler) GrantInventoryItemToUser(c *fiber.Ctx) error {
 	ctx := c.UserContext()
+	ctx, span := tracer.StartSpan(ctx, "InventoryItemHandler.GrantInventoryItemToUser")
+	defer span.End()
 
 	admin := mustExtractUser(ctx)
 
@@ -50,13 +49,7 @@ func (h *InventoryItemHandler) GrantInventoryItemToUser(c *fiber.Ctx) error {
 		return handleError(err, c)
 	}
 
-	result, err := tracer.TraceFnWithResult(
-		ctx,
-		"inventoryItemService.GrantToUserByAdmin",
-		func(ctx context.Context) (*dto.InventoryItemDTO, error) {
-			return h.inventoryItemService.GrantToUserByAdmin(ctx, userID, itemID, admin)
-		},
-	)
+	result, err := h.inventoryItemService.GrantToUserByAdmin(ctx, userID, itemID, admin)
 	if err != nil {
 		return handleError(err, c)
 	}
@@ -75,16 +68,12 @@ func (h *InventoryItemHandler) GrantInventoryItemToUser(c *fiber.Ctx) error {
 //	@Router			/api/users/inventory [get].
 func (h *InventoryItemHandler) GetAllByAuthorization(c *fiber.Ctx) error {
 	ctx := c.UserContext()
+	ctx, span := tracer.StartSpan(ctx, "InventoryItemHandler.GetAllByAuthorization")
+	defer span.End()
 
 	user := mustExtractUser(ctx)
 
-	result, err := tracer.TraceFnWithResult(
-		ctx,
-		"inventoryItemService.FindAllByID",
-		func(ctx context.Context) ([]*dto.InventoryItemDTO, error) {
-			return h.inventoryItemService.FindAllByUserID(ctx, user.ID)
-		},
-	)
+	result, err := h.inventoryItemService.FindAllByUserID(ctx, user.ID)
 	if err != nil {
 		return handleError(err, c)
 	}
@@ -107,19 +96,15 @@ func (h *InventoryItemHandler) GetAllByAuthorization(c *fiber.Ctx) error {
 //	@Router			/api/users/{user_id}/inventory [get].
 func (h *InventoryItemHandler) GetAllByUserID(c *fiber.Ctx) error {
 	ctx := c.UserContext()
+	ctx, span := tracer.StartSpan(ctx, "InventoryItemHandler.GetAllByUserID")
+	defer span.End()
 
 	userID, err := extractIntParam("user_id", c)
 	if err != nil {
 		return handleError(err, c)
 	}
 
-	result, err := tracer.TraceFnWithResult(
-		ctx,
-		"inventoryItemService.FindAllByUserID",
-		func(ctx context.Context) ([]*dto.InventoryItemDTO, error) {
-			return h.inventoryItemService.FindAllByUserID(ctx, userID)
-		},
-	)
+	result, err := h.inventoryItemService.FindAllByUserID(ctx, userID)
 	if err != nil {
 		return handleError(err, c)
 	}
@@ -144,6 +129,8 @@ func (h *InventoryItemHandler) GetAllByUserID(c *fiber.Ctx) error {
 //	@Router			/api/users/{user_id}/inventory/{item_id} [delete].
 func (h *InventoryItemHandler) RevokeByAdmin(c *fiber.Ctx) error {
 	ctx := c.UserContext()
+	ctx, span := tracer.StartSpan(ctx, "InventoryItemHandler.RevokeByAdmin")
+	defer span.End()
 
 	admin := mustExtractUser(ctx)
 
@@ -157,13 +144,7 @@ func (h *InventoryItemHandler) RevokeByAdmin(c *fiber.Ctx) error {
 		return handleError(err, c)
 	}
 
-	err = tracer.TraceFn(
-		ctx,
-		"inventoryItemService.RevokeByAdmin",
-		func(ctx context.Context) error {
-			return h.inventoryItemService.RevokeByAdmin(ctx, userID, itemID, admin)
-		},
-	)
+	err = h.inventoryItemService.RevokeByAdmin(ctx, userID, itemID, admin)
 	if err != nil {
 		return handleError(err, c)
 	}
@@ -187,6 +168,8 @@ func (h *InventoryItemHandler) RevokeByAdmin(c *fiber.Ctx) error {
 //	@Router			/api/users/me/inventory/set_item [post].
 func (h *InventoryItemHandler) SetInventoryItem(c *fiber.Ctx) error {
 	ctx := c.UserContext()
+	ctx, span := tracer.StartSpan(ctx, "InventoryItemHandler.SetInventoryItem")
+	defer span.End()
 
 	user := mustExtractUser(ctx)
 
@@ -195,13 +178,7 @@ func (h *InventoryItemHandler) SetInventoryItem(c *fiber.Ctx) error {
 		return handleError(err, c)
 	}
 
-	err = tracer.TraceFn(
-		ctx,
-		"inventoryItemService.SetInventoryItemAsCurrent",
-		func(ctx context.Context) error {
-			return h.inventoryItemService.SetInventoryItemAsCurrent(ctx, user, req.InventoryItemID)
-		},
-	)
+	err = h.inventoryItemService.SetInventoryItemAsCurrent(ctx, user, req.InventoryItemID)
 	if err != nil {
 		return handleError(err, c)
 	}

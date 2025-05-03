@@ -245,7 +245,7 @@ func (s *AuthenticationService) ChangePassword(
 			encodedPassword := s.encodePassword(ctx, credentials.NewPassword)
 
 			// Update password and get user data
-			user, err := s.authRepo.UpdatePasswordByID(ctx, authentication.UserID(), encodedPassword)
+			user, err := s.authRepo.TxUpdatePasswordByID(ctx, tx, authentication.UserID(), encodedPassword)
 			if err != nil {
 				return nil, nil, err
 			}

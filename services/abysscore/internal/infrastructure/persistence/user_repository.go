@@ -2,6 +2,7 @@ package persistence
 
 import (
 	"context"
+	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/metrics/tracer"
 	"strings"
 	"time"
 
@@ -27,6 +28,9 @@ func NewUserRepository(client *ent.Client) *UserRepository {
 
 // FindDTOById retrieves basic user data by ID.
 func (r *UserRepository) FindDTOById(ctx context.Context, id int) (*dto.UserDTO, error) {
+	ctx, span := tracer.StartSpan(ctx, "UserRepository.FindDTOById")
+	defer span.End()
+
 	user, err := r.client.User.
 		Query().
 		Where(entUser.IDEQ(id)).
@@ -40,6 +44,9 @@ func (r *UserRepository) FindDTOById(ctx context.Context, id int) (*dto.UserDTO,
 
 // FindFullDTOById retrieves complete user data with relationships by ID.
 func (r *UserRepository) FindFullDTOById(ctx context.Context, id int) (*dto.UserFullDTO, error) {
+	ctx, span := tracer.StartSpan(ctx, "UserRepository.FindFullDTOById")
+	defer span.End()
+
 	user, err := r.client.User.
 		Query().
 		Where(entUser.IDEQ(id)).
@@ -70,6 +77,9 @@ func (r *UserRepository) TxFindAuthenticationByLowerUsername(
 	*entity.AuthenticationData,
 	error,
 ) {
+	ctx, span := tracer.StartSpan(ctx, "UserRepository.TxFindAuthenticationByLowerUsername")
+	defer span.End()
+
 	user, err := tx.User.
 		Query().
 		Where(entUser.UsernameEqualFold(lowerUsername)).
@@ -82,6 +92,9 @@ func (r *UserRepository) TxFindAuthenticationByLowerUsername(
 }
 
 func (r *UserRepository) ExistsByEmail(ctx context.Context, email string) bool {
+	ctx, span := tracer.StartSpan(ctx, "UserRepository.ExistsByEmail")
+	defer span.End()
+
 	exists, _ := r.client.User.
 		Query().Where(entUser.EmailEqualFold(email)).
 		Exist(ctx)
@@ -91,6 +104,9 @@ func (r *UserRepository) ExistsByEmail(ctx context.Context, email string) bool {
 
 // TxUpdateHardwareIDByID updates a user's hardware ID.
 func (r *UserRepository) TxUpdateHardwareIDByID(ctx context.Context, tx *ent.Tx, id int, hardwareID string) error {
+	ctx, span := tracer.StartSpan(ctx, "UserRepository.TxUpdateHardwareIDByID")
+	defer span.End()
+
 	_, err := tx.User.
 		UpdateOneID(id).
 		SetHardwareID(hardwareID).
@@ -114,6 +130,9 @@ func (r *UserRepository) TxUpdateLoginStreakLoginAtByID(
 	loginStreak int,
 	loginAt time.Time,
 ) error {
+	ctx, span := tracer.StartSpan(ctx, "UserRepository.TxUpdateLoginStreakLoginAtByID")
+	defer span.End()
+
 	_, err := tx.User.
 		UpdateOneID(id).
 		SetLoginStreak(loginStreak).
@@ -123,13 +142,17 @@ func (r *UserRepository) TxUpdateLoginStreakLoginAtByID(
 	return r.handleUpdateError(err)
 }
 
-// UpdatePasswordByID updates a user's password and returns the updated user data.
-func (r *UserRepository) UpdatePasswordByID(
+// TxUpdatePasswordByID updates a user's password and returns the updated user data.
+func (r *UserRepository) TxUpdatePasswordByID(
 	ctx context.Context,
+	tx *ent.Tx,
 	id int,
 	password string,
 ) (*dto.UserFullDTO, error) {
-	user, err := r.client.User.
+	ctx, span := tracer.StartSpan(ctx, "UserRepository.TxUpdatePasswordByID")
+	defer span.End()
+
+	user, err := tx.User.
 		UpdateOneID(id).
 		SetPassword(password).
 		Save(ctx)
@@ -146,6 +169,9 @@ func (r *UserRepository) TxSetBlockUntilAndLevelAndReasonFromUser(
 	tx *ent.Tx,
 	user *dto.UserDTO,
 ) error {
+	ctx, span := tracer.StartSpan(ctx, "UserRepository.TxSetBlockUntilAndLevelAndReasonFromUser")
+	defer span.End()
+
 	_, err := tx.User.
 		UpdateOneID(user.ID).
 		SetNillableAccountBlockedUntil(user.AccountBlockedUntil).
@@ -164,6 +190,9 @@ func (r *UserRepository) SetInventoryItemAsCurrent(
 	user *dto.UserDTO,
 	item *dto.InventoryItemDTO,
 ) error {
+	ctx, span := tracer.StartSpan(ctx, "UserRepository.SetInventoryItemAsCurrent")
+	defer span.End()
+
 	_, err := r.client.User.
 		UpdateOneID(user.ID).
 		SetCurrentItemID(item.ID).
@@ -202,6 +231,9 @@ func (r *UserRepository) SetEmailIfNil(
 }
 
 func (r *UserRepository) WithTx(ctx context.Context) (*ent.Tx, error) {
+	ctx, span := tracer.StartSpan(ctx, "UserRepository.WithTx")
+	defer span.End()
+
 	tx, err := r.client.Tx(ctx)
 	if err != nil {
 		return nil, apperrors.WrapUnexpectedError(err)
@@ -216,6 +248,9 @@ func (r *UserRepository) TxCreate(
 	tx *ent.Tx,
 	credentials *dto.CredentialsDTO,
 ) (*entity.AuthenticationData, error) {
+	ctx, span := tracer.StartSpan(ctx, "UserRepository.TxCreate")
+	defer span.End()
+
 	user, err := tx.User.
 		Create().
 		SetUsername(credentials.Username).
@@ -231,6 +266,9 @@ func (r *UserRepository) TxCreate(
 
 // TxFindDTOById retrieves basic user data by ID.
 func (r *UserRepository) TxFindDTOById(ctx context.Context, tx *ent.Tx, id int) (*dto.UserDTO, error) {
+	ctx, span := tracer.StartSpan(ctx, "UserRepository.TxFindDTOById")
+	defer span.End()
+
 	user, err := tx.User.
 		Query().
 		Where(entUser.IDEQ(id)).

@@ -35,19 +35,16 @@ func (i *InventoryItemService) GrantToUserByAdmin(
 	itemID int,
 	performer *dto.UserDTO,
 ) (*dto.InventoryItemDTO, error) {
+	ctx, span := tracer.StartSpan(ctx, "InventoryItemService.GrantToUserByAdmin")
+	defer span.End()
+
 	createRequest := &dto.CreateInventoryItemDTO{
 		UserID:         userID,
 		ItemID:         itemID,
 		ReceivedFromID: performer.ID,
 	}
 
-	result, err := tracer.TraceFnWithResult(
-		ctx,
-		"inventoryItemRepository.Create",
-		func(ctx context.Context) (*dto.InventoryItemDTO, error) {
-			return i.inventoryItemRepository.Create(ctx, createRequest)
-		},
-	)
+	result, err := i.inventoryItemRepository.Create(ctx, createRequest)
 	if err != nil {
 		return nil, err
 	}
@@ -66,13 +63,10 @@ func (i *InventoryItemService) FindAllByUserID(
 	ctx context.Context,
 	userID int,
 ) ([]*dto.InventoryItemDTO, error) {
-	items, err := tracer.TraceFnWithResult(
-		ctx,
-		"inventoryItemRepository.FindByUserID",
-		func(ctx context.Context) ([]*dto.InventoryItemDTO, error) {
-			return i.inventoryItemRepository.FindByUserID(ctx, userID)
-		},
-	)
+	ctx, span := tracer.StartSpan(ctx, "InventoryItemService.FindAllByUserID")
+	defer span.End()
+
+	items, err := i.inventoryItemRepository.FindByUserID(ctx, userID)
 	if err != nil {
 		return nil, err
 	}
@@ -86,13 +80,10 @@ func (i *InventoryItemService) RevokeByAdmin(
 	inventoryItemID int,
 	performer *dto.UserDTO,
 ) error {
-	result, err := tracer.TraceFnWithResult(
-		ctx,
-		"inventoryItemRepository.DeleteByUserIDAndID",
-		func(ctx context.Context) (*dto.InventoryItemDTO, error) {
-			return i.inventoryItemRepository.DeleteByUserIDAndID(ctx, userID, inventoryItemID)
-		},
-	)
+	ctx, span := tracer.StartSpan(ctx, "InventoryItemService.RevokeByAdmin")
+	defer span.End()
+
+	result, err := i.inventoryItemRepository.DeleteByUserIDAndID(ctx, userID, inventoryItemID)
 	if err != nil {
 		return err
 	}
@@ -112,24 +103,15 @@ func (i *InventoryItemService) SetInventoryItemAsCurrent(
 	user *dto.UserDTO,
 	inventoryItemID int,
 ) error {
-	item, err := tracer.TraceFnWithResult(
-		ctx,
-		"inventoryItemRepository.FindByUserIDAndID",
-		func(ctx context.Context) (*dto.InventoryItemDTO, error) {
-			return i.inventoryItemRepository.FindByUserIDAndID(ctx, user.ID, inventoryItemID)
-		},
-	)
+	ctx, span := tracer.StartSpan(ctx, "InventoryItemService.SetInventoryItemAsCurrent")
+	defer span.End()
+
+	item, err := i.inventoryItemRepository.FindByUserIDAndID(ctx, user.ID, inventoryItemID)
 	if err != nil {
 		return err // item not found in inventory
 	}
 
-	err = tracer.TraceFn(
-		ctx,
-		"inventoryRepository.SetInventoryItemAsCurrent",
-		func(ctx context.Context) error {
-			return i.inventoryRepository.SetInventoryItemAsCurrent(ctx, user, item)
-		},
-	)
+	err = i.inventoryRepository.SetInventoryItemAsCurrent(ctx, user, item)
 	if err != nil {
 		return err // ???
 	}

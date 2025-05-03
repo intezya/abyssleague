@@ -1,8 +1,6 @@
 package handlers
 
 import (
-	"context"
-
 	"github.com/gofiber/fiber/v2"
 	"github.com/intezya/abyssleague/services/abysscore/internal/adapters/controller/http/dto/request"
 	domainservice "github.com/intezya/abyssleague/services/abysscore/internal/domain/service"
@@ -38,19 +36,15 @@ func NewAuthenticationHandler(
 //	@Router			/api/auth/register [post].
 func (h *AuthenticationHandler) Register(c *fiber.Ctx) error {
 	ctx := c.UserContext()
+	ctx, span := tracer.StartSpan(ctx, "AuthenticationHandler.Register")
+	defer span.End()
 
 	req, err := getAndValidateRequest[request.AuthenticationRequest](c)
 	if err != nil {
 		return handleError(err, c)
 	}
 
-	result, err := tracer.TraceFnWithResult(
-		ctx,
-		"authenticationService.Register",
-		func(ctx context.Context) (*domainservice.AuthenticationResult, error) {
-			return h.authenticationService.Register(ctx, req.ToCredentialsDTO())
-		},
-	)
+	result, err := h.authenticationService.Register(ctx, req.ToCredentialsDTO())
 	if err != nil {
 		return handleError(err, c)
 	}
@@ -78,19 +72,15 @@ func (h *AuthenticationHandler) Register(c *fiber.Ctx) error {
 //	@Router			/api/auth/login [post].
 func (h *AuthenticationHandler) Login(c *fiber.Ctx) error {
 	ctx := c.UserContext()
+	ctx, span := tracer.StartSpan(ctx, "AuthenticationHandler.Login")
+	defer span.End()
 
 	req, err := getAndValidateRequest[request.AuthenticationRequest](c)
 	if err != nil {
 		return handleError(err, c)
 	}
 
-	result, err := tracer.TraceFnWithResult(
-		ctx,
-		"authenticationService.Authenticate",
-		func(ctx context.Context) (*domainservice.AuthenticationResult, error) {
-			return h.authenticationService.Authenticate(ctx, req.ToCredentialsDTO())
-		},
-	)
+	result, err := h.authenticationService.Authenticate(ctx, req.ToCredentialsDTO())
 	if err != nil {
 		return handleError(err, c)
 	}
@@ -115,19 +105,15 @@ func (h *AuthenticationHandler) Login(c *fiber.Ctx) error {
 //	@Router			/api/auth/change_password [post].
 func (h *AuthenticationHandler) ChangePassword(c *fiber.Ctx) error {
 	ctx := c.UserContext()
+	ctx, span := tracer.StartSpan(ctx, "AuthenticationHandler.ChangePassword")
+	defer span.End()
 
 	req, err := getAndValidateRequest[request.PasswordChangeRequest](c)
 	if err != nil {
 		return handleError(err, c)
 	}
 
-	result, err := tracer.TraceFnWithResult(
-		ctx,
-		"authenticationService.ChangePassword",
-		func(ctx context.Context) (*domainservice.AuthenticationResult, error) {
-			return h.authenticationService.ChangePassword(ctx, req.ToDTO())
-		},
-	)
+	result, err := h.authenticationService.ChangePassword(ctx, req.ToDTO())
 	if err != nil {
 		return handleError(err, c)
 	}

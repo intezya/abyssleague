@@ -2,6 +2,7 @@ package persistence
 
 import (
 	"context"
+	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/metrics/tracer"
 
 	"github.com/intezya/abyssleague/services/abysscore/internal/adapters/mapper"
 	"github.com/intezya/abyssleague/services/abysscore/internal/domain/dto"
@@ -23,6 +24,9 @@ func (r *InventoryItemRepository) Create(
 	ctx context.Context,
 	inventoryItem *dto.CreateInventoryItemDTO,
 ) (*dto.InventoryItemDTO, error) {
+	ctx, span := tracer.StartSpan(ctx, "InventoryItemRepository.Create")
+	defer span.End()
+
 	result, err := withTxResult(ctx, r.client, func(tx *ent.Tx) (*ent.InventoryItem, error) {
 		created, err := r.client.InventoryItem.
 			Create().
@@ -56,6 +60,9 @@ func (r *InventoryItemRepository) FindByUserID(
 	ctx context.Context,
 	userID int,
 ) ([]*dto.InventoryItemDTO, error) {
+	ctx, span := tracer.StartSpan(ctx, "InventoryItemRepository.FindByUserID")
+	defer span.End()
+
 	inventoryItems, err := r.client.InventoryItem.
 		Query().
 		Where(inventoryitem.UserIDEQ(userID)).
@@ -74,6 +81,9 @@ func (r *InventoryItemRepository) FindByUserIDAndID(
 	ctx context.Context,
 	userID, id int,
 ) (*dto.InventoryItemDTO, error) {
+	ctx, span := tracer.StartSpan(ctx, "InventoryItemRepository.FindByUserIDAndID")
+	defer span.End()
+
 	inventoryItem, err := r.client.InventoryItem.
 		Query().
 		Where(
@@ -93,6 +103,9 @@ func (r *InventoryItemRepository) DeleteByUserIDAndID(
 	ctx context.Context,
 	userID, id int,
 ) (*dto.InventoryItemDTO, error) {
+	ctx, span := tracer.StartSpan(ctx, "InventoryItemRepository.DeleteByUserIDAndID")
+	defer span.End()
+
 	result, err := withTxResult(ctx, r.client, func(tx *ent.Tx) (*ent.InventoryItem, error) {
 		item, err := tx.InventoryItem.
 			Query().

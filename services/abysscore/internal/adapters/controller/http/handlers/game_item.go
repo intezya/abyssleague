@@ -1,11 +1,8 @@
 package handlers
 
 import (
-	"context"
-
 	"github.com/gofiber/fiber/v2"
 	"github.com/intezya/abyssleague/services/abysscore/internal/adapters/controller/http/dto/request"
-	"github.com/intezya/abyssleague/services/abysscore/internal/domain/dto"
 	"github.com/intezya/abyssleague/services/abysscore/internal/domain/entity/gameitementity"
 	domainservice "github.com/intezya/abyssleague/services/abysscore/internal/domain/service"
 	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/metrics/tracer"
@@ -53,6 +50,8 @@ func NewGameItemHandler(gameItemService domainservice.GameItemService) *GameItem
 //	@Router			/api/items [post].
 func (h *GameItemHandler) Create(c *fiber.Ctx) error {
 	ctx := c.UserContext()
+	ctx, span := tracer.StartSpan(ctx, "GameItemHandler.Create")
+	defer span.End()
 
 	admin := mustExtractUser(ctx)
 
@@ -61,13 +60,7 @@ func (h *GameItemHandler) Create(c *fiber.Ctx) error {
 		return handleError(err, c)
 	}
 
-	result, err := tracer.TraceFnWithResult(
-		ctx,
-		"gameItemService.Create",
-		func(ctx context.Context) (*dto.GameItemDTO, error) {
-			return h.gameItemService.Create(ctx, req, admin)
-		},
-	)
+	result, err := h.gameItemService.Create(ctx, req, admin)
 	if err != nil {
 		return handleError(err, c)
 	}
@@ -88,19 +81,15 @@ func (h *GameItemHandler) Create(c *fiber.Ctx) error {
 //	@Router			/api/items/{id} [get].
 func (h *GameItemHandler) FindByID(c *fiber.Ctx) error {
 	ctx := c.UserContext()
+	ctx, span := tracer.StartSpan(ctx, "GameItemHandler.FindByID")
+	defer span.End()
 
 	id, err := extractIntParam("id", c)
 	if err != nil {
 		return handleError(err, c)
 	}
 
-	result, err := tracer.TraceFnWithResult(
-		ctx,
-		"gameItemService.FindByID",
-		func(ctx context.Context) (*dto.GameItemDTO, error) {
-			return h.gameItemService.FindByID(ctx, id)
-		},
-	)
+	result, err := h.gameItemService.FindByID(ctx, id)
 	if err != nil {
 		return handleError(err, c)
 	}
@@ -123,19 +112,15 @@ func (h *GameItemHandler) FindByID(c *fiber.Ctx) error {
 //	@Router			/api/items [get].
 func (h *GameItemHandler) FindAllPaged(c *fiber.Ctx) error {
 	ctx := c.UserContext()
+	ctx, span := tracer.StartSpan(ctx, "GameItemHandler.FindAllPaged")
+	defer span.End()
 
 	paginationQuery, err := h.getPaginationQuery(c)
 	if err != nil {
 		return handleError(err, c)
 	}
 
-	result, err := tracer.TraceFnWithResult(
-		ctx,
-		"gameItemService.FindAllPaged",
-		func(ctx context.Context) (*dto.PaginatedResult[*dto.GameItemDTO], error) {
-			return h.gameItemService.FindAllPaged(ctx, paginationQuery)
-		},
-	)
+	result, err := h.gameItemService.FindAllPaged(ctx, paginationQuery)
 	if err != nil {
 		return handleError(err, c)
 	}
@@ -160,6 +145,8 @@ func (h *GameItemHandler) FindAllPaged(c *fiber.Ctx) error {
 //	@Router			/api/items/{id} [put].
 func (h *GameItemHandler) Update(c *fiber.Ctx) error {
 	ctx := c.UserContext()
+	ctx, span := tracer.StartSpan(ctx, "GameItemHandler.Update")
+	defer span.End()
 
 	admin := mustExtractUser(ctx)
 
@@ -173,13 +160,7 @@ func (h *GameItemHandler) Update(c *fiber.Ctx) error {
 		return handleError(err, c)
 	}
 
-	err = tracer.TraceFn(
-		ctx,
-		"gameItemService.Update",
-		func(ctx context.Context) error {
-			return h.gameItemService.Update(ctx, itemID, req, admin)
-		},
-	)
+	err = h.gameItemService.Update(ctx, itemID, req, admin)
 	if err != nil {
 		return handleError(err, c)
 	}
@@ -203,6 +184,8 @@ func (h *GameItemHandler) Update(c *fiber.Ctx) error {
 //	@Router			/api/items/{id} [delete].
 func (h *GameItemHandler) Delete(c *fiber.Ctx) error {
 	ctx := c.UserContext()
+	ctx, span := tracer.StartSpan(ctx, "GameItemHandler.Delete")
+	defer span.End()
 
 	admin := mustExtractUser(ctx)
 
@@ -211,13 +194,7 @@ func (h *GameItemHandler) Delete(c *fiber.Ctx) error {
 		return handleError(err, c)
 	}
 
-	err = tracer.TraceFn(
-		ctx,
-		"gameItemService.Delete",
-		func(ctx context.Context) error {
-			return h.gameItemService.Delete(ctx, itemID, admin)
-		},
-	)
+	err = h.gameItemService.Delete(ctx, itemID, admin)
 	if err != nil {
 		return handleError(err, c)
 	}

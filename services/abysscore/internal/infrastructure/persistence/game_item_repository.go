@@ -2,6 +2,7 @@ package persistence
 
 import (
 	"context"
+	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/metrics/tracer"
 
 	"github.com/intezya/abyssleague/services/abysscore/internal/adapters/mapper"
 	"github.com/intezya/abyssleague/services/abysscore/internal/domain/dto"
@@ -24,6 +25,9 @@ func (r *GameItemRepository) Create(
 	ctx context.Context,
 	gameItem *dto.GameItemDTO,
 ) (*dto.GameItemDTO, error) {
+	ctx, span := tracer.StartSpan(ctx, "GameItemRepository.Create")
+	defer span.End()
+
 	result, err := r.client.GameItem.
 		Create().
 		SetName(gameItem.Name).
@@ -43,6 +47,9 @@ func (r *GameItemRepository) UpdateByID(
 	id int,
 	gameItem *dto.GameItemDTO,
 ) error {
+	ctx, span := tracer.StartSpan(ctx, "GameItemRepository.UpdateByID")
+	defer span.End()
+
 	_, err := r.client.GameItem.
 		UpdateOneID(id).
 		SetName(gameItem.Name).
@@ -58,6 +65,9 @@ func (r *GameItemRepository) UpdateByID(
 }
 
 func (r *GameItemRepository) DeleteByID(ctx context.Context, id int) error {
+	ctx, span := tracer.StartSpan(ctx, "GameItemRepository.DeleteByID")
+	defer span.End()
+
 	err := r.client.GameItem.
 		DeleteOneID(id).
 		Exec(ctx)
@@ -78,6 +88,9 @@ func (r *GameItemRepository) FindAllPaged(
 	orderBy gameitementity.OrderBy,
 	orderType types.OrderType,
 ) (*dto.PaginatedResult[*dto.GameItemDTO], error) {
+	ctx, span := tracer.StartSpan(ctx, "GameItemRepository.FindAllPaged")
+	defer span.End()
+
 	page = getValidPage(page)
 	size = getValidSize(size)
 	offset := countOffset(page, size)
@@ -113,6 +126,9 @@ func (r *GameItemRepository) FindAllPaged(
 }
 
 func (r *GameItemRepository) FindByID(ctx context.Context, id int) (*dto.GameItemDTO, error) {
+	ctx, span := tracer.StartSpan(ctx, "GameItemRepository.FindByID")
+	defer span.End()
+
 	result, err := r.client.GameItem.
 		Get(ctx, id)
 	if err != nil {

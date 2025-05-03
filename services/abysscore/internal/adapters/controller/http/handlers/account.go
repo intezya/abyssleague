@@ -1,10 +1,8 @@
 package handlers
 
 import (
-	"context"
 	"github.com/gofiber/fiber/v2"
 	"github.com/intezya/abyssleague/services/abysscore/internal/adapters/controller/http/dto/request"
-	"github.com/intezya/abyssleague/services/abysscore/internal/domain/dto"
 	domainservice "github.com/intezya/abyssleague/services/abysscore/internal/domain/service"
 	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/metrics/tracer"
 )
@@ -35,6 +33,8 @@ func NewAccountHandler(accountService domainservice.AccountService) *AccountHand
 //	@Router			/api/account/email/get_code [post].
 func (h *AccountHandler) SendCodeForEmailLink(c *fiber.Ctx) error {
 	ctx := c.UserContext()
+	ctx, span := tracer.StartSpan(ctx, "AccountHandler.SendCodeForEmailLink")
+	defer span.End()
 
 	user := mustExtractUser(ctx)
 
@@ -43,13 +43,7 @@ func (h *AccountHandler) SendCodeForEmailLink(c *fiber.Ctx) error {
 		return handleError(err, c)
 	}
 
-	err = tracer.TraceFn(
-		ctx,
-		"accountService.SendCodeForEmailLink",
-		func(ctx context.Context) error {
-			return h.accountService.SendCodeForEmailLink(ctx, user, req.Email)
-		},
-	)
+	err = h.accountService.SendCodeForEmailLink(ctx, user, req.Email)
 	if err != nil {
 		return handleError(err, c)
 	}
@@ -75,6 +69,8 @@ func (h *AccountHandler) SendCodeForEmailLink(c *fiber.Ctx) error {
 //	@Router			/api/account/email/enter_code [post].
 func (h *AccountHandler) EnterCodeForEmailLink(c *fiber.Ctx) error {
 	ctx := c.UserContext()
+	ctx, span := tracer.StartSpan(ctx, "AccountHandler.EnterCodeForEmailLink")
+	defer span.End()
 
 	user := mustExtractUser(ctx)
 
@@ -83,13 +79,7 @@ func (h *AccountHandler) EnterCodeForEmailLink(c *fiber.Ctx) error {
 		return handleError(err, c)
 	}
 
-	result, err := tracer.TraceFnWithResult(
-		ctx,
-		"accountService.EnterCodeForEmailLink",
-		func(ctx context.Context) (*dto.UserDTO, error) {
-			return h.accountService.EnterCodeForEmailLink(ctx, user, req.VerificationCode)
-		},
-	)
+	result, err := h.accountService.EnterCodeForEmailLink(ctx, user, req.VerificationCode)
 	if err != nil {
 		return handleError(err, c)
 	}

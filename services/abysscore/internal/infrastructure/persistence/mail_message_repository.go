@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/metrics/tracer"
 	"strings"
 	"time"
 
@@ -45,6 +46,9 @@ func (s *MailMessageRepository) SaveLinkMailCodeData(
 	message *mailmessage.LinkEmailCodeData,
 	expireMinutes int,
 ) {
+	ctx, span := tracer.StartSpan(ctx, "MailMessageRepository.SaveLinkMailCodeData")
+	defer span.End()
+
 	key := s.linkMailCodeKey(message.UserID)
 
 	data := entry{
@@ -60,6 +64,9 @@ func (s *MailMessageRepository) GetLinkMailCodeData(
 	ctx context.Context,
 	receiverID int,
 ) (*mailmessage.LinkEmailCodeData, error) {
+	ctx, span := tracer.StartSpan(ctx, "MailMessageRepository.GetLinkMailCodeData")
+	defer span.End()
+
 	if s.redisClient.Client != nil {
 		key := s.linkMailCodeKey(receiverID)
 
