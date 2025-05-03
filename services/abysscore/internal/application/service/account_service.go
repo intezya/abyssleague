@@ -2,6 +2,7 @@ package applicationservice
 
 import (
 	"context"
+	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/metrics/tracer"
 	"time"
 
 	"github.com/intezya/abyssleague/services/abysscore/internal/domain/dto"
@@ -45,13 +46,21 @@ func (s *AccountService) SendCodeForEmailLink(
 		return apperrors.WrapBadRequest(err)
 	}
 
-	exists := s.userRepository.ExistsByEmail(ctx, email)
+	exists := tracer.Trace1(ctx, "userRepository.ExistsByEmail", func(ctx context.Context) bool {
+		return s.userRepository.ExistsByEmail(ctx, email)
+	})
 
 	if exists {
 		return apperrors.ErrEmailConflict
 	}
 
-	sentMailMessage, err := s.mailMessageRepository.GetLinkMailCodeData(ctx, user.ID)
+	sentMailMessage, err := tracer.TraceFnWithResult(
+		ctx,
+		"mailMessageRepository.GetLinkMailCodeData",
+		func(ctx context.Context) (*mailmessage.LinkEmailCodeData, error) {
+			return s.mailMessageRepository.GetLinkMailCodeData(ctx, user.ID)
+		},
+	)
 
 	if err == nil && sentMailMessage != nil &&
 		sentMailMessage.CreatedAt.After(
@@ -60,9 +69,17 @@ func (s *AccountService) SendCodeForEmailLink(
 		return apperrors.TooManyEmailLinkRequests // if already sent
 	}
 
-	mailMessage := mailmessage.NewLinkEmailCodeMail(user.ID, email, newLinkEmailCodeExpireMinutes)
+	mailMessage := tracer.Trace1(
+		ctx,
+		"mailmessage.NewLinkEmailCodeMail",
+		func(ctx context.Context) *mailmessage.LinkEmailCodeData {
+			return mailmessage.NewLinkEmailCodeMail(user.ID, email, newLinkEmailCodeExpireMinutes)
+		},
+	)
 
-	err = s.mailSender.Send(ctx, mailMessage.Message, typedEmail.String())
+	err = tracer.TraceFn(ctx, "mailSender.Send", func(ctx context.Context) error {
+		return s.mailSender.Send(ctx, mailMessage.Message, typedEmail.String())
+	})
 	if err != nil {
 		return apperrors.WrapServiceUnavailable(err)
 	}
@@ -80,7 +97,13 @@ func (s *AccountService) EnterCodeForEmailLink(
 	*dto.UserDTO,
 	error,
 ) {
-	mailMessageData, err := s.mailMessageRepository.GetLinkMailCodeData(ctx, user.ID)
+	mailMessageData, err := tracer.TraceFnWithResult(
+		ctx,
+		"mailMessageRepository.GetLinkMailCodeData",
+		func(ctx context.Context) (*mailmessage.LinkEmailCodeData, error) {
+			return s.mailMessageRepository.GetLinkMailCodeData(ctx, user.ID)
+		},
+	)
 	if err != nil {
 		return nil, apperrors.WrapWrongVerificationCodeForEmailLink(err)
 	}
@@ -89,7 +112,13 @@ func (s *AccountService) EnterCodeForEmailLink(
 		return nil, apperrors.ErrWrongVerificationCodeForEmailLink
 	}
 
-	result, err := s.userRepository.SetEmailIfNil(ctx, user.ID, mailMessageData.EmailForLink)
+	result, err := tracer.TraceFnWithResult(
+		ctx,
+		"userRepository.SetEmailIfNil",
+		func(ctx context.Context) (*dto.UserDTO, error) {
+			return s.userRepository.SetEmailIfNil(ctx, user.ID, mailMessageData.EmailForLink)
+		},
+	)
 	if err != nil {
 		return nil, err
 	}
