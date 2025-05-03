@@ -97,6 +97,7 @@ func (r *InventoryItemRepository) DeleteByUserIDAndID(
 		item, err := tx.InventoryItem.
 			Query().
 			Where(inventoryitem.IDEQ(id), inventoryitem.UserIDEQ(userID)).
+			WithItem().
 			First(ctx)
 		if err != nil {
 			return nil, err
@@ -109,7 +110,6 @@ func (r *InventoryItemRepository) DeleteByUserIDAndID(
 
 		return item, nil
 	})
-
 	if err != nil {
 		return nil, r.handleQueryError(err)
 	}

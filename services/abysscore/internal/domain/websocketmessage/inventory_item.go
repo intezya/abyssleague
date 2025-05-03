@@ -2,8 +2,10 @@ package websocketmessage
 
 import "github.com/intezya/abyssleague/services/abysscore/internal/domain/dto"
 
-const inventoryMessageType = "inventory"
-const itemMessageSubtype = "item"
+const (
+	inventoryMessageType = "inventory"
+	itemMessageSubtype   = "item"
+)
 
 type InventoryItemObtainedMessage struct {
 	*BaseMessage

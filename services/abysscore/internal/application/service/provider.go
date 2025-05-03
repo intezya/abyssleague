@@ -1,7 +1,7 @@
 package applicationservice
 
 import (
-	"github.com/intezya/abyssleague/services/abysscore/internal/adapters/controller/grpc/wrapper"
+	"github.com/intezya/abyssleague/services/abysscore/internal/adapters/controller/grpc/clients"
 	drivenports "github.com/intezya/abyssleague/services/abysscore/internal/domain/ports/driven"
 	domainservice "github.com/intezya/abyssleague/services/abysscore/internal/domain/service"
 	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/applicationevent"
@@ -11,7 +11,7 @@ import (
 
 type DependencyProvider struct {
 	repositoryDependencyProvider *persistence.DependencyProvider
-	gRPCDependencyProvider       *wrapper.DependencyProvider
+	gRPCDependencyProvider       *clients.DependencyProvider
 	passwordHelper               domainservice.CredentialsHelper
 	tokenHelper                  domainservice.TokenHelper
 
@@ -25,7 +25,7 @@ type DependencyProvider struct {
 
 func NewDependencyProvider(
 	repositoryDependencyProvider *persistence.DependencyProvider,
-	gRPCDependencyProvider *wrapper.DependencyProvider,
+	gRPCDependencyProvider *clients.DependencyProvider,
 	passwordHelper domainservice.CredentialsHelper,
 	tokenHelper domainservice.TokenHelper,
 	mailSender drivenports.MailSender,

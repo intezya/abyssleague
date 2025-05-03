@@ -4,16 +4,17 @@ import (
 	"context"
 	"encoding/json"
 
-	websocketpb "github.com/intezya/abyssleague/proto/websocket"
-	drivenports "github.com/intezya/abyssleague/services/abysscore/internal/domain/ports/driven"
+	"github.com/intezya/abyssleague/services/abysscore/internal/adapters/controller/grpc/clients"
 	"github.com/intezya/pkglib/logger"
 )
 
 type NotificationService struct {
-	websocketService drivenports.WebsocketService
+	websocketService clients.WebsocketMessagingClient
 }
 
-func NewNotificationService(websocketService drivenports.WebsocketService) *NotificationService {
+func NewNotificationService(
+	websocketService clients.WebsocketMessagingClient,
+) *NotificationService {
 	return &NotificationService{websocketService: websocketService}
 }
 
@@ -25,13 +26,7 @@ func (n NotificationService) SendToUser(userID int, message interface{}) error {
 		return err
 	}
 
-	err = n.websocketService.SendMessage(
-		context.Background(),
-		&websocketpb.SendMessageRequest{
-			UserId:      int64(userID),
-			JsonPayload: payload,
-		},
-	)
+	err = n.websocketService.SendMessage(context.Background(), userID, payload)
 	if err != nil {
 		logger.Log.Debug("failed to send message: %v", err)
 

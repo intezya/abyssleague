@@ -10,7 +10,7 @@ import (
 
 	"github.com/gofiber/fiber/v2/middleware/healthcheck"
 	"github.com/gofiber/fiber/v2/middleware/requestid"
-	"github.com/intezya/abyssleague/services/abysscore/internal/adapters/controller/grpc/factory"
+	"github.com/intezya/abyssleague/services/abysscore/internal/adapters/controller/grpc/clients"
 	rediswrapper "github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/cache/redis"
 	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/mail"
 	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/metrics/tracer"
@@ -22,11 +22,11 @@ import (
 	"github.com/redis/go-redis/v9"
 )
 
-// Environment types.
+type EnvType string
+
 const (
-	EnvTypeDev  = "dev"
-	EnvTypeTest = "test"
-	EnvTypeProd = "prod"
+	EnvTypeDev  EnvType = "dev"
+	EnvTypeProd EnvType = "prod"
 )
 
 var (
@@ -72,7 +72,7 @@ type Config struct {
 
 	// Environment configuration
 	IsDebug bool
-	EnvType string
+	EnvType EnvType
 
 	// Component configurations
 	RateLimitConfig  *RateLimitConfig
@@ -81,7 +81,7 @@ type Config struct {
 	EntConfig        *persistence.EntConfig
 	JWTConfiguration *auth.JWTConfiguration
 	TracerConfig     *tracer.Config
-	GRPCConfig       *factory.GRPCConfig
+	GRPCConfig       *clients.Config
 	SMTPConfig       *mail.SMTPConfig
 }
 
@@ -110,10 +110,10 @@ func LoadConfig() *Config {
 	if err := godotenv.Load(); err != nil {
 		// Only log error, don't fail as .env file is optional
 		//nolint:forbidigo // logger not initialized yet
-		fmt.Printf("%v: %v", errLoadEnvFile, err)
+		fmt.Printf("%v: %v\n", errLoadEnvFile, err)
 	}
 
-	envType := getEnvString("ENV_TYPE", EnvTypeProd)
+	envType := getEnvString("ENV_TYPE", string(EnvTypeProd))
 
 	config := &Config{
 		// Server configuration
@@ -128,7 +128,7 @@ func LoadConfig() *Config {
 
 		// Environment configuration
 		IsDebug: getEnvBool("DEBUG", false),
-		EnvType: envType,
+		EnvType: EnvType(envType),
 
 		// Component configurations
 		RateLimitConfig: initRateLimitConfig(),
@@ -141,7 +141,7 @@ func LoadConfig() *Config {
 			getEnvDuration("JWT_EXPIRATION_TIME", defaultJWTExpiration),
 		),
 		TracerConfig: initTracerConfig(envType),
-		GRPCConfig:   initGRPCConfig(),
+		GRPCConfig:   initGRPCConfig(envType == string(EnvTypeDev)),
 		SMTPConfig:   initSMTPConfig(),
 	}
 
@@ -261,11 +261,20 @@ func initTracerConfig(envType string) *tracer.Config {
 }
 
 // initGRPCConfig initializes GRPC configuration.
-func initGRPCConfig() *factory.GRPCConfig {
-	return &factory.GRPCConfig{
-		WebsocketApiGatewayHost:  getEnvString("WEBSOCKET_API_GATEWAY_HOST", ""),
-		WebsocketApiGatewayPorts: parseGrpcPorts(getEnvString("WEBSOCKET_API_GATEWAY_PORTS", "")),
+func initGRPCConfig(devMode bool) *clients.Config {
+	defaultConfig := &clients.Config{
+		DevMode: devMode,
+		RequestTimeout: time.Millisecond * time.Duration(getEnvInt(
+			"ABYSSCORE_GRPC_CLIENT_CALL_TIMEOUT_MS",
+			int(clients.DefaultRequestTimeout.Milliseconds()),
+		)),
+		WebsocketMessagingServiceHost: getEnvString("WEBSOCKET_API_GATEWAY_HOST", ""),
+		WebsocketMessagingServicePorts: parseGrpcPorts(
+			getEnvString("WEBSOCKET_API_GATEWAY_PORTS", ""),
+		),
 	}
+
+	return defaultConfig
 }
 
 // buildDBConnectionString creates a database connection string.

@@ -1,12 +1,9 @@
 package main
 
 import (
-	"context"
-
 	"github.com/go-playground/validator/v10"
 	"github.com/intezya/abyssleague/services/abysscore/internal/adapters/config"
-	"github.com/intezya/abyssleague/services/abysscore/internal/adapters/controller/grpc/factory"
-	"github.com/intezya/abyssleague/services/abysscore/internal/adapters/controller/grpc/wrapper"
+	"github.com/intezya/abyssleague/services/abysscore/internal/adapters/controller/grpc/clients"
 	"github.com/intezya/abyssleague/services/abysscore/internal/adapters/controller/http/handlers"
 	"github.com/intezya/abyssleague/services/abysscore/internal/adapters/controller/http/server"
 	"github.com/intezya/abyssleague/services/abysscore/internal/adapters/controller/http/server/routes"
@@ -33,27 +30,21 @@ import (
 func main() {
 	appConfig := config.LoadConfig()
 
-	config.SetupLogger(appConfig.IsDebug, appConfig.EnvType, appConfig.LoggerConfig)
+	config.SetupLogger(appConfig.IsDebug, string(appConfig.EnvType), appConfig.LoggerConfig)
 
 	tracerCleanup := tracer.Init(appConfig.TracerConfig, logger.Log)
 	entClient := persistence.SetupEnt(appConfig.EntConfig, logger.Log)
 	redisClient := rediswrapper.NewClientWrapper(appConfig.RedisConfig, logger.Log)
-	grpcFactory := factory.NewGrpcClientFactory()
 	smtpClient := mail.NewSMTPSender(appConfig.SMTPConfig, logger.Log)
+	gRPCDependencies := clients.NewDependencyProvider(appConfig.GRPCConfig)
 
 	defer func() {
 		tracerCleanup()
 		redisClient.Close()
-		grpcFactory.CloseAll()
 
 		_ = entClient.Close()
+		_ = gRPCDependencies.CloseAll()
 	}()
-
-	gRPCDependencies := wrapper.NewDependencyProvider(
-		context.Background(),
-		appConfig.GRPCConfig,
-		grpcFactory,
-	)
 
 	logger.Log.Debug("grpcDependencies has been initialized")
 

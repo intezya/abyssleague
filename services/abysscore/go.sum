@@ -82,6 +82,8 @@ github.com/grpc-ecosystem/grpc-gateway/v2 v2.26.1 h1:e9Rjr40Z98/clHv5Yg79Is0Ntos
 github.com/grpc-ecosystem/grpc-gateway/v2 v2.26.1/go.mod h1:tIxuGz/9mpox++sgp9fJjHO0+q1X9/UOWd798aAm22M=
 github.com/hashicorp/hcl/v2 v2.13.0 h1:0Apadu1w6M11dyGFxWnmhhcMjkbAiKCv7G1r/2QgCNc=
 github.com/hashicorp/hcl/v2 v2.13.0/go.mod h1:e4z5nxYlWNPdDSNYX+ph14EvWYMFm3eP0zIUqPc2jr0=
+github.com/intezya/pkglib/configloader v0.1.3 h1:8beCwXXgaE8pruzrk8adc7XoZIrcDYwytyohgSvYQRc=
+github.com/intezya/pkglib/configloader v0.1.3/go.mod h1:O23u9PIdrG4ynOiUbBup8Lxo4tKlXL/ijZ7fi32xIJI=
 github.com/intezya/pkglib/crypto v0.0.0-20250410075734-66680663f021 h1:Ekd5HZJvbVAqP3RqCaJ/MWiDbW0QYpwSy7TKvJuLBE0=
 github.com/intezya/pkglib/crypto v0.0.0-20250410075734-66680663f021/go.mod h1:SlAag+JDycmvrNp0RAWt3Vcchc3vUR0F8KYGjgH3wZc=
 github.com/intezya/pkglib/generate v0.0.0-20250423123611-fb09c2118aaa h1:LEfrlxXT8pTzVARrxe8xjWj3+5wanp7k7JN45Xyv0aU=

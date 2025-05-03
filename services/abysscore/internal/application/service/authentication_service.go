@@ -5,10 +5,10 @@ import (
 	"strings"
 	"time"
 
+	"github.com/intezya/abyssleague/services/abysscore/internal/adapters/controller/grpc/clients"
 	"github.com/intezya/abyssleague/services/abysscore/internal/domain/dto"
 	"github.com/intezya/abyssleague/services/abysscore/internal/domain/entity"
 	"github.com/intezya/abyssleague/services/abysscore/internal/domain/entity/userentity"
-	drivenports "github.com/intezya/abyssleague/services/abysscore/internal/domain/ports/driven"
 	repositoryports "github.com/intezya/abyssleague/services/abysscore/internal/domain/repository"
 	domainservice "github.com/intezya/abyssleague/services/abysscore/internal/domain/service"
 	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/metrics/tracer"
@@ -21,7 +21,7 @@ import (
 type AuthenticationService struct {
 	authenticationRepository repositoryports.AuthenticationRepository
 	userRepository           repositoryports.UserRepository
-	mainWebsocketService     drivenports.WebsocketService
+	mainWebsocketService     clients.WebsocketMessagingClient
 	credentialsHelper        domainservice.CredentialsHelper
 	tokenHelper              domainservice.TokenHelper
 }
@@ -30,7 +30,7 @@ type AuthenticationService struct {
 func NewAuthenticationService(
 	authenticationRepository repositoryports.AuthenticationRepository,
 	userRepository repositoryports.UserRepository,
-	mainWebsocketService drivenports.WebsocketService,
+	mainWebsocketService clients.WebsocketMessagingClient,
 	credentialsHelper domainservice.CredentialsHelper,
 	tokenHelper domainservice.TokenHelper,
 ) *AuthenticationService {
@@ -424,7 +424,7 @@ func (a *AuthenticationService) getOnlineCount(ctx context.Context) int {
 				return 0
 			}
 
-			return int(res.GetOnline())
+			return res
 		},
 	)
 }
