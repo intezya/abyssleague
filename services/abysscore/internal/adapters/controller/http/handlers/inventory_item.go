@@ -24,7 +24,7 @@ func NewInventoryItemHandler(
 //	@Tags			Inventory Items
 //	@Produce		json
 //	@Security		BearerAuth
-//	@Param			user_id	path		int											true	"User ID"
+//	@Param			user_id	path		int											true	"UserDTO ID"
 //	@Param			item_id	path		int											true	"Item ID"
 //	@Success		200		{object}	examples.InventoryItemDTOSuccessResponse	"Granted inventory item"
 //	@Failure		400		{object}	examples.BadRequestResponse					"Bad request - invalid ID"
@@ -88,7 +88,7 @@ func (h *InventoryItemHandler) GetAllByAuthorization(c *fiber.Ctx) error {
 //	@Tags			Inventory Items
 //	@Produce		json
 //	@Security		BearerAuth
-//	@Param			user_id	path		int											true	"User ID"
+//	@Param			user_id	path		int											true	"UserDTO ID"
 //	@Success		200		{array}		examples.PaginatedInventoryItemsDTOResponse	"List of user's inventory items"
 //	@Failure		400		{object}	examples.BadRequestResponse					"Bad request - invalid ID"
 //	@Failure		403		{object}	examples.ForbiddenByAccessLevelResponse		"Forbidden - not enough rights"
@@ -119,7 +119,7 @@ func (h *InventoryItemHandler) GetAllByUserID(c *fiber.Ctx) error {
 //	@Tags			Inventory Items
 //	@Produce		json
 //	@Security		BearerAuth
-//	@Param			user_id	path	int	true	"User ID"
+//	@Param			user_id	path	int	true	"UserDTO ID"
 //	@Param			item_id	path	int	true	"Item ID"
 //	@Success		204		"Item successfully revoked"
 //	@Failure		400		{object}	examples.BadRequestResponse				"Bad request - invalid ID"

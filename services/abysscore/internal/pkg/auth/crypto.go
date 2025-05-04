@@ -1,52 +1,106 @@
 package auth
 
 import (
+	"crypto/aes"
+	"crypto/cipher"
+	"crypto/sha256"
+	"encoding/base64"
+	"encoding/hex"
+	"fmt"
 	"github.com/intezya/pkglib/crypto"
-	"github.com/intezya/pkglib/logger"
+	"github.com/intezya/pkglib/generate"
+	"strings"
 )
 
 const (
 	defaultSaltLength = 32
 )
 
-type HashHelper struct{}
-
-func NewHashHelper() *HashHelper {
-	return &HashHelper{}
+type HashHelper struct {
+	block cipher.Block
 }
 
-func (h *HashHelper) EncodePassword(raw string) (hash string) {
-	salt, err := crypto.Salt(defaultSaltLength)
-	if err != nil {
-		logger.Log.Errorf("Unexpected error while generating salt: %v", err)
+func NewHashHelper(hardwareIDEncryptionKey string) *HashHelper {
+	key := sha256.Sum256([]byte(hardwareIDEncryptionKey))
+	block, err := aes.NewCipher(key[:])
 
-		for {
-			salt, err = crypto.Salt(defaultSaltLength)
-			if err == nil {
-				break
-			}
-		}
+	if err != nil {
+		panic(err) // unreachable
 	}
 
-	return crypto.HashArgon2(h.preHash(raw), salt, nil)
+	return &HashHelper{
+		block: block,
+	}
+}
+
+func (h *HashHelper) EncodePassword(raw string) string {
+	hash, err := crypto.HashArgon2(h.preHash(raw), crypto.DefaultArgonParams)
+	if err != nil {
+		panic(err)
+	}
+	return hash
 }
 
 func (h *HashHelper) VerifyPassword(raw, hash string) bool {
-	return crypto.VerifyArgon2(h.preHash(raw), hash, nil)
+	ok, _ := crypto.VerifyArgon2(hash, h.preHash(raw))
+	return ok
 }
 
-func (h *HashHelper) EncodeHardwareID(raw string) (hash string) {
-	return crypto.HashSHA256(raw)
+func (h *HashHelper) EncodeHardwareID(raw string) string {
+	salt := generate.RandomBytes(12)
+	aesgcm, err := cipher.NewGCM(h.block)
+	if err != nil {
+		panic(err)
+	}
+
+	ciphertext := aesgcm.Seal(nil, salt, []byte(raw), nil)
+
+	return fmt.Sprintf(
+		"%s:%s",
+		base64.StdEncoding.EncodeToString(salt),
+		base64.StdEncoding.EncodeToString(ciphertext),
+	)
 }
 
-func (h *HashHelper) VerifyHardwareID(raw, hash string) bool {
-	return raw == hash
+func (h *HashHelper) DecodeHardwareID(encoded string) (string, error) {
+	parts := strings.Split(encoded, ":")
+	if len(parts) != 2 {
+		return "", fmt.Errorf("invalid encoded format")
+	}
+
+	nonce, err := base64.StdEncoding.DecodeString(parts[0])
+	if err != nil {
+		return "", err
+	}
+
+	ciphertext, err := base64.StdEncoding.DecodeString(parts[1])
+	if err != nil {
+		return "", err
+	}
+
+	aesgcm, err := cipher.NewGCM(h.block)
+	if err != nil {
+		return "", err
+	}
+
+	plaintext, err := aesgcm.Open(nil, nonce, ciphertext, nil)
+	if err != nil {
+		return "", err
+	}
+
+	return string(plaintext), nil
 }
 
-func (h *HashHelper) VerifyTokenHardwareID(tokenHash, userHash string) bool {
-	return tokenHash == userHash
+func (h *HashHelper) VerifyHardwareID(raw, encoded string) bool {
+	decoded, err := h.DecodeHardwareID(encoded)
+	if err != nil {
+		return false
+	}
+
+	return decoded == raw
 }
 
-func (h *HashHelper) preHash(raw string) (prehash string) {
-	return crypto.HashSHA256(raw)
+func (h *HashHelper) preHash(raw string) string {
+	shaSum := sha256.Sum256([]byte(raw))
+	return hex.EncodeToString(shaSum[:])
 }

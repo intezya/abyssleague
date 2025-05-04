@@ -7,7 +7,6 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/intezya/abyssleague/services/abysscore/internal/adapters/config"
-	"github.com/intezya/abyssleague/services/abysscore/internal/pkg/apperrors"
 	"github.com/intezya/pkglib/logger"
 	"github.com/prometheus/client_golang/prometheus"
 	"go.opentelemetry.io/otel"
@@ -149,7 +148,7 @@ func setSpanAttributes(span trace.Span, c *fiber.Ctx, requestID interface{}) {
 		attribute.String("http.method", c.Method()),
 		attribute.String("http.url", c.OriginalURL()),
 		attribute.String("http.host", c.Hostname()),
-		attribute.String("http.user_agent", c.Get("User-Agent")),
+		attribute.String("http.user_agent", c.Get("UserDTO-Agent")),
 		attribute.String("http.request_id", fmt.Sprintf("%v", requestID)),
 	)
 }
@@ -193,7 +192,7 @@ func createLogEntry(
 		"remote_addr", c.IP(),
 		"x_forwarded_for", c.Get("X-Forwarded-For"),
 		"host", c.Hostname(),
-		"user_agent", c.Get("User-Agent"),
+		"user_agent", c.Get("UserDTO-Agent"),
 		"referer", c.Get("Referer"),
 		"content_length", len(c.Body()),
 		"accept", c.Get("Accept"),
@@ -245,7 +244,6 @@ func logRequest(
 	switch {
 	case isError:
 		log.Error("http request failed with server error")
-		apperrors.LogError(err)
 	case isWarning:
 		log.Info("http request failed with client error")
 	case isSlow:

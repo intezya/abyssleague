@@ -52,7 +52,7 @@ func (r *RecoverMiddleware) Handle() fiber.Handler {
 					"url":        c.OriginalURL(),
 					"method":     c.Method(),
 					"ip":         c.IP(),
-					"user_agent": c.Get("User-Agent"),
+					"user_agent": c.Get("UserDTO-Agent"),
 				}
 
 				// Log the error with full context
@@ -66,9 +66,6 @@ func (r *RecoverMiddleware) Handle() fiber.Handler {
 					"request_id", requestID,
 					"timestamp", timestamp,
 				).Error("panic recovered")
-
-				// Use the utils package to log structured error
-				apperrors.LogError(structuredErr)
 
 				// Return error response
 				err = apperrors.HandleError(structuredErr, c)

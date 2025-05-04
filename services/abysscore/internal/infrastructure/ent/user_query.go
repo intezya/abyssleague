@@ -552,7 +552,7 @@ func (uq *UserQuery) WithBalance(opts ...func(*UserBalanceQuery)) *UserQuery {
 //		Count int `json:"count,omitempty"`
 //	}
 //
-//	client.User.Query().
+//	client.UserDTO.Query().
 //		GroupBy(user.FieldUsername).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
@@ -574,7 +574,7 @@ func (uq *UserQuery) GroupBy(field string, fields ...string) *UserGroupBy {
 //		Username string `json:"username,omitempty"`
 //	}
 //
-//	client.User.Query().
+//	client.UserDTO.Query().
 //		Select(user.FieldUsername).
 //		Scan(ctx, &v)
 func (uq *UserQuery) Select(fields ...string) *UserSelect {

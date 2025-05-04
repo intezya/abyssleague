@@ -4,20 +4,27 @@ import (
 	"errors"
 
 	"github.com/intezya/abyssleague/services/abysscore/pkg/errorz"
-	"github.com/intezya/abyssleague/services/abysscore/pkg/optional"
 )
 
 var (
-	ErrAccountIsLocked = func(reason optional.String) error {
+	ErrAccountIsLocked = func(reason *string) error {
 		//nolint:err113 // required dynamic error
-		reasonAsError := errors.New(reason.Default("reason is null"))
+		var reasonAsError error
+
+		if reason != nil {
+			reasonAsError = errors.New(*reason)
+		}
 
 		return errorz.Forbidden("account is locked", reasonAsError)
 	}
 
-	ErrHardwareIDBanned = func(reason optional.String) error {
+	ErrHardwareIDBanned = func(reason *string) error {
 		//nolint:err113 // required dynamic error
-		reasonAsError := errors.New(reason.Default("reason is null"))
+		var reasonAsError error
+
+		if reason != nil {
+			reasonAsError = errors.New(*reason)
+		}
 
 		return errorz.Forbidden("hardware id is banned", reasonAsError)
 	}

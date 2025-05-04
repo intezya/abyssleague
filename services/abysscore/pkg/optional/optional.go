@@ -18,7 +18,7 @@ func New[T any](value T) Optional[T] {
 	}
 }
 
-func NewP[T any](value *T) Optional[T] {
+func FromPtr[T any](value *T) Optional[T] {
 	if value == nil {
 		return Optional[T]{
 			false,
@@ -52,6 +52,14 @@ func (o Optional[T]) Value() (value T, ok bool) {
 	}
 
 	return *o.value, true
+}
+
+func (o Optional[T]) ValueOrNil() *T {
+	if !o.isSet {
+		return nil
+	}
+
+	return o.value
 }
 
 func (o Optional[T]) MustValue() T {

@@ -192,7 +192,7 @@ var (
 	AccountBlockedLevelValidator func(int) error
 )
 
-// OrderOption defines the ordering options for the User queries.
+// OrderOption defines the ordering options for the UserDTO queries.
 type OrderOption func(*sql.Selector)
 
 // ByID orders the results by the id field.

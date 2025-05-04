@@ -26,8 +26,8 @@ func NewAuthenticationHandler(
 //	@Tags			Authentication
 //	@Accept			json
 //	@Produce		json
-//	@Param			request	body		request.AuthenticationRequest			true	"User registration details"
-//	@Success		200		{object}	examples.AuthenticationSuccessResponse	"User successfully registered"
+//	@Param			request	body		request.AuthenticationRequest			true	"UserDTO registration details"
+//	@Success		200		{object}	examples.AuthenticationSuccessResponse	"UserDTO successfully registered"
 //	@Failure		400		{object}	examples.BadRequestResponse				"Bad request - missed request fields"
 //	@Failure		409		{object}	examples.UsernameConflictResponse		"Conflict - user with this username already exists"
 //	@Failure		409		{object}	examples.HardwareIDConflictResponse		"Conflict - only one account per device allowed"
@@ -59,7 +59,7 @@ func (h *AuthenticationHandler) Register(c *fiber.Ctx) error {
 //	@Tags			Authentication
 //	@Accept			json
 //	@Produce		json
-//	@Param			request	body		request.AuthenticationRequest			true	"User login credentials"
+//	@Param			request	body		request.AuthenticationRequest			true	"UserDTO login credentials"
 //	@Success		200		{object}	examples.AuthenticationSuccessResponse	"Successfully authenticated"
 //	@Failure		400		{object}	examples.BadRequestResponse				"Bad request - missed request fields"
 //	@Failure		401		{object}	examples.UserWrongPasswordResponse		"Unauthorized - wrong password"

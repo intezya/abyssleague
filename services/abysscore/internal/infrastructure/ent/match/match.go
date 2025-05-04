@@ -41,14 +41,14 @@ const (
 	Table = "matches"
 	// Player1Table is the table that holds the player1 relation/edge.
 	Player1Table = "matches"
-	// Player1InverseTable is the table name for the User entity.
+	// Player1InverseTable is the table name for the UserDTO entity.
 	// It exists in this package in order to avoid circular dependency with the "user" package.
 	Player1InverseTable = "users"
 	// Player1Column is the table column denoting the player1 relation/edge.
 	Player1Column = "player1_id"
 	// Player2Table is the table that holds the player2 relation/edge.
 	Player2Table = "matches"
-	// Player2InverseTable is the table name for the User entity.
+	// Player2InverseTable is the table name for the UserDTO entity.
 	// It exists in this package in order to avoid circular dependency with the "user" package.
 	Player2InverseTable = "users"
 	// Player2Column is the table column denoting the player2 relation/edge.

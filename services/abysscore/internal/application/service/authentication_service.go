@@ -56,21 +56,18 @@ func (s *AuthenticationService) Register(
 	ctx, span := tracer.StartSpan(ctx, "AuthenticationService.Register")
 	defer span.End()
 
-	s.prepareCredentials(ctx, credentials)
-
 	tx, err := s.authRepo.WithTx(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	result, err := persistence.WithTxResultTx(ctx, tx, func(tx *ent.Tx) (*entity.AuthenticationData, error) {
-		// Check if hardware ID is banned
-		hardwareIDBanned, err := s.bannedHardwareIDRepo.TxFindByHardwareID(ctx, tx, credentials.HardwareID)
-		if hardwareIDBanned != nil {
-			return nil, apperrors.ErrHardwareIDBanned(hardwareIDBanned.BanReason)
+	s.encryptCredentials(ctx, credentials)
+
+	user, err := persistence.WithTxResultTx(ctx, tx, func(tx *ent.Tx) (*dto.UserDTO, error) {
+		if err := s.checkHardwareIDBanned(ctx, tx, credentials.HardwareID); err != nil {
+			return nil, err
 		}
 
-		// Create user
 		user, err := s.userRepo.TxCreate(ctx, tx, credentials)
 		if err != nil {
 			return nil, err
@@ -79,10 +76,10 @@ func (s *AuthenticationService) Register(
 		return user, nil
 	})
 	if err != nil {
-		return nil, err // Username or hardware ID conflict
+		return nil, err
 	}
 
-	return s.createAuthResult(ctx, result.TokenData(), nil), nil
+	return s.createAuthResult(ctx, &dto.UserFullDTO{UserDTO: user}), nil
 }
 
 // Authenticate validates user credentials and returns authentication result.
@@ -93,61 +90,45 @@ func (s *AuthenticationService) Authenticate(
 	ctx, span := tracer.StartSpan(ctx, "AuthenticationService.Authenticate")
 	defer span.End()
 
-	// Encode hardware ID for comparison
-	credentials.HardwareID = s.encodeHardwareID(ctx, credentials.HardwareID)
-
 	tx, err := s.authRepo.WithTx(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	authentication, user, err := persistence.WithTxResult2Tx(
-		ctx,
-		tx,
-		func(tx *ent.Tx) (*entity.AuthenticationData, *dto.UserFullDTO, error) {
-			// Find authentication data by username
-			authentication, err := s.findAuthByUsername(ctx, tx, credentials.Username)
-			if err != nil {
-				return nil, nil, err
-			}
+	user, err := persistence.WithTxResultTx(ctx, tx, func(tx *ent.Tx) (*dto.UserFullDTO, error) {
+		user, err := s.findUserFullDTOByUsername(ctx, tx, credentials.Username)
+		if err != nil {
+			return nil, err
+		}
 
-			// Verify password
-			if !s.verifyPassword(ctx, authentication, credentials.Password) {
-				return nil, nil, apperrors.ErrWrongPassword
-			}
+		if err := s.verifyAndUpdateHardwareID(ctx, tx, user, credentials.HardwareID); err != nil {
+			return nil, err
+		}
 
-			// Verify and update hardware ID if necessary
-			if err := s.verifyAndUpdateHardwareID(ctx, tx, authentication, credentials.HardwareID); err != nil {
-				return nil, nil, err
-			}
+		if !s.verifyPassword(ctx, user.Password, credentials.Password) {
+			return nil, apperrors.ErrWrongPassword
+		}
 
-			// Check if account is locked
-			if authentication.IsAccountLocked() {
-				return nil, nil, apperrors.ErrAccountIsLocked(authentication.BlockReason())
-			}
+		if s.isAccountLocked(user.UserDTO) {
+			return nil, apperrors.ErrAccountIsLocked(user.AccountBlockReason)
+		}
 
-			// Get full user data
-			user, err := s.userRepo.FindFullDTOById(ctx, authentication.UserID())
-			if err != nil {
-				logger.Log.Warnw(
-					"Failed to retrieve full user data",
-					"error", err,
-					"userID", authentication.UserID(),
-				)
-				return nil, nil, err
-			}
+		if err := s.processPostLoginTasks(ctx, tx, user.UserDTO); err != nil {
+			logger.Log.Warnw(
+				"Failed to process post-login tasks",
+				"error", err,
+				"userID", user.ID,
+			)
+			return nil, err
+		}
 
-			// Process post-login tasks
-			s.processPostLoginTasks(ctx, tx, user.UserDTO)
-
-			return authentication, user, nil
-		},
-	)
+		return user, nil
+	})
 	if err != nil {
 		return nil, err
 	}
 
-	return s.createAuthResult(ctx, authentication.TokenData(), user), nil
+	return s.createAuthResult(ctx, user), nil
 }
 
 // ValidateToken validates the authentication token and returns user data.
@@ -158,7 +139,6 @@ func (s *AuthenticationService) ValidateToken(
 	ctx, span := tracer.StartSpan(ctx, "AuthenticationService.ValidateToken")
 	defer span.End()
 
-	// Validate token and extract data
 	tokenData, err := s.tokenHelper.ValidateToken(token)
 	if err != nil {
 		return nil, err
@@ -172,36 +152,21 @@ func (s *AuthenticationService) ValidateToken(
 	}
 
 	user, err := persistence.WithTxResultTx(ctx, tx, func(tx *ent.Tx) (*dto.UserDTO, error) {
-		// Find authentication data by username from token
-		authentication, err := s.findAuthByUsername(ctx, tx, tokenData.Username)
+		// Find user auth by username from token
+		user, err := s.findUserDTOByUsername(ctx, tx, tokenData.Username)
 		if err != nil {
 			return nil, err
 		}
 
 		// Verify hardware ID from token
-		hardwareIDOk, needsUpdate := authentication.CompareHardwareID(
-			tokenData.Hwid,
-			s.credentialsHelper.VerifyTokenHardwareID,
-		)
-
-		if !hardwareIDOk || needsUpdate {
-			return nil, apperrors.ErrTokenHardwareIDIsInvalid
+		err = s.verifyTokenHardwareID(ctx, tx, user.HardwareID, tokenData.HardwareID)
+		if err != nil {
+			return nil, err
 		}
 
 		// Check if account is locked
-		if authentication.IsAccountLocked() {
-			return nil, apperrors.ErrAccountIsLocked(authentication.BlockReason())
-		}
-
-		// Get user data
-		user, err := s.userRepo.FindDTOById(ctx, authentication.UserID())
-		if err != nil {
-			logger.Log.Warnw(
-				"Failed to retrieve user data during token validation",
-				"error", err,
-				"userID", authentication.UserID(),
-			)
-			return nil, err
+		if s.isAccountLocked(user) {
+			return nil, apperrors.ErrAccountIsLocked(user.AccountBlockReason)
 		}
 
 		return user, nil
@@ -226,105 +191,168 @@ func (s *AuthenticationService) ChangePassword(
 		return nil, err
 	}
 
-	authentication, user, err := persistence.WithTxResult2Tx(
-		ctx,
-		tx,
-		func(tx *ent.Tx) (*entity.AuthenticationData, *dto.UserFullDTO, error) {
-			// Find authentication by username
-			authentication, err := s.findAuthByUsername(ctx, tx, credentials.Username)
-			if err != nil {
-				return nil, nil, err
-			}
+	userAuth, err := persistence.WithTxResultTx(ctx, tx, func(tx *ent.Tx) (*dto.UserFullDTO, error) {
+		// Find user auth by username
+		userAuth, err := s.findUserFullDTOByUsername(ctx, tx, credentials.Username)
+		if err != nil {
+			return nil, err
+		}
 
-			// Verify old password
-			if !s.verifyPassword(ctx, authentication, credentials.OldPassword) {
-				return nil, nil, apperrors.ErrWrongPassword
-			}
+		// Verify old password
+		if !s.verifyPassword(ctx, userAuth.Password, credentials.OldPassword) {
+			return nil, apperrors.ErrWrongPassword
+		}
 
-			// Encode new password
-			encodedPassword := s.encodePassword(ctx, credentials.NewPassword)
+		// Encode new password
+		encodedPassword := s.encodePassword(ctx, credentials.NewPassword)
 
-			// Update password and get user data
-			user, err := s.authRepo.TxUpdatePasswordByID(ctx, tx, authentication.UserID(), encodedPassword)
-			if err != nil {
-				return nil, nil, err
-			}
+		// Update password
+		err = s.authRepo.TxUpdatePasswordByID(ctx, tx, userAuth.ID, encodedPassword)
+		if err != nil {
+			return nil, err
+		}
 
-			return authentication, user, nil
-		})
+		// Update user auth object with new password
+		userAuth.Password = encodedPassword
 
+		return userAuth, nil
+	})
 	if err != nil {
 		return nil, err
 	}
 
-	return s.createAuthResult(ctx, authentication.TokenData(), user), nil
+	return s.createAuthResult(ctx, userAuth), nil
 }
 
 // Helper methods
 
-// prepareCredentials encodes password and HWID.
-func (s *AuthenticationService) prepareCredentials(
+// findUserFullDTOByUsername finds user with authentication data by username.
+func (s *AuthenticationService) findUserFullDTOByUsername(
+	ctx context.Context,
+	tx *ent.Tx,
+	username string,
+) (*dto.UserFullDTO, error) {
+	ctx, span := tracer.StartSpan(ctx, "AuthenticationService.findUserFullDTOByUsername")
+	defer span.End()
+
+	lowerUsername := strings.ToLower(username)
+	return s.userRepo.TxFindFullDTOByLowerUsername(ctx, tx, lowerUsername)
+}
+
+// findUserDTOByUsername finds user with authentication data by username.
+func (s *AuthenticationService) findUserDTOByUsername(
+	ctx context.Context,
+	tx *ent.Tx,
+	username string,
+) (*dto.UserDTO, error) {
+	ctx, span := tracer.StartSpan(ctx, "AuthenticationService.findUserDTOByUsername")
+	defer span.End()
+
+	lowerUsername := strings.ToLower(username)
+	return s.userRepo.TxFindDTOByLowerUsername(ctx, tx, lowerUsername)
+}
+
+// encryptCredentials encodes password and HWID.
+func (s *AuthenticationService) encryptCredentials(
 	ctx context.Context,
 	credentials *dto.CredentialsDTO,
 ) {
-	ctx, span := tracer.StartSpan(ctx, "AuthenticationService.prepareCredentials")
+	ctx, span := tracer.StartSpan(ctx, "AuthenticationService.encryptCredentials")
 	defer span.End()
 
 	credentials.Password = s.encodePassword(ctx, credentials.Password)
 	credentials.HardwareID = s.encodeHardwareID(ctx, credentials.HardwareID)
 }
 
-// findAuthByUsername finds authentication data by username.
-func (s *AuthenticationService) findAuthByUsername(
-	ctx context.Context,
-	tx *ent.Tx,
-	username string,
-) (*entity.AuthenticationData, error) {
-	ctx, span := tracer.StartSpan(ctx, "AuthenticationService.findAuthByUsername")
-	defer span.End()
-
-	lowerUsername := strings.ToLower(username)
-	return s.authRepo.TxFindAuthenticationByLowerUsername(ctx, tx, lowerUsername)
-}
-
 // verifyPassword checks if the provided password matches the stored one.
 func (s *AuthenticationService) verifyPassword(
 	ctx context.Context,
-	auth *entity.AuthenticationData,
-	password string,
+	hashedPassword string,
+	rawPassword string,
 ) bool {
 	ctx, span := tracer.StartSpan(ctx, "AuthenticationService.verifyPassword")
 	defer span.End()
 
-	return auth.ComparePassword(password, s.credentialsHelper.VerifyPassword)
+	return s.credentialsHelper.VerifyPassword(rawPassword, hashedPassword)
+}
+
+// verifyTokenHardwareID checks if the token's HWID matches the stored one.
+func (s *AuthenticationService) verifyTokenHardwareID(
+	ctx context.Context,
+	tx *ent.Tx,
+	storedHardwareID *string,
+	tokenHardwareID string,
+) error {
+	ctx, span := tracer.StartSpan(ctx, "AuthenticationService.verifyTokenHardwareID")
+	defer span.End()
+
+	if err := s.checkHardwareIDBanned(ctx, tx, tokenHardwareID); err != nil {
+		return err
+	}
+
+	if storedHardwareID == nil {
+		return apperrors.ErrHardwareIDIsInvalid
+	}
+
+	if *storedHardwareID != tokenHardwareID {
+		return apperrors.ErrTokenHardwareIDIsInvalid
+	}
+
+	return nil
 }
 
 // verifyAndUpdateHardwareID validates HardwareID and updates it if necessary.
 func (s *AuthenticationService) verifyAndUpdateHardwareID(
 	ctx context.Context,
 	tx *ent.Tx,
-	auth *entity.AuthenticationData,
+	user *dto.UserFullDTO,
 	hardwareID string,
 ) error {
 	ctx, span := tracer.StartSpan(ctx, "AuthenticationService.verifyAndUpdateHardwareID")
 	defer span.End()
 
-	hardwareIDOk, needsUpdate := auth.CompareHardwareID(hardwareID, s.credentialsHelper.VerifyHardwareID)
+	hardwareIDBanned, _ := s.bannedHardwareIDRepo.TxFindByHardwareID(ctx, tx, hardwareID)
 
-	if !hardwareIDOk {
+	if hardwareIDBanned != nil {
+		return apperrors.ErrHardwareIDBanned(hardwareIDBanned.BanReason)
+	}
+
+	if user.HardwareID == nil {
+		encodedHardwareID := s.encodeHardwareID(ctx, hardwareID)
+		user.HardwareID = &encodedHardwareID
+		return s.authRepo.TxUpdateHardwareIDByID(ctx, tx, user.ID, encodedHardwareID)
+	}
+
+	// Verify hardware ID
+	if !s.credentialsHelper.VerifyHardwareID(hardwareID, *user.HardwareID) {
 		return apperrors.ErrUserWrongHardwareID
 	}
 
-	if needsUpdate {
-		auth.SetHardwareID(hardwareID)
+	return nil
+}
 
-		err := s.authRepo.TxUpdateHardwareIDByID(ctx, tx, auth.UserID(), hardwareID)
-		if err != nil {
-			return err
-		}
+func (s *AuthenticationService) checkHardwareIDBanned(
+	ctx context.Context,
+	tx *ent.Tx,
+	encryptedHardwareID string,
+) error {
+	originalHWID, err := s.credentialsHelper.DecodeHardwareID(encryptedHardwareID)
+	if err != nil {
+		return apperrors.ErrHardwareIDIsInvalid
+	}
+
+	hardwareIDBanned, _ := s.bannedHardwareIDRepo.TxFindByHardwareID(ctx, tx, originalHWID)
+
+	if hardwareIDBanned != nil {
+		return apperrors.ErrHardwareIDBanned(hardwareIDBanned.BanReason)
 	}
 
 	return nil
+}
+
+// isAccountLocked checks if user account is locked.
+func (s *AuthenticationService) isAccountLocked(user *dto.UserDTO) bool {
+	return user.AccountBlockedUntil != nil && user.AccountBlockedUntil.After(time.Now())
 }
 
 // encodePassword encodes a raw password.
@@ -346,13 +374,22 @@ func (s *AuthenticationService) encodeHardwareID(ctx context.Context, rawHwid st
 // createAuthResult creates authentication result with token and online count.
 func (s *AuthenticationService) createAuthResult(
 	ctx context.Context,
-	tokenData *entity.TokenData,
 	user *dto.UserFullDTO,
 ) *domainservice.AuthenticationResult {
 	ctx, span := tracer.StartSpan(ctx, "AuthenticationService.createAuthResult")
 	defer span.End()
 
-	token := s.generateToken(ctx, tokenData)
+	var token string
+
+	if user.HardwareID != nil { // HardwareID must be updated if nil
+		tokenData := &entity.TokenData{
+			ID:         user.ID,
+			Username:   user.Username,
+			HardwareID: *user.HardwareID,
+		}
+
+		token = s.generateToken(ctx, tokenData)
+	}
 	online := s.getOnlineCount(ctx)
 
 	return domainservice.NewAuthenticationResult(token, user, online)
@@ -363,12 +400,19 @@ func (s *AuthenticationService) processPostLoginTasks(
 	ctx context.Context,
 	tx *ent.Tx,
 	user *dto.UserDTO,
-) {
+) error {
 	ctx, span := tracer.StartSpan(ctx, "AuthenticationService.processPostLoginTasks")
 	defer span.End()
 
-	s.processLoginStreakAndRewards(ctx, tx, user)
-	s.processBanDecrementAfterLogin(ctx, tx, user)
+	if err := s.processLoginStreakAndRewards(ctx, tx, user); err != nil {
+		return err
+	}
+
+	if err := s.processBanDecrementAfterLogin(ctx, tx, user); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 // processLoginStreakAndRewards handles post-login processing like login streaks and rewards.
@@ -376,13 +420,13 @@ func (s *AuthenticationService) processLoginStreakAndRewards(
 	ctx context.Context,
 	tx *ent.Tx,
 	user *dto.UserDTO,
-) {
+) error {
 	ctx, span := tracer.StartSpan(ctx, "AuthenticationService.processLoginStreakAndRewards")
 	defer span.End()
 
 	// Only update streak if user hasn't logged in today
 	if !timeutils.IsDayBeforeToday(user.LoginAt) {
-		return
+		return nil
 	}
 
 	user.LoginStreak++
@@ -401,7 +445,10 @@ func (s *AuthenticationService) processLoginStreakAndRewards(
 
 	if err != nil {
 		logger.Log.Warnw("Failed to update login streak", "error", err, "userID", user.ID)
+		return err
 	}
+
+	return nil
 }
 
 // processBanDecrementAfterLogin decrements ban levels if needed.
@@ -409,11 +456,12 @@ func (s *AuthenticationService) processBanDecrementAfterLogin(
 	ctx context.Context,
 	tx *ent.Tx,
 	user *dto.UserDTO,
-) {
+) error {
 	ctx, span := tracer.StartSpan(ctx, "AuthenticationService.processBanDecrementAfterLogin")
 	defer span.End()
 
 	var now = time.Now()
+	var needsUpdate = false
 
 	// Process account block decrement
 	if user.AccountBlockedUntil != nil &&
@@ -423,6 +471,7 @@ func (s *AuthenticationService) processBanDecrementAfterLogin(
 		}
 		user.AccountBlockedUntil = nil
 		user.AccountBlockReason = nil
+		needsUpdate = true
 	}
 
 	// Process search block decrement
@@ -433,16 +482,22 @@ func (s *AuthenticationService) processBanDecrementAfterLogin(
 		}
 		user.SearchBlockedUntil = nil
 		user.SearchBlockReason = nil
+		needsUpdate = true
 	}
 
-	err := s.authRepo.TxSetBlockUntilAndLevelAndReasonFromUser(ctx, tx, user)
-	if err != nil {
-		logger.Log.Errorw(
-			"Failed to update block settings for user",
-			"error", err,
-			"userID", user.ID,
-		)
+	if needsUpdate {
+		err := s.authRepo.TxSetBlockUntilAndLevelAndReasonFromUser(ctx, tx, user)
+		if err != nil {
+			logger.Log.Errorw(
+				"Failed to update block settings for user",
+				"error", err,
+				"userID", user.ID,
+			)
+			return err
+		}
 	}
+
+	return nil
 }
 
 // generateToken creates an authentication token.

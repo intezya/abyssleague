@@ -664,22 +664,22 @@ func (uu *UserUpdate) ExecX(ctx context.Context) {
 func (uu *UserUpdate) check() error {
 	if v, ok := uu.mutation.Username(); ok {
 		if err := user.UsernameValidator(v); err != nil {
-			return &ValidationError{Name: "username", err: fmt.Errorf(`ent: validator failed for field "User.username": %w`, err)}
+			return &ValidationError{Name: "username", err: fmt.Errorf(`ent: validator failed for field "UserDTO.username": %w`, err)}
 		}
 	}
 	if v, ok := uu.mutation.Password(); ok {
 		if err := user.PasswordValidator(v); err != nil {
-			return &ValidationError{Name: "password", err: fmt.Errorf(`ent: validator failed for field "User.password": %w`, err)}
+			return &ValidationError{Name: "password", err: fmt.Errorf(`ent: validator failed for field "UserDTO.password": %w`, err)}
 		}
 	}
 	if v, ok := uu.mutation.SearchBlockedLevel(); ok {
 		if err := user.SearchBlockedLevelValidator(v); err != nil {
-			return &ValidationError{Name: "search_blocked_level", err: fmt.Errorf(`ent: validator failed for field "User.search_blocked_level": %w`, err)}
+			return &ValidationError{Name: "search_blocked_level", err: fmt.Errorf(`ent: validator failed for field "UserDTO.search_blocked_level": %w`, err)}
 		}
 	}
 	if v, ok := uu.mutation.AccountBlockedLevel(); ok {
 		if err := user.AccountBlockedLevelValidator(v); err != nil {
-			return &ValidationError{Name: "account_blocked_level", err: fmt.Errorf(`ent: validator failed for field "User.account_blocked_level": %w`, err)}
+			return &ValidationError{Name: "account_blocked_level", err: fmt.Errorf(`ent: validator failed for field "UserDTO.account_blocked_level": %w`, err)}
 		}
 	}
 	return nil
@@ -1759,22 +1759,22 @@ func (uuo *UserUpdateOne) ExecX(ctx context.Context) {
 func (uuo *UserUpdateOne) check() error {
 	if v, ok := uuo.mutation.Username(); ok {
 		if err := user.UsernameValidator(v); err != nil {
-			return &ValidationError{Name: "username", err: fmt.Errorf(`ent: validator failed for field "User.username": %w`, err)}
+			return &ValidationError{Name: "username", err: fmt.Errorf(`ent: validator failed for field "UserDTO.username": %w`, err)}
 		}
 	}
 	if v, ok := uuo.mutation.Password(); ok {
 		if err := user.PasswordValidator(v); err != nil {
-			return &ValidationError{Name: "password", err: fmt.Errorf(`ent: validator failed for field "User.password": %w`, err)}
+			return &ValidationError{Name: "password", err: fmt.Errorf(`ent: validator failed for field "UserDTO.password": %w`, err)}
 		}
 	}
 	if v, ok := uuo.mutation.SearchBlockedLevel(); ok {
 		if err := user.SearchBlockedLevelValidator(v); err != nil {
-			return &ValidationError{Name: "search_blocked_level", err: fmt.Errorf(`ent: validator failed for field "User.search_blocked_level": %w`, err)}
+			return &ValidationError{Name: "search_blocked_level", err: fmt.Errorf(`ent: validator failed for field "UserDTO.search_blocked_level": %w`, err)}
 		}
 	}
 	if v, ok := uuo.mutation.AccountBlockedLevel(); ok {
 		if err := user.AccountBlockedLevelValidator(v); err != nil {
-			return &ValidationError{Name: "account_blocked_level", err: fmt.Errorf(`ent: validator failed for field "User.account_blocked_level": %w`, err)}
+			return &ValidationError{Name: "account_blocked_level", err: fmt.Errorf(`ent: validator failed for field "UserDTO.account_blocked_level": %w`, err)}
 		}
 	}
 	return nil
@@ -1787,7 +1787,7 @@ func (uuo *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) 
 	_spec := sqlgraph.NewUpdateSpec(user.Table, user.Columns, sqlgraph.NewFieldSpec(user.FieldID, field.TypeInt))
 	id, ok := uuo.mutation.ID()
 	if !ok {
-		return nil, &ValidationError{Name: "id", err: errors.New(`ent: missing "User.id" for update`)}
+		return nil, &ValidationError{Name: "id", err: errors.New(`ent: missing "UserDTO.id" for update`)}
 	}
 	_spec.Node.ID.Value = id
 	if fields := uuo.fields; len(fields) > 0 {

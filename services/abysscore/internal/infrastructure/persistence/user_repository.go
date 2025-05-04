@@ -8,7 +8,6 @@ import (
 
 	"github.com/intezya/abyssleague/services/abysscore/internal/adapters/mapper"
 	"github.com/intezya/abyssleague/services/abysscore/internal/domain/dto"
-	"github.com/intezya/abyssleague/services/abysscore/internal/domain/entity"
 	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/ent"
 	entUser "github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/ent/user"
 	"github.com/intezya/abyssleague/services/abysscore/internal/pkg/apperrors"
@@ -68,29 +67,6 @@ func (r *UserRepository) FindFullDTOById(ctx context.Context, id int) (*dto.User
 	return mapper.ToUserFullDTOFromEnt(user), nil
 }
 
-// TxFindAuthenticationByLowerUsername retrieves authentication data by lowercase username.
-func (r *UserRepository) TxFindAuthenticationByLowerUsername(
-	ctx context.Context,
-	tx *ent.Tx,
-	lowerUsername string,
-) (
-	*entity.AuthenticationData,
-	error,
-) {
-	ctx, span := tracer.StartSpan(ctx, "UserRepository.TxFindAuthenticationByLowerUsername")
-	defer span.End()
-
-	user, err := tx.User.
-		Query().
-		Where(entUser.UsernameEqualFold(lowerUsername)).
-		Only(ctx)
-	if err != nil {
-		return nil, r.handleQueryError(err)
-	}
-
-	return mapper.ToAuthenticationDataFromEnt(user), nil
-}
-
 func (r *UserRepository) ExistsByEmail(ctx context.Context, email string) bool {
 	ctx, span := tracer.StartSpan(ctx, "UserRepository.ExistsByEmail")
 	defer span.End()
@@ -140,27 +116,6 @@ func (r *UserRepository) TxUpdateLoginStreakLoginAtByID(
 		Save(ctx)
 
 	return r.handleUpdateError(err)
-}
-
-// TxUpdatePasswordByID updates a user's password and returns the updated user data.
-func (r *UserRepository) TxUpdatePasswordByID(
-	ctx context.Context,
-	tx *ent.Tx,
-	id int,
-	password string,
-) (*dto.UserFullDTO, error) {
-	ctx, span := tracer.StartSpan(ctx, "UserRepository.TxUpdatePasswordByID")
-	defer span.End()
-
-	user, err := tx.User.
-		UpdateOneID(id).
-		SetPassword(password).
-		Save(ctx)
-	if err != nil {
-		return nil, r.handleQueryError(err)
-	}
-
-	return mapper.ToUserFullDTOFromEnt(user), nil
 }
 
 // TxSetBlockUntilAndLevelAndReasonFromUser updates a user's block status information.
@@ -242,28 +197,6 @@ func (r *UserRepository) WithTx(ctx context.Context) (*ent.Tx, error) {
 	return tx, nil
 }
 
-// TxCreate adds a new user to the database.
-func (r *UserRepository) TxCreate(
-	ctx context.Context,
-	tx *ent.Tx,
-	credentials *dto.CredentialsDTO,
-) (*entity.AuthenticationData, error) {
-	ctx, span := tracer.StartSpan(ctx, "UserRepository.TxCreate")
-	defer span.End()
-
-	user, err := tx.User.
-		Create().
-		SetUsername(credentials.Username).
-		SetPassword(credentials.Password).
-		SetHardwareID(credentials.HardwareID).
-		Save(ctx)
-	if err != nil {
-		return nil, r.handleConstraintError(err)
-	}
-
-	return mapper.ToAuthenticationDataFromEnt(user), nil
-}
-
 // TxFindDTOById retrieves basic user data by ID.
 func (r *UserRepository) TxFindDTOById(ctx context.Context, tx *ent.Tx, id int) (*dto.UserDTO, error) {
 	ctx, span := tracer.StartSpan(ctx, "UserRepository.TxFindDTOById")
@@ -293,6 +226,96 @@ func (r *UserRepository) handleQueryError(err error) error {
 	}
 
 	return apperrors.WrapUnexpectedError(err)
+}
+
+func (r *UserRepository) TxCreate(
+	ctx context.Context,
+	tx *ent.Tx,
+	credentials *dto.CredentialsDTO,
+) (*dto.UserDTO, error) {
+	ctx, span := tracer.StartSpan(ctx, "UserRepository.TxCreate")
+	defer span.End()
+
+	user, err := tx.User.
+		Create().
+		SetUsername(credentials.Username).
+		SetPassword(credentials.Password).
+		SetHardwareID(credentials.HardwareID).
+		Save(ctx)
+	if err != nil {
+		return nil, r.handleConstraintError(err)
+	}
+
+	return mapper.ToUserDTOFromEnt(user), nil
+}
+
+// TxUpdatePasswordByID updates a user's password and returns the updated user data.
+func (r *UserRepository) TxUpdatePasswordByID(
+	ctx context.Context,
+	tx *ent.Tx,
+	id int,
+	password string,
+) error {
+	ctx, span := tracer.StartSpan(ctx, "UserRepository.TxUpdatePasswordByID")
+	defer span.End()
+
+	_, err := tx.User.
+		UpdateOneID(id).
+		SetPassword(password).
+		Save(ctx)
+	if err != nil {
+		return r.handleQueryError(err)
+	}
+
+	return nil
+}
+
+func (r *UserRepository) TxFindFullDTOByLowerUsername(
+	ctx context.Context,
+	tx *ent.Tx,
+	username string,
+) (*dto.UserFullDTO, error) {
+	ctx, span := tracer.StartSpan(ctx, "UserRepository.FindFullDTOById")
+	defer span.End()
+
+	user, err := tx.User.
+		Query().
+		Where(entUser.UsernameEqualFold(username)).
+		WithCurrentMatch().
+		WithFriends().
+		WithCurrentItem(func(q *ent.InventoryItemQuery) {
+			q.WithItem()
+		}).
+		WithItems(func(q *ent.InventoryItemQuery) {
+			q.WithItem()
+		}).
+		WithReceivedFriendRequests().
+		WithStatistics().
+		Only(ctx)
+	if err != nil {
+		return nil, r.handleQueryError(err)
+	}
+
+	return mapper.ToUserFullDTOFromEnt(user), nil
+}
+
+func (r *UserRepository) TxFindDTOByLowerUsername(
+	ctx context.Context,
+	tx *ent.Tx,
+	username string,
+) (*dto.UserDTO, error) {
+	ctx, span := tracer.StartSpan(ctx, "UserRepository.FindFullDTOById")
+	defer span.End()
+
+	user, err := tx.User.
+		Query().
+		Where(entUser.UsernameEqualFold(username)).
+		Only(ctx)
+	if err != nil {
+		return nil, r.handleQueryError(err)
+	}
+
+	return mapper.ToUserDTOFromEnt(user), nil
 }
 
 // handleUpdateError transforms Ent update errors into domain-specific errors.

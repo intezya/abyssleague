@@ -29,7 +29,7 @@ func Handle(err error, ctx Context) error {
 
 	// Otherwise, wrap it as an internal server error
 	return New(
-		"Internal server error",
+		"internal server error",
 		err,
 		ErrorTypeInternal,
 		http.StatusInternalServerError,

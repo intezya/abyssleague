@@ -64,11 +64,12 @@ type ConfigValidator interface {
 // Config represents application configuration.
 type Config struct {
 	// Server configuration
-	ServerPort             int
-	SlowRequestThresholdMs int
-	MetricsPort            int
-	FiberHealthCheckConfig healthcheck.Config
-	FiberRequestIDConfig   requestid.Config
+	ServerPort              int
+	SlowRequestThresholdMs  int
+	MetricsPort             int
+	FiberHealthCheckConfig  healthcheck.Config
+	FiberRequestIDConfig    requestid.Config
+	HardwareIDEncryptionKey string
 
 	// Environment configuration
 	IsDebug bool
@@ -123,8 +124,9 @@ func LoadConfig() *Config {
 			"SLOW_REQUEST_THRESHOLD_MS",
 			defaultSlowRequestThresholdMs,
 		),
-		FiberHealthCheckConfig: healthcheck.ConfigDefault,
-		FiberRequestIDConfig:   requestid.ConfigDefault,
+		FiberHealthCheckConfig:  healthcheck.ConfigDefault,
+		FiberRequestIDConfig:    requestid.ConfigDefault,
+		HardwareIDEncryptionKey: getEnvString("HARDWARE_ID_ENCRYPTION_KEY", ""),
 
 		// Environment configuration
 		IsDebug: getEnvBool("DEBUG", false),

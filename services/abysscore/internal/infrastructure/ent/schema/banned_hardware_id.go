@@ -4,6 +4,7 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/schema/field"
 	"entgo.io/ent/schema/index"
+	"time"
 )
 
 type BannedHardwareID struct {
@@ -14,8 +15,8 @@ func (BannedHardwareID) Fields() []ent.Field {
 	return []ent.Field{
 		field.Int("id").Unique().Immutable(),
 
-		field.String("hardware_id").Unique().Immutable(),
-		field.Time("created_at").Immutable(),
+		field.String("hardware_id").Unique().Immutable().Sensitive(),
+		field.Time("created_at").Default(time.Now).Immutable(),
 		field.String("ban_reason").Nillable().Optional(),
 	}
 }

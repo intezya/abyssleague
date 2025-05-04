@@ -53,7 +53,7 @@ func main() {
 	serviceDependencies := applicationservice.NewDependencyProvider(
 		repositoryDependencies,
 		gRPCDependencies,
-		auth.NewHashHelper(),
+		auth.NewHashHelper(appConfig.HardwareIDEncryptionKey),
 		auth.NewJWTHelper(appConfig.JWTConfiguration),
 		smtpClient,
 	)

@@ -400,7 +400,7 @@ func (u *User) Update() *UserUpdateOne {
 func (u *User) Unwrap() *User {
 	_tx, ok := u.config.driver.(*txDriver)
 	if !ok {
-		panic("ent: User is not a transactional entity")
+		panic("ent: UserDTO is not a transactional entity")
 	}
 	u.config.driver = _tx.drv
 	return u
@@ -409,7 +409,7 @@ func (u *User) Unwrap() *User {
 // String implements the fmt.Stringer.
 func (u *User) String() string {
 	var builder strings.Builder
-	builder.WriteString("User(")
+	builder.WriteString("UserDTO(")
 	builder.WriteString(fmt.Sprintf("id=%v, ", u.ID))
 	builder.WriteString("username=")
 	builder.WriteString(u.Username)

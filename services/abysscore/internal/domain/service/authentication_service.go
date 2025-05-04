@@ -9,7 +9,7 @@ import (
 
 type AuthenticationResult struct {
 	Token       string           `json:"token,omitempty" example:"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."`
-	User        *dto.UserFullDTO `json:"user,omitempty"`
+	User        *dto.UserFullDTO `json:"user"`
 	OnlineCount int              `json:"online_count"`
 }
 
@@ -40,9 +40,9 @@ type TokenHelper interface {
 }
 
 type CredentialsHelper interface {
-	EncodePassword(raw string) (hash string)
+	EncodePassword(raw string) string
 	VerifyPassword(raw, hash string) bool
-	EncodeHardwareID(raw string) (hash string)
-	VerifyHardwareID(raw, hash string) bool
-	VerifyTokenHardwareID(raw, hash string) bool
+	EncodeHardwareID(raw string) string
+	DecodeHardwareID(encoded string) (string, error)
+	VerifyHardwareID(raw, encoded string) bool
 }

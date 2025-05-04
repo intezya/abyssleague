@@ -40,7 +40,7 @@ const (
 	TypeMatch             = "Match"
 	TypePlayerMatchResult = "PlayerMatchResult"
 	TypeStatistic         = "Statistic"
-	TypeUser              = "User"
+	TypeUser              = "UserDTO"
 	TypeUserBalance       = "UserBalance"
 )
 
@@ -7872,7 +7872,7 @@ func (m *UserMutation) OldField(ctx context.Context, name string) (ent.Value, er
 	case user.FieldAccountBlockedLevel:
 		return m.OldAccountBlockedLevel(ctx)
 	}
-	return nil, fmt.Errorf("unknown User field %s", name)
+	return nil, fmt.Errorf("unknown UserDTO field %s", name)
 }
 
 // SetField sets the value of a field with the given name. It returns an error if
@@ -8021,7 +8021,7 @@ func (m *UserMutation) SetField(name string, value ent.Value) error {
 		m.SetAccountBlockedLevel(v)
 		return nil
 	}
-	return fmt.Errorf("unknown User field %s", name)
+	return fmt.Errorf("unknown UserDTO field %s", name)
 }
 
 // AddedFields returns all numeric fields that were incremented/decremented during
@@ -8082,7 +8082,7 @@ func (m *UserMutation) AddField(name string, value ent.Value) error {
 		m.AddAccountBlockedLevel(v)
 		return nil
 	}
-	return fmt.Errorf("unknown User numeric field %s", name)
+	return fmt.Errorf("unknown UserDTO numeric field %s", name)
 }
 
 // ClearedFields returns all nullable fields that were cleared during this
@@ -8170,7 +8170,7 @@ func (m *UserMutation) ClearField(name string) error {
 		m.ClearAccountBlockReason()
 		return nil
 	}
-	return fmt.Errorf("unknown User nullable field %s", name)
+	return fmt.Errorf("unknown UserDTO nullable field %s", name)
 }
 
 // ResetField resets all changes in the mutation for the field with the given name.
@@ -8238,7 +8238,7 @@ func (m *UserMutation) ResetField(name string) error {
 		m.ResetAccountBlockedLevel()
 		return nil
 	}
-	return fmt.Errorf("unknown User field %s", name)
+	return fmt.Errorf("unknown UserDTO field %s", name)
 }
 
 // AddedEdges returns all edge names that were set/added in this mutation.
@@ -8448,7 +8448,7 @@ func (m *UserMutation) ClearEdge(name string) error {
 		m.ClearBalance()
 		return nil
 	}
-	return fmt.Errorf("unknown User unique edge %s", name)
+	return fmt.Errorf("unknown UserDTO unique edge %s", name)
 }
 
 // ResetEdge resets all changes to the edge with the given name in this mutation.
@@ -8480,7 +8480,7 @@ func (m *UserMutation) ResetEdge(name string) error {
 		m.ResetBalance()
 		return nil
 	}
-	return fmt.Errorf("unknown User edge %s", name)
+	return fmt.Errorf("unknown UserDTO edge %s", name)
 }
 
 // UserBalanceMutation represents an operation that mutates the UserBalance nodes in the graph.

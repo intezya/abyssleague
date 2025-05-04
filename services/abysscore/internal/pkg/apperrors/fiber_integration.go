@@ -1,11 +1,8 @@
 package apperrors
 
 import (
-	"errors"
-
 	"github.com/gofiber/fiber/v2"
 	"github.com/intezya/abyssleague/services/abysscore/pkg/errorz"
-	"github.com/intezya/pkglib/logger"
 )
 
 // FiberContext adapts Fiber's context to our errors package.
@@ -37,29 +34,5 @@ func NewContext(c *fiber.Ctx) errorz.Context {
 
 // HandleError handles any error and sends an appropriate response.
 func HandleError(err error, c *fiber.Ctx) error {
-	return errorz.Handle(err, NewContext(c))
-}
-
-// LogError logs an error with all available details.
-func LogError(err error) {
-	var appErr *errorz.Error
-
-	if errors.As(err, &appErr) {
-		// Log structured error with stack trace
-		logger.Log.Errorw(
-			appErr.Message,
-			"error_id", appErr.ErrorID,
-			"details", appErr.Detail,
-			"stack_trace", appErr.Stack,
-			"code", appErr.StatusCode,
-			"timestamp", appErr.Timestamp,
-			"type", appErr.ErrorType,
-		)
-	} else {
-		// Log standard error
-		logger.Log.Errorw(
-			"Unstructured error",
-			"error", err,
-		)
-	}
+	return errorz.Handle(err, NewContext(c)) // TODO: pass request_id context key
 }

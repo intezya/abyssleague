@@ -68,7 +68,7 @@ func (s *SMTPSender) SendS(
 	message *mailmessage.Message,
 	receivers ...string,
 ) error {
-	s.logger.Debugln("Sending email from:", sender, "to:", receivers)
+	s.logger.Debugln("sending email from:", sender, "to:", receivers)
 
 	msg := mail.NewMessage()
 	msg.SetHeader("From", sender)

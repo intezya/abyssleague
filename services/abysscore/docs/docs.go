@@ -217,7 +217,7 @@ const docTemplate = `{
                 "summary": "Authenticate user",
                 "parameters": [
                     {
-                        "description": "User login credentials",
+                        "description": "UserDTO login credentials",
                         "name": "request",
                         "in": "body",
                         "required": true,
@@ -287,7 +287,7 @@ const docTemplate = `{
                 "summary": "Register a new user",
                 "parameters": [
                     {
-                        "description": "User registration details",
+                        "description": "UserDTO registration details",
                         "name": "request",
                         "in": "body",
                         "required": true,
@@ -298,7 +298,7 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "User successfully registered",
+                        "description": "UserDTO successfully registered",
                         "schema": {
                             "$ref": "#/definitions/examples.AuthenticationSuccessResponse"
                         }
@@ -695,7 +695,7 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "integer",
-                        "description": "User ID",
+                        "description": "UserDTO ID",
                         "name": "user_id",
                         "in": "path",
                         "required": true
@@ -750,7 +750,7 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "integer",
-                        "description": "User ID",
+                        "description": "UserDTO ID",
                         "name": "user_id",
                         "in": "path",
                         "required": true
@@ -807,7 +807,7 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "integer",
-                        "description": "User ID",
+                        "description": "UserDTO ID",
                         "name": "user_id",
                         "in": "path",
                         "required": true

@@ -28,14 +28,14 @@ const (
 	Table = "friend_requests"
 	// FromUserTable is the table that holds the from_user relation/edge.
 	FromUserTable = "friend_requests"
-	// FromUserInverseTable is the table name for the User entity.
+	// FromUserInverseTable is the table name for the UserDTO entity.
 	// It exists in this package in order to avoid circular dependency with the "user" package.
 	FromUserInverseTable = "users"
 	// FromUserColumn is the table column denoting the from_user relation/edge.
 	FromUserColumn = "from_user_id"
 	// ToUserTable is the table that holds the to_user relation/edge.
 	ToUserTable = "friend_requests"
-	// ToUserInverseTable is the table name for the User entity.
+	// ToUserInverseTable is the table name for the UserDTO entity.
 	// It exists in this package in order to avoid circular dependency with the "user" package.
 	ToUserInverseTable = "users"
 	// ToUserColumn is the table column denoting the to_user relation/edge.

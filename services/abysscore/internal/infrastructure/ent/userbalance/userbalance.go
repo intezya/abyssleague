@@ -28,7 +28,7 @@ const (
 	Table = "user_balances"
 	// UserTable is the table that holds the user relation/edge.
 	UserTable = "user_balances"
-	// UserInverseTable is the table name for the User entity.
+	// UserInverseTable is the table name for the UserDTO entity.
 	// It exists in this package in order to avoid circular dependency with the "user" package.
 	UserInverseTable = "users"
 	// UserColumn is the table column denoting the user relation/edge.

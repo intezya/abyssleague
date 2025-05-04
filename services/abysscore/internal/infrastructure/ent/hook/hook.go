@@ -94,7 +94,7 @@ func (f StatisticFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, e
 }
 
 // The UserFunc type is an adapter to allow the use of ordinary
-// function as User mutator.
+// function as UserDTO mutator.
 type UserFunc func(context.Context, *ent.UserMutation) (ent.Value, error)
 
 // Mutate calls f(ctx, m).

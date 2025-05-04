@@ -10,8 +10,8 @@ require (
 	github.com/golang-jwt/jwt/v5 v5.2.2
 	github.com/google/uuid v1.6.0
 	github.com/intezya/abyssleague/proto v0.0.0
-	github.com/intezya/pkglib/crypto v0.0.0-20250410075734-66680663f021
-	github.com/intezya/pkglib/generate v0.0.0-20250423123611-fb09c2118aaa
+	github.com/intezya/pkglib/crypto v0.1.1
+	github.com/intezya/pkglib/generate v0.1.1
 	github.com/intezya/pkglib/itertools v0.1.2
 	github.com/intezya/pkglib/logger v0.1.3
 	github.com/joho/godotenv v1.5.1

@@ -81,6 +81,8 @@ func (a *AuthenticationMiddleware) Handle() fiber.Handler {
 			a.cacheToken(authorizationHeaderValue, user)
 		}
 
+		logger.Log.Debugw("user successfully fetched", "user", user)
+
 		userContext := context.WithValue(c.UserContext(), UserCtxKey, user)
 		c.SetUserContext(userContext)
 

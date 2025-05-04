@@ -1,15 +1,16 @@
 package dto
 
 import (
-	"time"
-
 	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/ent/schema/access_level"
+	"time"
 )
 
 type UserDTO struct {
 	ID                     int                      `json:"id"`
 	Username               string                   `json:"username"`
 	Email                  *string                  `json:"email"`
+	Password               string                   `json:"-"`
+	HardwareID             *string                  `json:"-"`
 	AccessLevel            access_level.AccessLevel `json:"-"`
 	GenshinUID             *string                  `json:"genshin_uid"`
 	HoyolabLogin           *string                  `json:"hoyolab_login"`

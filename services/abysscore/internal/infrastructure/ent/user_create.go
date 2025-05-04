@@ -482,50 +482,50 @@ func (uc *UserCreate) defaults() {
 // check runs all checks and user-defined validators on the builder.
 func (uc *UserCreate) check() error {
 	if _, ok := uc.mutation.Username(); !ok {
-		return &ValidationError{Name: "username", err: errors.New(`ent: missing required field "User.username"`)}
+		return &ValidationError{Name: "username", err: errors.New(`ent: missing required field "UserDTO.username"`)}
 	}
 	if v, ok := uc.mutation.Username(); ok {
 		if err := user.UsernameValidator(v); err != nil {
-			return &ValidationError{Name: "username", err: fmt.Errorf(`ent: validator failed for field "User.username": %w`, err)}
+			return &ValidationError{Name: "username", err: fmt.Errorf(`ent: validator failed for field "UserDTO.username": %w`, err)}
 		}
 	}
 	if _, ok := uc.mutation.Password(); !ok {
-		return &ValidationError{Name: "password", err: errors.New(`ent: missing required field "User.password"`)}
+		return &ValidationError{Name: "password", err: errors.New(`ent: missing required field "UserDTO.password"`)}
 	}
 	if v, ok := uc.mutation.Password(); ok {
 		if err := user.PasswordValidator(v); err != nil {
-			return &ValidationError{Name: "password", err: fmt.Errorf(`ent: validator failed for field "User.password": %w`, err)}
+			return &ValidationError{Name: "password", err: fmt.Errorf(`ent: validator failed for field "UserDTO.password": %w`, err)}
 		}
 	}
 	if _, ok := uc.mutation.AccessLevel(); !ok {
-		return &ValidationError{Name: "access_level", err: errors.New(`ent: missing required field "User.access_level"`)}
+		return &ValidationError{Name: "access_level", err: errors.New(`ent: missing required field "UserDTO.access_level"`)}
 	}
 	if _, ok := uc.mutation.InvitesEnabled(); !ok {
-		return &ValidationError{Name: "invites_enabled", err: errors.New(`ent: missing required field "User.invites_enabled"`)}
+		return &ValidationError{Name: "invites_enabled", err: errors.New(`ent: missing required field "UserDTO.invites_enabled"`)}
 	}
 	if _, ok := uc.mutation.LoginAt(); !ok {
-		return &ValidationError{Name: "login_at", err: errors.New(`ent: missing required field "User.login_at"`)}
+		return &ValidationError{Name: "login_at", err: errors.New(`ent: missing required field "UserDTO.login_at"`)}
 	}
 	if _, ok := uc.mutation.LoginStreak(); !ok {
-		return &ValidationError{Name: "login_streak", err: errors.New(`ent: missing required field "User.login_streak"`)}
+		return &ValidationError{Name: "login_streak", err: errors.New(`ent: missing required field "UserDTO.login_streak"`)}
 	}
 	if _, ok := uc.mutation.CreatedAt(); !ok {
-		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "User.created_at"`)}
+		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "UserDTO.created_at"`)}
 	}
 	if _, ok := uc.mutation.SearchBlockedLevel(); !ok {
-		return &ValidationError{Name: "search_blocked_level", err: errors.New(`ent: missing required field "User.search_blocked_level"`)}
+		return &ValidationError{Name: "search_blocked_level", err: errors.New(`ent: missing required field "UserDTO.search_blocked_level"`)}
 	}
 	if v, ok := uc.mutation.SearchBlockedLevel(); ok {
 		if err := user.SearchBlockedLevelValidator(v); err != nil {
-			return &ValidationError{Name: "search_blocked_level", err: fmt.Errorf(`ent: validator failed for field "User.search_blocked_level": %w`, err)}
+			return &ValidationError{Name: "search_blocked_level", err: fmt.Errorf(`ent: validator failed for field "UserDTO.search_blocked_level": %w`, err)}
 		}
 	}
 	if _, ok := uc.mutation.AccountBlockedLevel(); !ok {
-		return &ValidationError{Name: "account_blocked_level", err: errors.New(`ent: missing required field "User.account_blocked_level"`)}
+		return &ValidationError{Name: "account_blocked_level", err: errors.New(`ent: missing required field "UserDTO.account_blocked_level"`)}
 	}
 	if v, ok := uc.mutation.AccountBlockedLevel(); ok {
 		if err := user.AccountBlockedLevelValidator(v); err != nil {
-			return &ValidationError{Name: "account_blocked_level", err: fmt.Errorf(`ent: validator failed for field "User.account_blocked_level": %w`, err)}
+			return &ValidationError{Name: "account_blocked_level", err: fmt.Errorf(`ent: validator failed for field "UserDTO.account_blocked_level": %w`, err)}
 		}
 	}
 	return nil

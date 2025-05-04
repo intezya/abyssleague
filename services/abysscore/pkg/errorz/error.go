@@ -25,7 +25,7 @@ const (
 
 // Error is the central error type for the entire application.
 type Error struct {
-	Message     string                 // User-facing error message
+	Message     string                 // UserDTO-facing error message
 	Detail      error                  // Original/technical error (for logs)
 	StatusCode  int                    // HTTP status code
 	ErrorType   ErrorType              // Category of error

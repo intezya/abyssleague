@@ -11,6 +11,8 @@ func ToUserDTOFromEnt(user *ent.User) *dto.UserDTO {
 		ID:                     user.ID,
 		Username:               user.Username,
 		Email:                  user.Email,
+		Password:               user.Password,
+		HardwareID:             user.HardwareID,
 		AccessLevel:            user.AccessLevel,
 		GenshinUID:             user.GenshinUID,
 		HoyolabLogin:           user.HoyolabLogin,

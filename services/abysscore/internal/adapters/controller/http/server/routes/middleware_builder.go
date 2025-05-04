@@ -43,7 +43,7 @@ func createAccessLevelChecker(requiredLevel *access_level.AccessLevel) fiber.Han
 		user, ok := c.UserContext().Value(middleware.UserCtxKey).(*dto.UserDTO)
 
 		if !ok {
-			logger.Log.Error("mismatched client type for middleware")
+			logger.Log.Warn("mismatched client type for middleware")
 
 			return apperrors.HandleError(apperrors.InternalServerError, c)
 		}
@@ -62,7 +62,7 @@ func createMatchRequirementChecker(matchRequirement MatchRequirement) fiber.Hand
 		user, ok := c.UserContext().Value(middleware.UserCtxKey).(*dto.UserDTO)
 
 		if !ok {
-			logger.Log.Error("mismatched client type for middleware")
+			logger.Log.Warn("mismatched client type for middleware")
 
 			return apperrors.HandleError(apperrors.InternalServerError, c)
 		}
