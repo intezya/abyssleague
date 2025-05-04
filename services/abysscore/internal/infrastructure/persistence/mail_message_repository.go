@@ -4,12 +4,12 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/metrics/tracer"
 	"strings"
 	"time"
 
 	"github.com/intezya/abyssleague/services/abysscore/internal/domain/entity/mailmessage"
 	rediswrapper "github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/cache/redis"
+	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/metrics/tracer"
 	"github.com/intezya/abyssleague/services/abysscore/internal/pkg/apperrors"
 	"github.com/intezya/pkglib/logger"
 )

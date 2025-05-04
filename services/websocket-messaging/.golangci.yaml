@@ -20,6 +20,7 @@ linters:
     - testpackage
     - bodyclose
     - godox
+    - spancheck
     # Must be turned on after
     - revive
     - depguard

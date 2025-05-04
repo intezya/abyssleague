@@ -29,5 +29,6 @@ func AddAttribute(ctx context.Context, key string, value interface{}) {
 // This is a convenience wrapper around the OpenTelemetry tracer Start method.
 func StartSpan(ctx context.Context, spanName string) (context.Context, trace.Span) {
 	tracer := otel.Tracer("application")
+
 	return tracer.Start(ctx, spanName)
 }

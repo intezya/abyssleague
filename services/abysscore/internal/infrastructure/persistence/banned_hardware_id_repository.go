@@ -2,6 +2,7 @@ package persistence
 
 import (
 	"context"
+
 	"github.com/intezya/abyssleague/services/abysscore/internal/adapters/mapper"
 	"github.com/intezya/abyssleague/services/abysscore/internal/domain/dto"
 	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/ent"
@@ -26,7 +27,7 @@ func (r *BannedHardwareIDRepository) Create(
 	ctx, span := tracer.StartSpan(ctx, "BannedHardwareIDRepository.Create")
 	defer span.End()
 
-	//TODO implement me
+	// TODO implement me
 	panic("implement me")
 }
 
@@ -37,15 +38,18 @@ func (r *BannedHardwareIDRepository) FindByHardwareID(
 	ctx, span := tracer.StartSpan(ctx, "BannedHardwareIDRepository.FindByHardwareID")
 	defer span.End()
 
-	//TODO implement me
+	// TODO implement me
 	panic("implement me")
 }
 
-func (r *BannedHardwareIDRepository) DeleteByHardwareID(ctx context.Context, hardwareID string) error {
+func (r *BannedHardwareIDRepository) DeleteByHardwareID(
+	ctx context.Context,
+	hardwareID string,
+) error {
 	ctx, span := tracer.StartSpan(ctx, "BannedHardwareIDRepository.DeleteByHardwareID")
 	defer span.End()
 
-	//TODO implement me
+	// TODO implement me
 	panic("implement me")
 }
 
@@ -61,7 +65,6 @@ func (r *BannedHardwareIDRepository) TxFindByHardwareID(
 		Query().
 		Where(bannedhardwareid.HardwareIDEQ(hardwareID)).
 		First(ctx)
-
 	if err != nil {
 		return nil, err
 	}

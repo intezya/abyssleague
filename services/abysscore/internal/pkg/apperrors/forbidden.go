@@ -8,22 +8,20 @@ import (
 
 var (
 	ErrAccountIsLocked = func(reason *string) error {
-		//nolint:err113 // required dynamic error
 		var reasonAsError error
 
 		if reason != nil {
-			reasonAsError = errors.New(*reason)
+			reasonAsError = errors.New(*reason) //nolint:err113 // required dynamic error
 		}
 
 		return errorz.Forbidden("account is locked", reasonAsError)
 	}
 
 	ErrHardwareIDBanned = func(reason *string) error {
-		//nolint:err113 // required dynamic error
 		var reasonAsError error
 
 		if reason != nil {
-			reasonAsError = errors.New(*reason)
+			reasonAsError = errors.New(*reason) //nolint:err113 // required dynamic error
 		}
 
 		return errorz.Forbidden("hardware id is banned", reasonAsError)

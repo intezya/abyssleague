@@ -55,7 +55,13 @@ func (g *GameItemService) FindAllPaged(
 	ctx, span := tracer.StartSpan(ctx, "GameItemService.FindAllPaged")
 	defer span.End()
 
-	result, err := g.gameItemRepository.FindAllPaged(ctx, query.Page, query.Size, query.OrderBy, query.OrderType)
+	result, err := g.gameItemRepository.FindAllPaged(
+		ctx,
+		query.Page,
+		query.Size,
+		query.OrderBy,
+		query.OrderType,
+	)
 	if err != nil {
 		return nil, err // ???
 	}

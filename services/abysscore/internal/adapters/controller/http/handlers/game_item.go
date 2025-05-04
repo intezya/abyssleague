@@ -50,6 +50,7 @@ func NewGameItemHandler(gameItemService domainservice.GameItemService) *GameItem
 //	@Router			/api/items [post].
 func (h *GameItemHandler) Create(c *fiber.Ctx) error {
 	ctx := c.UserContext()
+
 	ctx, span := tracer.StartSpan(ctx, "GameItemHandler.Create")
 	defer span.End()
 
@@ -81,6 +82,7 @@ func (h *GameItemHandler) Create(c *fiber.Ctx) error {
 //	@Router			/api/items/{id} [get].
 func (h *GameItemHandler) FindByID(c *fiber.Ctx) error {
 	ctx := c.UserContext()
+
 	ctx, span := tracer.StartSpan(ctx, "GameItemHandler.FindByID")
 	defer span.End()
 
@@ -112,6 +114,7 @@ func (h *GameItemHandler) FindByID(c *fiber.Ctx) error {
 //	@Router			/api/items [get].
 func (h *GameItemHandler) FindAllPaged(c *fiber.Ctx) error {
 	ctx := c.UserContext()
+
 	ctx, span := tracer.StartSpan(ctx, "GameItemHandler.FindAllPaged")
 	defer span.End()
 
@@ -145,6 +148,7 @@ func (h *GameItemHandler) FindAllPaged(c *fiber.Ctx) error {
 //	@Router			/api/items/{id} [put].
 func (h *GameItemHandler) Update(c *fiber.Ctx) error {
 	ctx := c.UserContext()
+
 	ctx, span := tracer.StartSpan(ctx, "GameItemHandler.Update")
 	defer span.End()
 
@@ -184,6 +188,7 @@ func (h *GameItemHandler) Update(c *fiber.Ctx) error {
 //	@Router			/api/items/{id} [delete].
 func (h *GameItemHandler) Delete(c *fiber.Ctx) error {
 	ctx := c.UserContext()
+
 	ctx, span := tracer.StartSpan(ctx, "GameItemHandler.Delete")
 	defer span.End()
 

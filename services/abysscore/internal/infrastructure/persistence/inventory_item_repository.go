@@ -2,12 +2,12 @@ package persistence
 
 import (
 	"context"
-	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/metrics/tracer"
 
 	"github.com/intezya/abyssleague/services/abysscore/internal/adapters/mapper"
 	"github.com/intezya/abyssleague/services/abysscore/internal/domain/dto"
 	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/ent"
 	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/ent/inventoryitem"
+	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/metrics/tracer"
 	"github.com/intezya/abyssleague/services/abysscore/internal/pkg/apperrors"
 	"github.com/intezya/pkglib/itertools"
 )

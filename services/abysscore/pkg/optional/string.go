@@ -2,6 +2,8 @@ package optional
 
 import "time"
 
-type String = Optional[string]
-type Time = Optional[time.Time]
-type Int = Optional[int]
+type (
+	String = Optional[string]
+	Time   = Optional[time.Time]
+	Int    = Optional[int]
+)

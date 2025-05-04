@@ -1,8 +1,9 @@
 package dto
 
 import (
-	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/ent/schema/access_level"
 	"time"
+
+	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/ent/schema/access_level"
 )
 
 type UserDTO struct {

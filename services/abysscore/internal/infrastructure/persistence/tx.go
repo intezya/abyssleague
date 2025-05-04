@@ -4,9 +4,9 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/metrics/tracer"
 
 	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/ent"
+	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/metrics/tracer"
 	"github.com/intezya/abyssleague/services/abysscore/internal/pkg/apperrors"
 )
 
@@ -112,6 +112,7 @@ func WithTxResult2Tx[R1, R2 any](
 	}()
 
 	var res1 *R1
+
 	var res2 *R2
 	res1, res2, err = fn(tx)
 

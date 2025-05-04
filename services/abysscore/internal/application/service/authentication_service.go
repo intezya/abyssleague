@@ -119,6 +119,7 @@ func (s *AuthenticationService) Authenticate(
 				"error", err,
 				"userID", user.ID,
 			)
+
 			return nil, err
 		}
 
@@ -191,32 +192,36 @@ func (s *AuthenticationService) ChangePassword(
 		return nil, err
 	}
 
-	userAuth, err := persistence.WithTxResultTx(ctx, tx, func(tx *ent.Tx) (*dto.UserFullDTO, error) {
-		// Find user auth by username
-		userAuth, err := s.findUserFullDTOByUsername(ctx, tx, credentials.Username)
-		if err != nil {
-			return nil, err
-		}
+	userAuth, err := persistence.WithTxResultTx(
+		ctx,
+		tx,
+		func(tx *ent.Tx) (*dto.UserFullDTO, error) {
+			// Find user auth by username
+			userAuth, err := s.findUserFullDTOByUsername(ctx, tx, credentials.Username)
+			if err != nil {
+				return nil, err
+			}
 
-		// Verify old password
-		if !s.verifyPassword(ctx, userAuth.Password, credentials.OldPassword) {
-			return nil, apperrors.ErrWrongPassword
-		}
+			// Verify old password
+			if !s.verifyPassword(ctx, userAuth.Password, credentials.OldPassword) {
+				return nil, apperrors.ErrWrongPassword
+			}
 
-		// Encode new password
-		encodedPassword := s.encodePassword(ctx, credentials.NewPassword)
+			// Encode new password
+			encodedPassword := s.encodePassword(ctx, credentials.NewPassword)
 
-		// Update password
-		err = s.authRepo.TxUpdatePasswordByID(ctx, tx, userAuth.ID, encodedPassword)
-		if err != nil {
-			return nil, err
-		}
+			// Update password
+			err = s.authRepo.TxUpdatePasswordByID(ctx, tx, userAuth.ID, encodedPassword)
+			if err != nil {
+				return nil, err
+			}
 
-		// Update user auth object with new password
-		userAuth.Password = encodedPassword
+			// Update user auth object with new password
+			userAuth.Password = encodedPassword
 
-		return userAuth, nil
-	})
+			return userAuth, nil
+		},
+	)
 	if err != nil {
 		return nil, err
 	}
@@ -236,6 +241,7 @@ func (s *AuthenticationService) findUserFullDTOByUsername(
 	defer span.End()
 
 	lowerUsername := strings.ToLower(username)
+
 	return s.userRepo.TxFindFullDTOByLowerUsername(ctx, tx, lowerUsername)
 }
 
@@ -249,6 +255,7 @@ func (s *AuthenticationService) findUserDTOByUsername(
 	defer span.End()
 
 	lowerUsername := strings.ToLower(username)
+
 	return s.userRepo.TxFindDTOByLowerUsername(ctx, tx, lowerUsername)
 }
 
@@ -320,6 +327,7 @@ func (s *AuthenticationService) verifyAndUpdateHardwareID(
 	if user.HardwareID == nil {
 		encodedHardwareID := s.encodeHardwareID(ctx, hardwareID)
 		user.HardwareID = &encodedHardwareID
+
 		return s.authRepo.TxUpdateHardwareIDByID(ctx, tx, user.ID, encodedHardwareID)
 	}
 
@@ -390,6 +398,7 @@ func (s *AuthenticationService) createAuthResult(
 
 		token = s.generateToken(ctx, tokenData)
 	}
+
 	online := s.getOnlineCount(ctx)
 
 	return domainservice.NewAuthenticationResult(token, user, online)
@@ -442,9 +451,9 @@ func (s *AuthenticationService) processLoginStreakAndRewards(
 		user.LoginStreak,
 		user.LoginAt,
 	)
-
 	if err != nil {
 		logger.Log.Warnw("Failed to update login streak", "error", err, "userID", user.ID)
+
 		return err
 	}
 
@@ -460,8 +469,9 @@ func (s *AuthenticationService) processBanDecrementAfterLogin(
 	ctx, span := tracer.StartSpan(ctx, "AuthenticationService.processBanDecrementAfterLogin")
 	defer span.End()
 
-	var now = time.Now()
-	var needsUpdate = false
+	now := time.Now()
+
+	needsUpdate := false
 
 	// Process account block decrement
 	if user.AccountBlockedUntil != nil &&
@@ -469,6 +479,7 @@ func (s *AuthenticationService) processBanDecrementAfterLogin(
 		if user.AccountBlockedLevel > 0 {
 			user.AccountBlockedLevel--
 		}
+
 		user.AccountBlockedUntil = nil
 		user.AccountBlockReason = nil
 		needsUpdate = true
@@ -480,6 +491,7 @@ func (s *AuthenticationService) processBanDecrementAfterLogin(
 		if user.SearchBlockedLevel > 0 {
 			user.SearchBlockedLevel--
 		}
+
 		user.SearchBlockedUntil = nil
 		user.SearchBlockReason = nil
 		needsUpdate = true
@@ -493,6 +505,7 @@ func (s *AuthenticationService) processBanDecrementAfterLogin(
 				"error", err,
 				"userID", user.ID,
 			)
+
 			return err
 		}
 	}
@@ -519,6 +532,7 @@ func (s *AuthenticationService) getOnlineCount(ctx context.Context) int {
 	res, err := s.websocketClient.GetOnline(ctx)
 	if err != nil {
 		logger.Log.Debugw("Failed to get online count", "error", err)
+
 		return 0
 	}
 

@@ -33,6 +33,7 @@ func NewAccountHandler(accountService domainservice.AccountService) *AccountHand
 //	@Router			/api/account/email/get_code [post].
 func (h *AccountHandler) SendCodeForEmailLink(c *fiber.Ctx) error {
 	ctx := c.UserContext()
+
 	ctx, span := tracer.StartSpan(ctx, "AccountHandler.SendCodeForEmailLink")
 	defer span.End()
 
@@ -69,6 +70,7 @@ func (h *AccountHandler) SendCodeForEmailLink(c *fiber.Ctx) error {
 //	@Router			/api/account/email/enter_code [post].
 func (h *AccountHandler) EnterCodeForEmailLink(c *fiber.Ctx) error {
 	ctx := c.UserContext()
+
 	ctx, span := tracer.StartSpan(ctx, "AccountHandler.EnterCodeForEmailLink")
 	defer span.End()
 

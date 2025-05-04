@@ -6,15 +6,15 @@ import (
 	"crypto/sha256"
 	"encoding/base64"
 	"encoding/hex"
+	"errors"
 	"fmt"
+	"strings"
+
 	"github.com/intezya/pkglib/crypto"
 	"github.com/intezya/pkglib/generate"
-	"strings"
 )
 
-const (
-	defaultSaltLength = 32
-)
+var errInvalidEncodeFormat = errors.New("invalid encoded format")
 
 type HashHelper struct {
 	block cipher.Block
@@ -22,8 +22,8 @@ type HashHelper struct {
 
 func NewHashHelper(hardwareIDEncryptionKey string) *HashHelper {
 	key := sha256.Sum256([]byte(hardwareIDEncryptionKey))
-	block, err := aes.NewCipher(key[:])
 
+	block, err := aes.NewCipher(key[:])
 	if err != nil {
 		panic(err) // unreachable
 	}
@@ -38,16 +38,19 @@ func (h *HashHelper) EncodePassword(raw string) string {
 	if err != nil {
 		panic(err)
 	}
+
 	return hash
 }
 
 func (h *HashHelper) VerifyPassword(raw, hash string) bool {
 	ok, _ := crypto.VerifyArgon2(hash, h.preHash(raw))
+
 	return ok
 }
 
 func (h *HashHelper) EncodeHardwareID(raw string) string {
-	salt := generate.RandomBytes(12)
+	salt := generate.RandomBytes(12) //nolint:mnd
+
 	aesgcm, err := cipher.NewGCM(h.block)
 	if err != nil {
 		panic(err)
@@ -64,8 +67,8 @@ func (h *HashHelper) EncodeHardwareID(raw string) string {
 
 func (h *HashHelper) DecodeHardwareID(encoded string) (string, error) {
 	parts := strings.Split(encoded, ":")
-	if len(parts) != 2 {
-		return "", fmt.Errorf("invalid encoded format")
+	if len(parts) != 2 { //nolint:mnd
+		return "", errInvalidEncodeFormat
 	}
 
 	nonce, err := base64.StdEncoding.DecodeString(parts[0])
@@ -102,5 +105,6 @@ func (h *HashHelper) VerifyHardwareID(raw, encoded string) bool {
 
 func (h *HashHelper) preHash(raw string) string {
 	shaSum := sha256.Sum256([]byte(raw))
+
 	return hex.EncodeToString(shaSum[:])
 }

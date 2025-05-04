@@ -20,6 +20,7 @@ linters:
     - testpackage
     - exhaustruct # freakin linter that argue with mu, wg, ...
     - godox
+    - spancheck
     # Must be turned on after
     - revive
     - depguard

@@ -7,10 +7,10 @@ import (
 )
 
 type CreateUpdateGameItem struct {
-	Name       string `json:"name"       validate:"required"`
-	Collection string `json:"collection" validate:"required"`
-	Type       int    `json:"type"       validate:"required"`
-	Rarity     int    `json:"rarity"     validate:"required"`
+	Name       string `json:"name"       validate:"required" example:"Whirling Mark"`
+	Collection string `json:"collection" validate:"required" example:"Shadow Sigils"`
+	Type       int    `json:"type"       validate:"required" example:"4"`
+	Rarity     int    `json:"rarity"     validate:"required" example:"4"`
 }
 
 // TODO: repository should accept CreateUpdateGameItemDTO from domain.

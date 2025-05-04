@@ -2,7 +2,6 @@ package persistence
 
 import (
 	"context"
-	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/metrics/tracer"
 	"strings"
 	"time"
 
@@ -10,6 +9,7 @@ import (
 	"github.com/intezya/abyssleague/services/abysscore/internal/domain/dto"
 	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/ent"
 	entUser "github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/ent/user"
+	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/metrics/tracer"
 	"github.com/intezya/abyssleague/services/abysscore/internal/pkg/apperrors"
 )
 
@@ -79,7 +79,12 @@ func (r *UserRepository) ExistsByEmail(ctx context.Context, email string) bool {
 }
 
 // TxUpdateHardwareIDByID updates a user's hardware ID.
-func (r *UserRepository) TxUpdateHardwareIDByID(ctx context.Context, tx *ent.Tx, id int, hardwareID string) error {
+func (r *UserRepository) TxUpdateHardwareIDByID(
+	ctx context.Context,
+	tx *ent.Tx,
+	id int,
+	hardwareID string,
+) error {
 	ctx, span := tracer.StartSpan(ctx, "UserRepository.TxUpdateHardwareIDByID")
 	defer span.End()
 
@@ -198,7 +203,11 @@ func (r *UserRepository) WithTx(ctx context.Context) (*ent.Tx, error) {
 }
 
 // TxFindDTOById retrieves basic user data by ID.
-func (r *UserRepository) TxFindDTOById(ctx context.Context, tx *ent.Tx, id int) (*dto.UserDTO, error) {
+func (r *UserRepository) TxFindDTOById(
+	ctx context.Context,
+	tx *ent.Tx,
+	id int,
+) (*dto.UserDTO, error) {
 	ctx, span := tracer.StartSpan(ctx, "UserRepository.TxFindDTOById")
 	defer span.End()
 
@@ -211,21 +220,6 @@ func (r *UserRepository) TxFindDTOById(ctx context.Context, tx *ent.Tx, id int) 
 	}
 
 	return mapper.ToUserDTOFromEnt(user), nil
-}
-
-// Helper methods for error handling
-
-// handleQueryError transforms Ent query errors into domain-specific errors.
-func (r *UserRepository) handleQueryError(err error) error {
-	if err == nil {
-		return nil
-	}
-
-	if ent.IsNotFound(err) {
-		return apperrors.WrapUserNotFound(err)
-	}
-
-	return apperrors.WrapUnexpectedError(err)
 }
 
 func (r *UserRepository) TxCreate(
@@ -316,6 +310,21 @@ func (r *UserRepository) TxFindDTOByLowerUsername(
 	}
 
 	return mapper.ToUserDTOFromEnt(user), nil
+}
+
+// Helper methods for error handling
+
+// handleQueryError transforms Ent query errors into domain-specific errors.
+func (r *UserRepository) handleQueryError(err error) error {
+	if err == nil {
+		return nil
+	}
+
+	if ent.IsNotFound(err) {
+		return apperrors.WrapUserNotFound(err)
+	}
+
+	return apperrors.WrapUnexpectedError(err)
 }
 
 // handleUpdateError transforms Ent update errors into domain-specific errors.

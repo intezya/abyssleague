@@ -3,6 +3,7 @@ package handlers
 import (
 	"context"
 	"errors"
+
 	"github.com/gofiber/fiber/v2"
 	"github.com/intezya/abyssleague/services/abysscore/internal/adapters/controller/http/dto/response"
 	"github.com/intezya/abyssleague/services/abysscore/internal/adapters/controller/http/middleware"
@@ -15,12 +16,16 @@ import (
 var wrapInvalidRequestBody = func(wrapped error) error {
 	return apperrors.WrapUnprocessableEntity(wrapped)
 }
-var errUserNotFoundInContext = apperrors.WrapInternalServerError(errors.New("user not found in context"))
+
+var errUserNotFoundInContext = apperrors.WrapInternalServerError(
+	errors.New("user not found in context"), //nolint:err113
+)
 
 // getAndValidateRequest parses and validates the request body into the given generic struct T.
 // returns the parsed struct or a validation/parsing error.
 func getAndValidateRequest[T interface{}](c *fiber.Ctx) (*T, error) {
 	ctx := c.UserContext()
+
 	ctx, span := tracer.StartSpan(ctx, "getAndValidateRequest")
 	defer span.End()
 
@@ -56,7 +61,6 @@ func extractUser(ctx context.Context) (*dto.UserDTO, error) {
 // calls panic if user hasn't been authenticated.
 func mustExtractUser(ctx context.Context) *dto.UserDTO {
 	user, err := extractUser(ctx)
-
 	if err != nil {
 		panic(err)
 	}

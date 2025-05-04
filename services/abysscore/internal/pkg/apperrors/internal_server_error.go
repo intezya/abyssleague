@@ -2,6 +2,7 @@ package apperrors
 
 import (
 	"errors"
+
 	"github.com/intezya/abyssleague/services/abysscore/pkg/errorz"
 )
 

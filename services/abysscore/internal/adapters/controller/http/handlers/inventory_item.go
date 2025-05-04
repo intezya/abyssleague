@@ -34,6 +34,7 @@ func NewInventoryItemHandler(
 //	@Router			/api/users/{user_id}/inventory/{item_id} [post].
 func (h *InventoryItemHandler) GrantInventoryItemToUser(c *fiber.Ctx) error {
 	ctx := c.UserContext()
+
 	ctx, span := tracer.StartSpan(ctx, "InventoryItemHandler.GrantInventoryItemToUser")
 	defer span.End()
 
@@ -68,6 +69,7 @@ func (h *InventoryItemHandler) GrantInventoryItemToUser(c *fiber.Ctx) error {
 //	@Router			/api/users/inventory [get].
 func (h *InventoryItemHandler) GetAllByAuthorization(c *fiber.Ctx) error {
 	ctx := c.UserContext()
+
 	ctx, span := tracer.StartSpan(ctx, "InventoryItemHandler.GetAllByAuthorization")
 	defer span.End()
 
@@ -96,6 +98,7 @@ func (h *InventoryItemHandler) GetAllByAuthorization(c *fiber.Ctx) error {
 //	@Router			/api/users/{user_id}/inventory [get].
 func (h *InventoryItemHandler) GetAllByUserID(c *fiber.Ctx) error {
 	ctx := c.UserContext()
+
 	ctx, span := tracer.StartSpan(ctx, "InventoryItemHandler.GetAllByUserID")
 	defer span.End()
 
@@ -129,6 +132,7 @@ func (h *InventoryItemHandler) GetAllByUserID(c *fiber.Ctx) error {
 //	@Router			/api/users/{user_id}/inventory/{item_id} [delete].
 func (h *InventoryItemHandler) RevokeByAdmin(c *fiber.Ctx) error {
 	ctx := c.UserContext()
+
 	ctx, span := tracer.StartSpan(ctx, "InventoryItemHandler.RevokeByAdmin")
 	defer span.End()
 
@@ -168,6 +172,7 @@ func (h *InventoryItemHandler) RevokeByAdmin(c *fiber.Ctx) error {
 //	@Router			/api/users/me/inventory/set_item [post].
 func (h *InventoryItemHandler) SetInventoryItem(c *fiber.Ctx) error {
 	ctx := c.UserContext()
+
 	ctx, span := tracer.StartSpan(ctx, "InventoryItemHandler.SetInventoryItem")
 	defer span.End()
 

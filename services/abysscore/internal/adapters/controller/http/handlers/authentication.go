@@ -36,6 +36,7 @@ func NewAuthenticationHandler(
 //	@Router			/api/auth/register [post].
 func (h *AuthenticationHandler) Register(c *fiber.Ctx) error {
 	ctx := c.UserContext()
+
 	ctx, span := tracer.StartSpan(ctx, "AuthenticationHandler.Register")
 	defer span.End()
 
@@ -72,6 +73,7 @@ func (h *AuthenticationHandler) Register(c *fiber.Ctx) error {
 //	@Router			/api/auth/login [post].
 func (h *AuthenticationHandler) Login(c *fiber.Ctx) error {
 	ctx := c.UserContext()
+
 	ctx, span := tracer.StartSpan(ctx, "AuthenticationHandler.Login")
 	defer span.End()
 
@@ -105,6 +107,7 @@ func (h *AuthenticationHandler) Login(c *fiber.Ctx) error {
 //	@Router			/api/auth/change_password [post].
 func (h *AuthenticationHandler) ChangePassword(c *fiber.Ctx) error {
 	ctx := c.UserContext()
+
 	ctx, span := tracer.StartSpan(ctx, "AuthenticationHandler.ChangePassword")
 	defer span.End()
 

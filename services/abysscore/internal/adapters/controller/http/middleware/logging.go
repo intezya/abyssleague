@@ -135,7 +135,7 @@ func (l *LoggingMiddleware) Handle() fiber.Handler {
 
 		l.updateMetrics(c, statusCode, requestDuration)
 
-		logRequest(log, err, statusCode, requestDuration, l.slowRequestThreshold)
+		logRequest(log, statusCode, requestDuration, l.slowRequestThreshold)
 
 		updateSpanWithResponseData(span, statusCode, c, requestDuration, err)
 
@@ -231,7 +231,6 @@ func (l *LoggingMiddleware) updateMetrics(c *fiber.Ctx, statusCode int, duration
 
 func logRequest(
 	log *zap.SugaredLogger,
-	err error,
 	statusCode int,
 	duration time.Duration,
 	slowThreshold time.Duration,

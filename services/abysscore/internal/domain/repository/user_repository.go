@@ -2,10 +2,11 @@ package repositoryports
 
 import (
 	"context"
+	"time"
+
 	"github.com/intezya/abyssleague/services/abysscore/internal/domain/dto"
 	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/ent"
 	"github.com/intezya/abyssleague/services/abysscore/pkg/optional"
-	"time"
 )
 
 type UserRepository interface {
@@ -16,7 +17,11 @@ type UserRepository interface {
 
 	TxCreate(ctx context.Context, tx *ent.Tx, credentials *dto.CredentialsDTO) (*dto.UserDTO, error)
 	TxFindDTOById(ctx context.Context, tx *ent.Tx, id int) (*dto.UserDTO, error)
-	TxFindFullDTOByLowerUsername(ctx context.Context, tx *ent.Tx, username string) (*dto.UserFullDTO, error)
+	TxFindFullDTOByLowerUsername(
+		ctx context.Context,
+		tx *ent.Tx,
+		username string,
+	) (*dto.UserFullDTO, error)
 	TxFindDTOByLowerUsername(ctx context.Context, tx *ent.Tx, username string) (*dto.UserDTO, error)
 }
 
@@ -30,7 +35,11 @@ type AuthenticationRepository interface {
 		loginStreak int,
 		loginAt time.Time,
 	) error
-	TxSetBlockUntilAndLevelAndReasonFromUser(ctx context.Context, tx *ent.Tx, user *dto.UserDTO) error
+	TxSetBlockUntilAndLevelAndReasonFromUser(
+		ctx context.Context,
+		tx *ent.Tx,
+		user *dto.UserDTO,
+	) error
 	TxUpdatePasswordByID(ctx context.Context, tx *ent.Tx, id int, password string) error
 }
 
@@ -43,9 +52,17 @@ type InventoryRepository interface {
 }
 
 type BannedHardwareIDRepository interface {
-	Create(ctx context.Context, hardwareID string, reason optional.String) (*dto.BannedHardwareID, error)
+	Create(
+		ctx context.Context,
+		hardwareID string,
+		reason optional.String,
+	) (*dto.BannedHardwareID, error)
 	FindByHardwareID(ctx context.Context, hardwareID string) (*dto.BannedHardwareID, error)
 	DeleteByHardwareID(ctx context.Context, hardwareID string) error
 
-	TxFindByHardwareID(ctx context.Context, tx *ent.Tx, hardwareID string) (*dto.BannedHardwareID, error)
+	TxFindByHardwareID(
+		ctx context.Context,
+		tx *ent.Tx,
+		hardwareID string,
+	) (*dto.BannedHardwareID, error)
 }
