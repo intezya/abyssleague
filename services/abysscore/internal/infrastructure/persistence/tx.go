@@ -83,11 +83,11 @@ func WithTxResultTx[T any](
 	return res, err
 }
 
-func WithTxResult2Tx[R1, R2 any](
+func WithTx(
 	ctx context.Context,
 	tx *ent.Tx,
-	fn func(tx *ent.Tx) (*R1, *R2, error),
-) (_ *R1, _ *R2, err error) {
+	fn func(tx *ent.Tx) error,
+) (err error) {
 	ctx, span := tracer.StartSpan(ctx, "WithTxResult2Tx")
 	defer span.End()
 
@@ -111,10 +111,7 @@ func WithTxResult2Tx[R1, R2 any](
 		}
 	}()
 
-	var res1 *R1
+	err = fn(tx)
 
-	var res2 *R2
-	res1, res2, err = fn(tx)
-
-	return res1, res2, err
+	return err
 }

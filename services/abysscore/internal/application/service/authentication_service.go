@@ -8,14 +8,12 @@ import (
 	"github.com/intezya/abyssleague/services/abysscore/internal/adapters/controller/grpc/clients"
 	"github.com/intezya/abyssleague/services/abysscore/internal/domain/dto"
 	"github.com/intezya/abyssleague/services/abysscore/internal/domain/entity"
-	"github.com/intezya/abyssleague/services/abysscore/internal/domain/entity/userentity"
 	repositoryports "github.com/intezya/abyssleague/services/abysscore/internal/domain/repository"
 	domainservice "github.com/intezya/abyssleague/services/abysscore/internal/domain/service"
 	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/ent"
 	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/metrics/tracer"
 	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/persistence"
 	"github.com/intezya/abyssleague/services/abysscore/internal/pkg/apperrors"
-	"github.com/intezya/abyssleague/services/abysscore/pkg/timeutils"
 	"github.com/intezya/pkglib/logger"
 )
 
@@ -27,6 +25,7 @@ type AuthenticationService struct {
 	credentialsHelper    domainservice.CredentialsHelper
 	tokenHelper          domainservice.TokenHelper
 	bannedHardwareIDRepo repositoryports.BannedHardwareIDRepository
+	eventService         domainservice.AuthenticationEventService
 }
 
 // NewAuthenticationService creates a new authentication service with dependency injection.
@@ -37,6 +36,7 @@ func NewAuthenticationService(
 	credentialsHelper domainservice.CredentialsHelper,
 	tokenHelper domainservice.TokenHelper,
 	bannedHardwareIDRepo repositoryports.BannedHardwareIDRepository,
+	eventService domainservice.AuthenticationEventService,
 ) *AuthenticationService {
 	return &AuthenticationService{
 		authRepo:             authRepo,
@@ -45,6 +45,7 @@ func NewAuthenticationService(
 		credentialsHelper:    credentialsHelper,
 		tokenHelper:          tokenHelper,
 		bannedHardwareIDRepo: bannedHardwareIDRepo,
+		eventService:         eventService,
 	}
 }
 
@@ -63,21 +64,25 @@ func (s *AuthenticationService) Register(
 
 	s.encryptCredentials(ctx, credentials)
 
-	user, err := persistence.WithTxResultTx(ctx, tx, func(tx *ent.Tx) (*dto.UserDTO, error) {
-		if err := s.checkHardwareIDBanned(ctx, tx, credentials.HardwareID); err != nil {
-			return nil, err
-		}
+	user, err := persistence.WithTxResultTx(
+		ctx, tx, func(tx *ent.Tx) (*dto.UserDTO, error) {
+			if err := s.checkHardwareIDBanned(ctx, tx, credentials.HardwareID); err != nil {
+				return nil, err
+			}
 
-		user, err := s.userRepo.TxCreate(ctx, tx, credentials)
-		if err != nil {
-			return nil, err
-		}
+			user, err := s.userRepo.TxCreate(ctx, tx, credentials)
+			if err != nil {
+				return nil, err
+			}
 
-		return user, nil
-	})
+			return user, nil
+		},
+	)
 	if err != nil {
 		return nil, err
 	}
+
+	s.eventService.HandleRegistration(ctx, user)
 
 	return s.createAuthResult(ctx, &dto.UserFullDTO{UserDTO: user}), nil
 }
@@ -95,39 +100,33 @@ func (s *AuthenticationService) Authenticate(
 		return nil, err
 	}
 
-	user, err := persistence.WithTxResultTx(ctx, tx, func(tx *ent.Tx) (*dto.UserFullDTO, error) {
-		user, err := s.findUserFullDTOByUsername(ctx, tx, credentials.Username)
-		if err != nil {
-			return nil, err
-		}
+	user, err := persistence.WithTxResultTx(
+		ctx, tx, func(tx *ent.Tx) (*dto.UserFullDTO, error) {
+			user, err := s.findUserFullDTOByUsername(ctx, tx, credentials.Username)
+			if err != nil {
+				return nil, err
+			}
 
-		if err := s.verifyAndUpdateHardwareID(ctx, tx, user, credentials.HardwareID); err != nil {
-			return nil, err
-		}
+			if err := s.verifyAndUpdateHardwareID(ctx, tx, user, credentials.HardwareID); err != nil {
+				return nil, err
+			}
 
-		if !s.verifyPassword(ctx, user.Password, credentials.Password) {
-			return nil, apperrors.ErrWrongPassword
-		}
+			if !s.verifyPassword(ctx, user.Password, credentials.Password) {
+				return nil, apperrors.ErrWrongPassword
+			}
 
-		if s.isAccountLocked(user.UserDTO) {
-			return nil, apperrors.ErrAccountIsLocked(user.AccountBlockReason)
-		}
+			if s.isAccountLocked(user.UserDTO) {
+				return nil, apperrors.ErrAccountIsLocked(user.AccountBlockReason)
+			}
 
-		if err := s.processPostLoginTasks(ctx, tx, user.UserDTO); err != nil {
-			logger.Log.Warnw(
-				"Failed to process post-login tasks",
-				"error", err,
-				"userID", user.ID,
-			)
-
-			return nil, err
-		}
-
-		return user, nil
-	})
+			return user, nil
+		},
+	)
 	if err != nil {
 		return nil, err
 	}
+
+	s.eventService.HandleLogin(ctx, user.UserDTO)
 
 	return s.createAuthResult(ctx, user), nil
 }
@@ -152,26 +151,28 @@ func (s *AuthenticationService) ValidateToken(
 		return nil, err
 	}
 
-	user, err := persistence.WithTxResultTx(ctx, tx, func(tx *ent.Tx) (*dto.UserDTO, error) {
-		// Find user auth by username from token
-		user, err := s.findUserDTOByUsername(ctx, tx, tokenData.Username)
-		if err != nil {
-			return nil, err
-		}
+	user, err := persistence.WithTxResultTx(
+		ctx, tx, func(tx *ent.Tx) (*dto.UserDTO, error) {
+			// Find user auth by username from token
+			user, err := s.findUserDTOByUsername(ctx, tx, tokenData.Username)
+			if err != nil {
+				return nil, err
+			}
 
-		// Verify hardware ID from token
-		err = s.verifyTokenHardwareID(ctx, tx, user.HardwareID, tokenData.HardwareID)
-		if err != nil {
-			return nil, err
-		}
+			// Verify hardware ID from token
+			err = s.verifyTokenHardwareID(ctx, tx, user.HardwareID, tokenData.HardwareID)
+			if err != nil {
+				return nil, err
+			}
 
-		// Check if account is locked
-		if s.isAccountLocked(user) {
-			return nil, apperrors.ErrAccountIsLocked(user.AccountBlockReason)
-		}
+			// Check if account is locked
+			if s.isAccountLocked(user) {
+				return nil, apperrors.ErrAccountIsLocked(user.AccountBlockReason)
+			}
 
-		return user, nil
-	})
+			return user, nil
+		},
+	)
 	if err != nil {
 		return nil, err
 	}
@@ -402,115 +403,6 @@ func (s *AuthenticationService) createAuthResult(
 	online := s.getOnlineCount(ctx)
 
 	return domainservice.NewAuthenticationResult(token, user, online)
-}
-
-// processPostLoginTasks handles all post-login actions.
-func (s *AuthenticationService) processPostLoginTasks(
-	ctx context.Context,
-	tx *ent.Tx,
-	user *dto.UserDTO,
-) error {
-	ctx, span := tracer.StartSpan(ctx, "AuthenticationService.processPostLoginTasks")
-	defer span.End()
-
-	if err := s.processLoginStreakAndRewards(ctx, tx, user); err != nil {
-		return err
-	}
-
-	if err := s.processBanDecrementAfterLogin(ctx, tx, user); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-// processLoginStreakAndRewards handles post-login processing like login streaks and rewards.
-func (s *AuthenticationService) processLoginStreakAndRewards(
-	ctx context.Context,
-	tx *ent.Tx,
-	user *dto.UserDTO,
-) error {
-	ctx, span := tracer.StartSpan(ctx, "AuthenticationService.processLoginStreakAndRewards")
-	defer span.End()
-
-	// Only update streak if user hasn't logged in today
-	if !timeutils.IsDayBeforeToday(user.LoginAt) {
-		return nil
-	}
-
-	user.LoginStreak++
-	user.LoginAt = time.Now()
-
-	// TODO: Implement logic to handle search block level decrement
-	// TODO: Implement logic to add bonuses for user based on login streak
-
-	err := s.authRepo.TxUpdateLoginStreakLoginAtByID(
-		ctx,
-		tx,
-		user.ID,
-		user.LoginStreak,
-		user.LoginAt,
-	)
-	if err != nil {
-		logger.Log.Warnw("Failed to update login streak", "error", err, "userID", user.ID)
-
-		return err
-	}
-
-	return nil
-}
-
-// processBanDecrementAfterLogin decrements ban levels if needed.
-func (s *AuthenticationService) processBanDecrementAfterLogin(
-	ctx context.Context,
-	tx *ent.Tx,
-	user *dto.UserDTO,
-) error {
-	ctx, span := tracer.StartSpan(ctx, "AuthenticationService.processBanDecrementAfterLogin")
-	defer span.End()
-
-	now := time.Now()
-
-	needsUpdate := false
-
-	// Process account block decrement
-	if user.AccountBlockedUntil != nil &&
-		user.AccountBlockedUntil.Add(userentity.AccountBlockDecrementTime).Before(now) {
-		if user.AccountBlockedLevel > 0 {
-			user.AccountBlockedLevel--
-		}
-
-		user.AccountBlockedUntil = nil
-		user.AccountBlockReason = nil
-		needsUpdate = true
-	}
-
-	// Process search block decrement
-	if user.SearchBlockedUntil != nil &&
-		user.SearchBlockedUntil.Add(userentity.SearchBlockDecrementTime).Before(now) {
-		if user.SearchBlockedLevel > 0 {
-			user.SearchBlockedLevel--
-		}
-
-		user.SearchBlockedUntil = nil
-		user.SearchBlockReason = nil
-		needsUpdate = true
-	}
-
-	if needsUpdate {
-		err := s.authRepo.TxSetBlockUntilAndLevelAndReasonFromUser(ctx, tx, user)
-		if err != nil {
-			logger.Log.Errorw(
-				"Failed to update block settings for user",
-				"error", err,
-				"userID", user.ID,
-			)
-
-			return err
-		}
-	}
-
-	return nil
 }
 
 // generateToken creates an authentication token.

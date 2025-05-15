@@ -2,30 +2,29 @@ package applicationservice
 
 import (
 	"context"
+	domainservice "github.com/intezya/abyssleague/services/abysscore/internal/domain/service"
 
 	"github.com/intezya/abyssleague/services/abysscore/internal/domain/dto"
-	"github.com/intezya/abyssleague/services/abysscore/internal/domain/event"
 	repositoryports "github.com/intezya/abyssleague/services/abysscore/internal/domain/repository"
 	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/metrics/tracer"
-	eventlib "github.com/intezya/abyssleague/services/abysscore/pkg/event"
 	"github.com/intezya/abyssleague/services/abysscore/pkg/optional"
 )
 
 type InventoryItemService struct {
 	inventoryItemRepository repositoryports.InventoryItemRepository
 	inventoryRepository     repositoryports.InventoryRepository
-	eventPublisher          eventlib.Publisher
+	eventService            domainservice.InventoryItemEventService
 }
 
 func NewInventoryItemService(
 	repository repositoryports.InventoryItemRepository,
 	inventoryRepository repositoryports.InventoryRepository,
-	eventPublisher eventlib.Publisher,
+	eventService domainservice.InventoryItemEventService,
 ) *InventoryItemService {
 	return &InventoryItemService{
 		inventoryItemRepository: repository,
 		inventoryRepository:     inventoryRepository,
-		eventPublisher:          eventPublisher,
+		eventService:            eventService,
 	}
 }
 
@@ -44,19 +43,14 @@ func (i *InventoryItemService) GrantToUserByAdmin(
 		ReceivedFromID: performer.ID,
 	}
 
-	result, err := i.inventoryItemRepository.Create(ctx, createRequest)
+	item, err := i.inventoryItemRepository.Create(ctx, createRequest)
 	if err != nil {
 		return nil, err
 	}
 
-	i.eventPublisher.Publish(event.NewInventoryItemObtainedEvent(
-		optional.EmptyOptional[string](),
-		optional.New(performer),
-		userID,
-		result,
-	))
+	i.eventService.HandleItemObtained(ctx, userID, optional.New(performer), item)
 
-	return result, nil
+	return item, nil
 }
 
 func (i *InventoryItemService) FindAllByUserID(
@@ -83,17 +77,12 @@ func (i *InventoryItemService) RevokeByAdmin(
 	ctx, span := tracer.StartSpan(ctx, "InventoryItemService.RevokeByAdmin")
 	defer span.End()
 
-	result, err := i.inventoryItemRepository.DeleteByUserIDAndID(ctx, userID, inventoryItemID)
+	item, err := i.inventoryItemRepository.DeleteByUserIDAndID(ctx, userID, inventoryItemID)
 	if err != nil {
 		return err
 	}
 
-	i.eventPublisher.Publish(event.NewInventoryItemRevokedEvent(
-		optional.EmptyOptional[string](),
-		optional.New(performer),
-		userID,
-		result,
-	))
+	i.eventService.HandleItemRevoked(ctx, userID, optional.New(performer), item)
 
 	return nil
 }

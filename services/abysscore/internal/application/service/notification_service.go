@@ -3,6 +3,7 @@ package applicationservice
 import (
 	"context"
 	"encoding/json"
+	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/metrics/tracer"
 
 	"github.com/intezya/abyssleague/services/abysscore/internal/adapters/controller/grpc/clients"
 	"github.com/intezya/pkglib/logger"
@@ -18,7 +19,10 @@ func NewNotificationService(
 	return &NotificationService{websocketService: websocketService}
 }
 
-func (n NotificationService) SendToUser(userID int, message interface{}) error {
+func (n NotificationService) SendToUser(ctx context.Context, userID int, message interface{}) error {
+	ctx, span := tracer.StartSpan(ctx, "NotificationService.SendToUser")
+	defer span.End()
+
 	payload, err := json.Marshal(message)
 	if err != nil {
 		logger.Log.Warn("failed to marshal message: %v", err)

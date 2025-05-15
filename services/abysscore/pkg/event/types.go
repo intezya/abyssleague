@@ -16,11 +16,16 @@ type (
 	Middleware func(next Handler) Handler
 )
 
-type Publisher interface {
+type ApplicationEventPublisher interface {
 	Publish(event ApplicationEvent)
 }
 
 type Manager interface {
 	Register(event ApplicationEvent, handler Handler, middleware ...Middleware)
 	Unregister(event ApplicationEvent)
+}
+
+type PublisherAndManager interface {
+	ApplicationEventPublisher
+	Manager
 }

@@ -16,14 +16,14 @@ type eventBus struct {
 	cancel   context.CancelFunc
 }
 
-type ApplicationEventPublisher struct {
+type publisher struct {
 	mu          sync.RWMutex
 	subscribers map[string]*eventBus
 	workerCount int
 	bufferSize  int
 }
 
-func NewApplicationEventPublisher(workerCount int, bufferSize int) *ApplicationEventPublisher {
+func NewPublisher(workerCount int, bufferSize int) PublisherAndManager {
 	if workerCount <= 0 {
 		workerCount = 1
 	}
@@ -32,14 +32,14 @@ func NewApplicationEventPublisher(workerCount int, bufferSize int) *ApplicationE
 		bufferSize = 100
 	}
 
-	return &ApplicationEventPublisher{
+	return &publisher{
 		subscribers: make(map[string]*eventBus),
 		workerCount: workerCount,
 		bufferSize:  bufferSize,
 	}
 }
 
-func (p *ApplicationEventPublisher) Register(
+func (p *publisher) Register(
 	event ApplicationEvent,
 	handler Handler,
 	middleware ...Middleware,
@@ -73,7 +73,7 @@ func (p *ApplicationEventPublisher) Register(
 	bus.handlers = append(bus.handlers, handler)
 }
 
-func (p *ApplicationEventPublisher) Unregister(event ApplicationEvent) {
+func (p *publisher) Unregister(event ApplicationEvent) {
 	p.mu.Lock()
 	defer p.mu.Unlock()
 
@@ -87,7 +87,7 @@ func (p *ApplicationEventPublisher) Unregister(event ApplicationEvent) {
 	}
 }
 
-func (p *ApplicationEventPublisher) Publish(event ApplicationEvent) {
+func (p *publisher) Publish(event ApplicationEvent) {
 	p.mu.RLock()
 	defer p.mu.RUnlock()
 
@@ -109,7 +109,7 @@ func (p *ApplicationEventPublisher) Publish(event ApplicationEvent) {
 	}
 }
 
-func (p *ApplicationEventPublisher) startWorker(ctx context.Context, bus *eventBus) {
+func (p *publisher) startWorker(ctx context.Context, bus *eventBus) {
 	for {
 		select {
 		case <-ctx.Done():

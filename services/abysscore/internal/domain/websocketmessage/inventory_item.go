@@ -42,14 +42,14 @@ type InventoryItemRevokedMessage struct {
 	*BaseMessage
 
 	Data struct {
-		InventoryItemID int `json:"item_id"`
+		Item *dto.InventoryItemDTO `json:"item"`
 	} `json:"data"`
 }
 
 func NewInventoryItemRevokedMessage(
 	eventID string,
 	performerName string,
-	inventoryItemID int,
+	item *dto.InventoryItemDTO,
 ) *InventoryItemRevokedMessage {
 	const message = "item revoked"
 
@@ -62,9 +62,9 @@ func NewInventoryItemRevokedMessage(
 			performerName,
 		),
 		Data: struct {
-			InventoryItemID int `json:"item_id"`
+			Item *dto.InventoryItemDTO `json:"item"`
 		}{
-			InventoryItemID: inventoryItemID,
+			Item: item,
 		},
 	}
 }

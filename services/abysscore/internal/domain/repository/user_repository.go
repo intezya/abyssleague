@@ -2,14 +2,14 @@ package repositoryports
 
 import (
 	"context"
-	"time"
-
 	"github.com/intezya/abyssleague/services/abysscore/internal/domain/dto"
 	"github.com/intezya/abyssleague/services/abysscore/internal/infrastructure/ent"
 	"github.com/intezya/abyssleague/services/abysscore/pkg/optional"
+	"time"
 )
 
 type UserRepository interface {
+	WithTx(ctx context.Context) (*ent.Tx, error)
 	FindDTOById(ctx context.Context, id int) (*dto.UserDTO, error)
 	FindFullDTOById(ctx context.Context, id int) (*dto.UserFullDTO, error)
 	ExistsByEmail(ctx context.Context, email string) bool
@@ -23,11 +23,6 @@ type UserRepository interface {
 		username string,
 	) (*dto.UserFullDTO, error)
 	TxFindDTOByLowerUsername(ctx context.Context, tx *ent.Tx, username string) (*dto.UserDTO, error)
-}
-
-type AuthenticationRepository interface {
-	WithTx(ctx context.Context) (*ent.Tx, error)
-	TxUpdateHardwareIDByID(ctx context.Context, tx *ent.Tx, id int, hardwareID string) error
 	TxUpdateLoginStreakLoginAtByID(
 		ctx context.Context,
 		tx *ent.Tx,
@@ -40,6 +35,11 @@ type AuthenticationRepository interface {
 		tx *ent.Tx,
 		user *dto.UserDTO,
 	) error
+}
+
+type AuthenticationRepository interface {
+	WithTx(ctx context.Context) (*ent.Tx, error)
+	TxUpdateHardwareIDByID(ctx context.Context, tx *ent.Tx, id int, hardwareID string) error
 	TxUpdatePasswordByID(ctx context.Context, tx *ent.Tx, id int, password string) error
 }
 
